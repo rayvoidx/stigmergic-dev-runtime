@@ -1,0 +1,76 @@
+{
+  "config": {
+    "budget": {
+      "max_episodes": 8,
+      "max_provider_calls": 12,
+      "max_tokens": 400000,
+      "max_usd": 0.0,
+      "max_wall_seconds": 2400.0
+    },
+    "condition": "artifact_only",
+    "fixture_version": "v2",
+    "fixtures_dir": null,
+    "k": 10,
+    "n_workers": 1,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 4096,
+      "model_id": "gemma3:12b",
+      "provider": "ollama",
+      "temperature": 0.0,
+      "use_failure_memory": true
+    },
+    "replace_at_episode": -1,
+    "replacement_provider": null,
+    "run_id": "live-v2-gemma3-12b-seed42",
+    "sandbox_timeout": 15.0,
+    "seed": 42
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6",
+    "stigdev_version": "0.1.0"
+  },
+  "evaluator_id": "trendevobench.select",
+  "evaluator_version": "1",
+  "fixture_hashes": {
+    "holdout.jsonl": "a44945220df7b1668b0360bbce66963efcacdd13143fc1d4d74720bcfe7a6c0d",
+    "train.jsonl": "624d05e95b6a003897db7c8a3c00d90f5684ea084f4b96880c38a22db699957a"
+  },
+  "policy_id": "strict-improve/v1",
+  "prompt_template_hash": "9828460e85b3ff8d63ad5afcd22faa6350268c7ceb4dbeebb8353e1933096ecb",
+  "run_id": "live-v2-gemma3-12b-seed42",
+  "seed_artifact_hash": "218988094a0093e7381e6f3d3c6fa97ccd868a5ee61c4b16649b7d5af989d6ff",
+  "summary": {
+    "accepted_ratio": 0.0,
+    "canonical": {
+      "artifact_hash": "218988094a0093e7381e6f3d3c6fa97ccd868a5ee61c4b16649b7d5af989d6ff",
+      "generation": 0,
+      "score": 0.3
+    },
+    "condition": "artifact_only",
+    "cost": {
+      "input_tokens": 9686,
+      "output_tokens": 3934,
+      "usd": 0.0
+    },
+    "episodes": 8,
+    "holdout_metrics": {
+      "precision_at_k": 0.1,
+      "selected": 10.0,
+      "unique_group_rate": 1.0
+    },
+    "holdout_score": 0.37,
+    "lineage_depth": 0,
+    "promoted": 0,
+    "proposed": 8,
+    "provider_calls": 8,
+    "provider_replaced_at": [],
+    "rejected": 8,
+    "repeated_failure_attempts": 2,
+    "seed_score_train": 0.3,
+    "wall_seconds": 196.22,
+    "worker_replaced_at": []
+  }
+}

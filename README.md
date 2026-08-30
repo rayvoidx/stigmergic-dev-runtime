@@ -81,6 +81,13 @@ precision@k, duplicate-group uniqueness, composite score, train/holdout split.
 The seed-42 demo goes from 0.55 to 0.86 (train) and 0.52 to 0.86 (holdout) via
 three promotions, with five rejections recorded as failure evidence.
 
+Two fixture tiers exist: **v1** (mechanism tier, used by the demo and most
+tests) and **v2** (discrimination tier: paraphrased duplicates that defeat
+prefix dedup, spam detectable only via source reliability, old-but-relevant
+items, engagement as anti-signal; floor 0.30 / v1-strategy plateau ~0.69 /
+probed ceiling 0.97 on train). See `benchmarks/trendevobench/README.md` for
+the calibration table.
+
 The shipped offline provider is a deterministic reference worker that proposes
 predefined mutations ("genes") — it exists to exercise the runtime and tests
 without a model API. It reads inherited failure records and skips known-failed

@@ -98,12 +98,22 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     artifact_only reproduced its baseline token-for-token; single_persistent
     successor re-crashed with its predecessor's exact NameError artifact.
     Lab note RQ4 addendum + `examples/live_run_rq4_*` archives.
+15. **Fixtures v2 (discrimination tier) shipped** (2026-08-30). Generator
+    refactored to versioned dispatch (v1 output verified byte-identical).
+    v2 adversarial properties: paraphrase duplicates (prefix dedup gains
+    exactly 0), subtle listicle spam carrying no clickbait/target words
+    (source reliability is the signal), old-but-relevant items, engagement as
+    anti-signal. Calibration locked by tests/test_fixtures_v2.py: seed 0.30
+    train, v1-gene plateau 0.69, reference_artifact_v2.py probe 0.97/0.90.
+    Calibration table in benchmarks/trendevobench/README.md. First live v2
+    run (gemma3:12b, 8 eps): zero promotions, stuck at the 0.30 floor —
+    the tier now discriminates (archived: examples/live_run_v2_gemma3/).
 
 ## Known gaps / next actions (highest value first)
 
-1. **Harder benchmark tier** (fixture v2: larger pools, adversarial
-   near-duplicates, more headroom) — every mechanism now exists, but the toy
-   landscape saturates too fast for meaningful pilot comparisons.
+1. **Pilot-tier comparisons on v2** — the discrimination tier exists; the
+   next real gain is 5-seed pilots across conditions with a stronger model
+   (paid adapters or a larger local model), per the protocol's pilot tier.
 2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
    by user approval; never in tests).
 3. Harder benchmark tier (larger fixture versions, more mutation surface, or a

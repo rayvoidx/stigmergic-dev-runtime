@@ -85,3 +85,20 @@ memory wiped, store untouched). Archives: `examples/live_run_rq4_single/`,
   are locked in as regression tests (`tests/test_rq4_replacement.py`).
 
 Same caveat as above: n=1 per cell, mechanism demonstration only.
+
+## Fixtures v2 addendum: first live run on the discrimination tier
+
+One artifact_only run on fixtures v2 (gemma3:12b, 8 episodes, seed 42,
+13,620 tokens, archived at `examples/live_run_v2_gemma3/`, replay clean):
+**zero promotions**. The model produced one crash (the same `NameError:
+GENES` imitation failure seen on v1), two repeated failures, and five
+distinct tie proposals stuck at the 0.30 floor — including a `keyword_boost`
+attempt that failed to realize the 0.69 keyword rung the calibration probes
+show is available.
+
+Reading: v2 behaves as designed — the floor is escapable (calibration table
+in `benchmarks/trendevobench/README.md`: rungs at 0.37/0.69, probed ceiling
+0.97) but a 12B local model no longer escapes it for free in 8 episodes.
+"Failure to leave the floor" is now a possible outcome, which is what gives
+the tier discrimination for future pilot comparisons across models,
+conditions, and budgets. n=1; no capability claim about gemma3:12b.

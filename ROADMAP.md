@@ -11,9 +11,10 @@ Ordered by value. Nothing below is a present capability; see README
    in tests.
 3. **Pilot experiments** — 5 conditions x 5 seeds on a small live model per
    `docs/research_protocol.md`; variance estimates feed the power analysis.
-4. **Harder benchmark tiers** — fixture v2+ with larger pools, adversarial
-   near-duplicates, evidence-citation metrics; a second task family to reduce
-   single-task construct risk.
+4. **Harder benchmark tiers** — fixture v2 (adversarial paraphrase
+   duplicates, source-signal spam, calibrated 0.30 floor / 0.97 probed
+   ceiling) is done. Remaining: larger pools, evidence-citation metrics, and
+   a second task family to reduce single-task construct risk.
 5. ~~RQ3/RQ4 harnesses~~ — done: `use_failure_memory` ablation toggle and
    `replace_at_episode`/`replacement_provider` schedule (worker and provider
    replacement, offline-tested). Remaining: injected input-source failures.
