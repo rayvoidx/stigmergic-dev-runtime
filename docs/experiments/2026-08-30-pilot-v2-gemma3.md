@@ -46,8 +46,31 @@ local; every run is individually replayable).
 
 - Ablation: add recent *promotion* history to the artifact_only observation
   (richer medium) and rerun the same matrix — isolates "information richness"
-  from "information source".
+  from "information source". **Done same day; see below.**
 - Stronger worker model (paid adapter, needs approval; or a larger local
   model) — gemma3:12b fails to realize known-reachable rungs (calibration
   ceiling 0.97, best observed 0.83).
 - More seeds per the protocol before any comparative language.
+
+## Ablation result: richer medium did NOT close the gap
+
+`observe_promotion_history: true` (artifact_only x seeds 41–45, otherwise
+identical setup; data: `docs/experiments/data/ablation-richmedium-matrix.json`,
+12.1 min, $0):
+
+| variant | holdout mean [95% CI] | promoted/run | floor-stuck |
+|---|---|---|---|
+| artifact_only + promotion history | 0.498 [0.370, 0.670] | 0.4 | 3/5 |
+| artifact_only baseline | 0.528 [0.370, 0.700] | 0.6 | 3/5 |
+| single_persistent baseline | 0.646 [0.504, 0.774] | 1.2 | 1/5 |
+
+Exposing what-worked summaries (mutation, score, generation) did not move
+artifact_only toward single_persistent — the difference is
+indistinguishable from noise at n=5, and certainly not a closure. The
+"information richness" explanation in its simplest form is **weakened**.
+Remaining candidates, untested: (a) pure noise — every CI here overlaps;
+(b) the persistent worker's advantage lives in *attempt-level context*
+(its own prior source code and reasoning traces, not summary tuples);
+(c) an interaction with temperature-0.7 sampling. Next discriminating step
+is more seeds and/or a stronger worker model; summary-tuple enrichment of
+the medium is not it.

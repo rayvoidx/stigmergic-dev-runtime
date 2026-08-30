@@ -1,0 +1,156 @@
+{
+  "aggregates": {
+    "artifact_only": {
+      "holdout": {
+        "ci95": [
+          0.37,
+          0.67
+        ],
+        "mean": 0.498,
+        "n": 5,
+        "sd": 0.1918
+      },
+      "promoted": {
+        "ci95": [
+          0.0,
+          0.8
+        ],
+        "mean": 0.4,
+        "n": 5,
+        "sd": 0.5477
+      },
+      "rejected": {
+        "ci95": [
+          5.2,
+          6.0
+        ],
+        "mean": 5.6,
+        "n": 5,
+        "sd": 0.5477
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.6
+        ],
+        "mean": 0.2,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "tokens": {
+        "ci95": [
+          9282.6,
+          10182.0
+        ],
+        "mean": 9673.4,
+        "n": 5,
+        "sd": 577.7861
+      },
+      "train": {
+        "ci95": [
+          0.3,
+          0.576
+        ],
+        "mean": 0.42,
+        "n": 5,
+        "sd": 0.1762
+      }
+    }
+  },
+  "base_config": {
+    "budget": {
+      "max_episodes": 6,
+      "max_provider_calls": 12,
+      "max_tokens": 400000,
+      "max_usd": 0.0,
+      "max_wall_seconds": 2400.0
+    },
+    "condition": "artifact_only",
+    "fixture_version": "v2",
+    "fixtures_dir": null,
+    "k": 10,
+    "n_workers": 3,
+    "observe_promotion_history": true,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 4096,
+      "model_id": "gemma3:12b",
+      "provider": "ollama",
+      "temperature": 0.7,
+      "use_failure_memory": true
+    },
+    "run_id": "overridden-by-matrix",
+    "sandbox_timeout": 15.0,
+    "seed": 42
+  },
+  "conditions": [
+    "artifact_only"
+  ],
+  "label": "ablation-richmedium",
+  "rows": [
+    {
+      "condition": "artifact_only",
+      "holdout": 0.37,
+      "promoted": 0,
+      "rejected": 6,
+      "repeated": 0,
+      "run_id": "ablation-richmedium-artifact_only-s41",
+      "seed": 41,
+      "tokens": 9778,
+      "train": 0.3
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.37,
+      "promoted": 0,
+      "rejected": 6,
+      "repeated": 1,
+      "run_id": "ablation-richmedium-artifact_only-s42",
+      "seed": 42,
+      "tokens": 9326,
+      "train": 0.3
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.37,
+      "promoted": 0,
+      "rejected": 6,
+      "repeated": 0,
+      "run_id": "ablation-richmedium-artifact_only-s43",
+      "seed": 43,
+      "tokens": 9561,
+      "train": 0.3
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.58,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "ablation-richmedium-artifact_only-s44",
+      "seed": 44,
+      "tokens": 9100,
+      "train": 0.51
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "ablation-richmedium-artifact_only-s45",
+      "seed": 45,
+      "tokens": 10602,
+      "train": 0.69
+    }
+  ],
+  "seeds": [
+    41,
+    42,
+    43,
+    44,
+    45
+  ],
+  "wall_seconds": 727.8
+}

@@ -116,15 +116,22 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     docs/experiments/2026-08-30-pilot-v2-gemma3.md with a named confound
     (medium carries failures only; persistent worker sees full trajectory
     incl. promotions). Next: observation-richness ablation.
+17. **Richness ablation ran same day** (`observe_promotion_history` flag,
+    default off, tested): artifact_only + promotion history holdout 0.498
+    [0.37, 0.67] vs baseline 0.528 — gap to single_persistent (0.646) NOT
+    closed; summary-tuple enrichment is not the explanation. Remaining
+    candidates (untested): noise at n=5; attempt-level context (own prior
+    source) as the real persistent advantage; temperature interaction.
 
 ## Known gaps / next actions (highest value first)
 
-1. **Observation-richness ablation** — pilot found the point ordering
-   opposite to H1 (single_persistent best on average), with a named
-   confound: the stigmergic medium transmits failures but not promotion
-   history, while the persistent worker sees its full trajectory. Add recent
-   promotion context to the artifact_only observation and rerun the matrix
-   (decision log #16).
+1. **Scale or strengthen before further interpretation** — the ablation
+   (decision log #17) weakened the simple richness explanation; every CI
+   still overlaps at n=5. Two paths, user's call: (a) more seeds locally
+   (n>=20 per arm, ~2h+ on gemma3:12b), (b) stronger worker model (paid
+   adapter — requires approval; or update Ollama.app to unlock gpt-oss:20b).
+   Candidate hypothesis to test then: the persistent advantage lives in
+   attempt-level context (own prior code), not summary tuples.
 2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
    by user approval; never in tests).
 3. Harder benchmark tier (larger fixture versions, more mutation surface, or a
