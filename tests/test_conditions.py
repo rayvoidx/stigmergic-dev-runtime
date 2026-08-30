@@ -71,6 +71,31 @@ def test_single_persistent_ignores_store_failures(tmp_path: Path):
     assert private["own_history"] == []
 
 
+def test_observe_promotion_history_enriches_stigmergic_medium(tmp_path: Path):
+    """Ablation flag: medium can also transmit what worked, not only failures.
+    Default stays off (baseline observation unchanged)."""
+    from dataclasses import replace
+
+    from stigdev.store import RunStore
+    from stigdev.worker import build_observation
+
+    base = _load("artifact_only")
+    run(base, tmp_path)
+    store = RunStore.open(tmp_path / base.run_id)
+
+    default_obs = build_observation(store, base, episode=99)
+    assert "promotions" not in default_obs and "own_history" not in default_obs
+
+    rich = replace(base, observe_promotion_history=True)
+    rich_obs = build_observation(store, rich, episode=99)
+    assert [p["mutation"] for p in rich_obs["promotions"]] == ["recency", "keyword", "dedup"]
+    assert all(set(p) == {"mutation", "score", "generation"} for p in rich_obs["promotions"])
+
+    # persistent workers keep their private view; the flag must not leak there
+    persistent_obs = build_observation(store, rich, 99, private_history=[])
+    assert "promotions" not in persistent_obs and persistent_obs["own_history"] == []
+
+
 def test_best_of_n_isolated_workers_and_selection(tmp_path: Path):
     summary = run(_load("best_of_n"), tmp_path)
     run_dir = tmp_path / "exp-best_of_n-seed42"

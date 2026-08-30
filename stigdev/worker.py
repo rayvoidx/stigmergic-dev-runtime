@@ -79,6 +79,12 @@ def build_observation(
             {"status": h["status"], "mutation": h.get("mutation"), "score": h.get("score")}
             for h in private_history
         ]
+    elif config.observe_promotion_history:
+        # richer stigmergic medium: what worked, not only what failed
+        observation["promotions"] = [
+            {"mutation": e.get("mutation"), "score": e["score"], "generation": e["generation"]}
+            for e in store.events("promoted")[-MAX_OBSERVED_FAILURES:]
+        ]
     return observation
 
 

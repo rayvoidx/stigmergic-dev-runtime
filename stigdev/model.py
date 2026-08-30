@@ -72,6 +72,10 @@ class RunConfig:
     # already, so for them it is logged but informationally a no-op.
     replace_at_episode: int = -1
     replacement_provider: ProviderSpec | None = None
+    # Ablation (pilot 2026-08-30 confound): when true, the stigmergic medium
+    # also exposes recent promotion history to workers, matching the
+    # information richness a persistent worker gets from its own trajectory.
+    observe_promotion_history: bool = False
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "RunConfig":
