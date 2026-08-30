@@ -108,12 +108,23 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     Calibration table in benchmarks/trendevobench/README.md. First live v2
     run (gemma3:12b, 8 eps): zero promotions, stuck at the 0.30 floor —
     the tier now discriminates (archived: examples/live_run_v2_gemma3/).
+16. **Matrix runner + first pilot** (2026-08-30). `stigdev matrix` runs
+    conditions x seeds with bootstrap-CI aggregates (offline-tested). Pilot
+    3x5 on v2 (gemma3:12b, temp 0.7, $0, 34 min): holdout means
+    single_persistent 0.646 > artifact_only 0.528 > best_of_n 0.454, all
+    CIs overlapping — direction OPPOSITE to H1, honestly recorded in
+    docs/experiments/2026-08-30-pilot-v2-gemma3.md with a named confound
+    (medium carries failures only; persistent worker sees full trajectory
+    incl. promotions). Next: observation-richness ablation.
 
 ## Known gaps / next actions (highest value first)
 
-1. **Pilot-tier comparisons on v2** — the discrimination tier exists; the
-   next real gain is 5-seed pilots across conditions with a stronger model
-   (paid adapters or a larger local model), per the protocol's pilot tier.
+1. **Observation-richness ablation** — pilot found the point ordering
+   opposite to H1 (single_persistent best on average), with a named
+   confound: the stigmergic medium transmits failures but not promotion
+   history, while the persistent worker sees its full trajectory. Add recent
+   promotion context to the artifact_only observation and rerun the matrix
+   (decision log #16).
 2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
    by user approval; never in tests).
 3. Harder benchmark tier (larger fixture versions, more mutation surface, or a
