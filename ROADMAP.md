@@ -3,7 +3,7 @@
 Ordered by value. Nothing below is a present capability; see README
 "Current limitations" for what exists today.
 
-1. ~~Baseline conditions~~ — done: `single_persistent` and `best_of_n`
+1. **Baseline conditions** — done: `single_persistent` and `best_of_n`
    runners implemented (see PROJECT_STATE decision log #12).
 2. **Paid provider adapters** — Anthropic/OpenAI behind the existing
    `Provider` protocol (a local Ollama adapter already exists); strict budget
@@ -15,7 +15,7 @@ Ordered by value. Nothing below is a present capability; see README
    duplicates, source-signal spam, calibrated 0.30 floor / 0.97 probed
    ceiling) is done. Remaining: larger pools, evidence-citation metrics, and
    a second task family to reduce single-task construct risk.
-5. ~~RQ3/RQ4 harnesses~~ — done: `use_failure_memory` ablation toggle and
+5. **RQ3/RQ4 harnesses** — done: `use_failure_memory` ablation toggle and
    `replace_at_episode`/`replacement_provider` schedule (worker and provider
    replacement, offline-tested). Remaining: injected input-source failures.
 6. **Multi-artifact projects** — directory-tree canonical state, per-artifact
