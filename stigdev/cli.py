@@ -60,6 +60,24 @@ def cmd_recover(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_matrix(args: argparse.Namespace) -> int:
+    from .matrix import format_table, run_matrix
+
+    base = json.loads(Path(args.config).read_text(encoding="utf-8"))
+    matrix = run_matrix(
+        base,
+        args.conditions.split(","),
+        [int(s) for s in args.seeds.split(",")],
+        Path(args.runs_root),
+        args.label,
+    )
+    print(format_table(matrix))
+    print(
+        f"\nmatrix file: {Path(args.runs_root) / (args.label + '-matrix.json')}", file=sys.stderr
+    )
+    return 0
+
+
 def cmd_lineage(args: argparse.Namespace) -> int:
     store = RunStore.open(Path(args.run_dir))
     started = store.events("run_started")[0]
@@ -111,6 +129,14 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("recover", help="restore canonical pointer from the event log")
     p.add_argument("run_dir")
     p.set_defaults(func=cmd_recover)
+
+    p = sub.add_parser("matrix", help="run a conditions x seeds experiment matrix")
+    p.add_argument("--config", required=True, help="base RunConfig JSON (run_id/condition/seed overridden)")
+    p.add_argument("--conditions", required=True, help="comma-separated condition names")
+    p.add_argument("--seeds", required=True, help="comma-separated integer seeds")
+    p.add_argument("--label", required=True)
+    p.add_argument("--runs-root", default="runs")
+    p.set_defaults(func=cmd_matrix)
 
     p = sub.add_parser("lineage", help="print lineage, failures, and canonical state")
     p.add_argument("run_dir")

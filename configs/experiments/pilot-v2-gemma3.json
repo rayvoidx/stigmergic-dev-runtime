@@ -1,0 +1,26 @@
+{
+  "condition": "artifact_only",
+  "seed": 42,
+  "k": 10,
+  "fixture_version": "v2",
+  "fixtures_dir": null,
+  "budget": {
+    "max_episodes": 6,
+    "max_provider_calls": 12,
+    "max_tokens": 400000,
+    "max_usd": 0.0,
+    "max_wall_seconds": 2400.0
+  },
+  "provider": {
+    "provider": "ollama",
+    "model_id": "gemma3:12b",
+    "effort": null,
+    "temperature": 0.7,
+    "max_output_tokens": 4096,
+    "use_failure_memory": true
+  },
+  "policy_id": "strict-improve/v1",
+  "sandbox_timeout": 15.0,
+  "n_workers": 3,
+  "run_id": "overridden-by-matrix"
+}
