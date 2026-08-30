@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stigdev"
+version = "0.1.0"
+description = "Evaluator-gated stigmergic software evolution runtime: persistent projects, ephemeral agents."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+authors = [{ name = "stigmergic-dev-runtime maintainers" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+stigdev = "stigdev.cli:main"
+
+[tool.setuptools]
+packages = ["stigdev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

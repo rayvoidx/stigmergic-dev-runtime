@@ -1,0 +1,70 @@
+{
+  "config": {
+    "budget": {
+      "max_episodes": 8,
+      "max_provider_calls": 16,
+      "max_tokens": 0,
+      "max_usd": 0.0,
+      "max_wall_seconds": 300.0
+    },
+    "condition": "artifact_only",
+    "fixture_version": "v1",
+    "fixtures_dir": null,
+    "k": 10,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 0,
+      "model_id": "offline-deterministic/v1",
+      "provider": "offline",
+      "temperature": 0.0,
+      "use_failure_memory": true
+    },
+    "run_id": "sample_run",
+    "sandbox_timeout": 10.0,
+    "seed": 42
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6",
+    "stigdev_version": "0.1.0"
+  },
+  "evaluator_id": "trendevobench.select",
+  "evaluator_version": "1",
+  "fixture_hashes": {
+    "holdout.jsonl": "9f43a93c8a54204d0fe2d0a8e19a6887f7ebf489615f7de9c1a49a0afe6c528f",
+    "train.jsonl": "b187e25be73801dc2f8b674df8ec6a89a7dd2b2e880bb0b1011be2e7e5e49063"
+  },
+  "policy_id": "strict-improve/v1",
+  "prompt_template_hash": "c80134cf25695b27825d02bdee53e83d78b9fc29f47692b82efddecd684e5adf",
+  "run_id": "sample_run",
+  "seed_artifact_hash": "218988094a0093e7381e6f3d3c6fa97ccd868a5ee61c4b16649b7d5af989d6ff",
+  "summary": {
+    "accepted_ratio": 0.375,
+    "canonical": {
+      "artifact_hash": "8a7cdcb1a3700ef29a54acf77ccff85fc3b397c5daf650a15a2f9350204a6e09",
+      "generation": 3,
+      "score": 0.86
+    },
+    "cost": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usd": 0.0
+    },
+    "episodes": 8,
+    "holdout_metrics": {
+      "precision_at_k": 0.8,
+      "selected": 10.0,
+      "unique_group_rate": 1.0
+    },
+    "holdout_score": 0.86,
+    "lineage_depth": 3,
+    "promoted": 3,
+    "proposed": 8,
+    "provider_calls": 8,
+    "rejected": 5,
+    "repeated_failure_attempts": 2,
+    "seed_score_train": 0.55,
+    "wall_seconds": 0.201
+  }
+}

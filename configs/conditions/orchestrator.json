@@ -1,0 +1,25 @@
+{
+  "run_id": "exp-orchestrator-seed42",
+  "condition": "orchestrator",
+  "seed": 42,
+  "k": 10,
+  "fixture_version": "v1",
+  "fixtures_dir": null,
+  "budget": {
+    "max_episodes": 8,
+    "max_provider_calls": 16,
+    "max_tokens": 0,
+    "max_usd": 0.0,
+    "max_wall_seconds": 300.0
+  },
+  "provider": {
+    "provider": "offline",
+    "model_id": "offline-deterministic/v1",
+    "effort": null,
+    "temperature": 0.0,
+    "max_output_tokens": 0,
+    "use_failure_memory": true
+  },
+  "policy_id": "strict-improve/v1",
+  "sandbox_timeout": 10.0
+}
