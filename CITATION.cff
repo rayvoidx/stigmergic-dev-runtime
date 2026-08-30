@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "stigmergic-dev-runtime: an evaluator-gated stigmergic software evolution runtime"
+version: 0.1.0
+date-released: 2026-08-30
+license: Apache-2.0
+type: software
+authors:
+  - name: "stigmergic-dev-runtime maintainers"
+abstract: >-
+  Research runtime and reproducible benchmark for evaluator-gated stigmergic
+  software evolution: finite-lived AI workers accumulate capability through
+  versioned executable artifacts, lineage, evidence, and failure records,
+  without persistent conversational identity.
+keywords:
+  - stigmergy
+  - software evolution
+  - language-model agents
+  - reproducibility
