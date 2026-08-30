@@ -198,6 +198,40 @@ def test_provider_repeats_failures_without_memory():
     assert parse_mutation(extract_code_fence(response.text)) == "short_filter"
 
 
+def test_ollama_provider_maps_request_and_response(monkeypatch):
+    import io
+    import urllib.request
+
+    from stigdev.provider import OllamaProvider
+
+    captured = {}
+
+    class FakeResponse(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    def fake_urlopen(req, timeout):
+        captured["url"] = req.full_url
+        captured["payload"] = json.loads(req.data.decode("utf-8"))
+        body = {"response": "```python\nx = 1\n```", "prompt_eval_count": 12, "eval_count": 34}
+        return FakeResponse(json.dumps(body).encode("utf-8"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    from stigdev.model import ProviderSpec
+
+    provider = OllamaProvider(ProviderSpec(provider="ollama", model_id="test-model"))
+    response = provider.generate(ProviderRequest("hi", seed=7, temperature=0.0, max_output_tokens=64))
+    assert captured["url"].endswith("/api/generate")
+    assert captured["payload"]["model"] == "test-model"
+    assert captured["payload"]["options"] == {"temperature": 0.0, "seed": 7, "num_predict": 64}
+    assert captured["payload"]["stream"] is False
+    assert response.text == "```python\nx = 1\n```"
+    assert (response.input_tokens, response.output_tokens, response.usd) == (12, 34, 0.0)
+
+
 def test_render_and_parse_genes_round_trip():
     genes = {"dedup", "recency"}
     assert parse_genes(render_artifact(genes, "recency")) == genes

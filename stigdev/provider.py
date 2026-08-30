@@ -117,6 +117,50 @@ class Provider(Protocol):
     def generate(self, request: ProviderRequest) -> ProviderResponse: ...
 
 
+class OllamaProvider:
+    """Local Ollama adapter (default http://localhost:11434). Free and local-only,
+    but still a live model: outputs are not bit-reproducible across hardware or
+    Ollama versions. Never used in tests; replay verifies evidence, not
+    generation. GPU use (Metal/CUDA) is Ollama's own scheduling.
+    """
+
+    def __init__(
+        self,
+        spec: ProviderSpec,
+        host: str = "http://localhost:11434",
+        timeout: float = 600.0,
+    ):
+        self.spec = spec
+        self._host = host
+        self._timeout = timeout
+
+    def generate(self, request: ProviderRequest) -> ProviderResponse:
+        import urllib.request
+
+        options: dict = {"temperature": request.temperature, "seed": request.seed}
+        if request.max_output_tokens:
+            options["num_predict"] = request.max_output_tokens
+        payload = {
+            "model": self.spec.model_id,
+            "prompt": request.prompt,
+            "stream": False,
+            "options": options,
+        }
+        http_request = urllib.request.Request(
+            f"{self._host}/api/generate",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(http_request, timeout=self._timeout) as response:
+            body = json.loads(response.read().decode("utf-8"))
+        return ProviderResponse(
+            text=str(body.get("response", "")),
+            input_tokens=int(body.get("prompt_eval_count", 0)),
+            output_tokens=int(body.get("eval_count", 0)),
+            usd=0.0,
+        )
+
+
 class OfflineTrendProvider:
     def __init__(self, spec: ProviderSpec, seed: int):
         self.spec = spec

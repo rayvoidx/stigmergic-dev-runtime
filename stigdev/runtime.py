@@ -66,10 +66,10 @@ def run(
             f"condition {config.condition!r} is configurable but not implemented; "
             f"implemented: {IMPLEMENTED_CONDITIONS}. No silent fallback."
         )
-    if config.provider.provider != "offline":
+    if config.provider.provider not in ("offline", "ollama"):
         raise NotImplementedError(
-            "only the offline deterministic provider is implemented; "
-            "live adapters are future work and must never run inside tests"
+            f"provider {config.provider.provider!r} not implemented "
+            "(implemented: offline, ollama); paid adapters require explicit approval"
         )
 
     fixtures_dir = (
@@ -83,7 +83,12 @@ def run(
     sandbox = SubprocessSandbox()
     evaluator = TrendSelectEvaluator(fixtures_dir, sandbox, config.sandbox_timeout)
     policy = StrictImprovementPolicy()
-    provider = OfflineTrendProvider(config.provider, config.seed)
+    if config.provider.provider == "ollama":
+        from .provider import OllamaProvider
+
+        provider: OfflineTrendProvider | OllamaProvider = OllamaProvider(config.provider)
+    else:
+        provider = OfflineTrendProvider(config.provider, config.seed)
 
     seed_source = seed_path.read_text(encoding="utf-8")
     seed_hash = store.put_artifact(seed_source)

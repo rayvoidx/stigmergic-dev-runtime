@@ -24,6 +24,8 @@ PROMPT_TEMPLATE = """You are one ephemeral worker episode in an artifact-evoluti
 Improve the canonical artifact below. Respond with a complete Python module in
 one ```python fence. The module must define
 select_trends(items: list[dict], k: int) -> list[str] returning item ids.
+Use only the Python standard library. Include one comment line
+`# stigdev-mutation: <short-name>` naming your change.
 Prior failures are listed so you do not repeat them.
 {obs_begin}
 {observation_json}
