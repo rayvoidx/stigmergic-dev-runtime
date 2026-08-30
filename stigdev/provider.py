@@ -137,7 +137,8 @@ class OllamaProvider:
     def generate(self, request: ProviderRequest) -> ProviderResponse:
         import urllib.request
 
-        options: dict = {"temperature": request.temperature, "seed": request.seed}
+        # 8k context: persistent-condition prompts grow with private history
+        options: dict = {"temperature": request.temperature, "seed": request.seed, "num_ctx": 8192}
         if request.max_output_tokens:
             options["num_predict"] = request.max_output_tokens
         payload = {

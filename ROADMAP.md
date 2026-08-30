@@ -3,8 +3,8 @@
 Ordered by value. Nothing below is a present capability; see README
 "Current limitations" for what exists today.
 
-1. **Baseline conditions** — implement `single_persistent` and `best_of_n`
-   runners (RQ1 comparisons are impossible without them).
+1. ~~Baseline conditions~~ — done: `single_persistent` and `best_of_n`
+   runners implemented (see PROJECT_STATE decision log #12).
 2. **Paid provider adapters** — Anthropic/OpenAI behind the existing
    `Provider` protocol (a local Ollama adapter already exists); strict budget
    enforcement (tokens/USD/calls) already present in the run loop; never used

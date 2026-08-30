@@ -35,11 +35,28 @@ Prior failures are listed so you do not repeat them.
 _FENCE_RE = re.compile(r"```python\n(.*?)```", re.DOTALL)
 
 
-def build_observation(store: RunStore, config: RunConfig, episode: int) -> dict[str, Any]:
+def build_observation(
+    store: RunStore,
+    config: RunConfig,
+    episode: int,
+    private_history: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Bounded worker view.
+
+    Stigmergic (private_history is None): failures come from the shared store —
+    the medium left behind by earlier, now-gone workers.
+    Persistent (private_history given): the worker sees only its own full
+    trajectory (all statuses), never the store's failure records.
+    """
     canonical = store.canonical()
     assert canonical is not None, "runtime must seed canonical state before episodes"
-    failures = store.failures()[-MAX_OBSERVED_FAILURES:]
-    return {
+    if private_history is None:
+        failures = store.failures()[-MAX_OBSERVED_FAILURES:]
+    else:
+        failures = [h for h in private_history if h["status"] == "rejected"][
+            -MAX_OBSERVED_FAILURES:
+        ]
+    observation = {
         "episode": episode,
         "canonical_hash": canonical["artifact_hash"],
         "canonical_score": canonical["score"],
@@ -57,6 +74,12 @@ def build_observation(store: RunStore, config: RunConfig, episode: int) -> dict[
         ],
         "budget": {"episodes_remaining": config.budget.max_episodes - episode},
     }
+    if private_history is not None:
+        observation["own_history"] = [
+            {"status": h["status"], "mutation": h.get("mutation"), "score": h.get("score")}
+            for h in private_history
+        ]
+    return observation
 
 
 def extract_code_fence(text: str) -> str | None:
@@ -76,8 +99,9 @@ def run_episode(
     evaluator: TrendSelectEvaluator,
     policy: StrictImprovementPolicy,
     episode: int,
+    private_history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    observation = build_observation(store, config, episode)
+    observation = build_observation(store, config, episode, private_history)
     prompt = PROMPT_TEMPLATE.format(
         obs_begin=OBS_BEGIN,
         observation_json=json.dumps(observation, sort_keys=True),
@@ -110,7 +134,11 @@ def run_episode(
 
     candidate_hash = store.put_artifact(source)
     mutation = parse_mutation(source)
-    prior_failures = store.failures()
+    prior_failures = (
+        store.failures()
+        if private_history is None
+        else [h for h in private_history if h["status"] == "rejected"]
+    )
     repeated_failure = candidate_hash in {f["artifact_hash"] for f in prior_failures} or (
         mutation is not None and mutation in {f.get("mutation") for f in prior_failures}
     )
@@ -155,11 +183,17 @@ def run_episode(
             repeated_failure=repeated_failure,
         )
         status = "rejected"
-    return {
+    outcome = {
         "status": status,
         "artifact_hash": candidate_hash,
         "mutation": mutation,
         "score": evidence.score,
+        "reason": decision.reason,
         "repeated_failure": repeated_failure,
         "cost": cost,
     }
+    if private_history is not None:
+        private_history.append(
+            {k: outcome[k] for k in ("status", "artifact_hash", "mutation", "score", "reason")}
+        )
+    return outcome

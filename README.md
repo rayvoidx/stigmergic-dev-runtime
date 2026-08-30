@@ -107,19 +107,33 @@ claim. Live-model runs are not bit-reproducible; `stigdev replay` still
 re-derives and verifies all recorded evidence (it does for this run: 7
 evaluations, 0 divergences). Tests never call a live model.
 
+A first archived 3-condition comparison (offline + live gemma3:12b, one seed,
+qualitative only) lives in
+`docs/experiments/2026-08-30-local-3condition-comparison.md`.
+
 ## Experimental conditions
 
 `configs/conditions/` holds matched-budget configs for all five comparison
-arms. Only `artifact_only` is implemented; the others parse, validate, and
-**refuse to run** rather than silently falling back:
+arms. Unimplemented ones parse, validate, and **refuse to run** rather than
+silently falling back:
 
 | Condition | Status |
 |---|---|
-| `single_persistent` | config only |
-| `best_of_n` | config only |
-| `artifact_only` (stigmergic) | **implemented** |
+| `single_persistent` | **implemented** — one worker, private full-trajectory memory, never reads the store's failure records |
+| `best_of_n` | **implemented** — `n_workers` isolated stores, budget split n ways, best final artifact selected (logged as a promotion) |
+| `artifact_only` (stigmergic) | **implemented** — ephemeral workers, coordination only through the shared store |
 | `full_communication` | config only |
 | `orchestrator` | config only |
+
+Caveat: with a single sequential offline worker, `single_persistent` and
+`artifact_only` carry the same information and produce identical results by
+construction — the conditions differ in the information *source* (private
+context vs persistent medium), which is exactly what worker-replacement (RQ4)
+and live-context-limit experiments will stress. One deterministic matched-
+budget run (8 episodes, seed 42) illustrates the structure:
+`artifact_only` = `single_persistent` 0.86 train / 0.86 holdout, versus
+`best_of_n` (4 workers x 2 episodes) 0.84 train / 0.74 holdout — splitting
+the budget cost search depth. Single runs; mechanism demo, not evidence.
 
 ## Current limitations
 

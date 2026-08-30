@@ -1,0 +1,97 @@
+{
+  "config": {
+    "budget": {
+      "max_episodes": 6,
+      "max_provider_calls": 12,
+      "max_tokens": 400000,
+      "max_usd": 0.0,
+      "max_wall_seconds": 2400.0
+    },
+    "condition": "best_of_n",
+    "fixture_version": "v1",
+    "fixtures_dir": null,
+    "k": 10,
+    "n_workers": 3,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 4096,
+      "model_id": "gemma3:12b",
+      "provider": "ollama",
+      "temperature": 0.0,
+      "use_failure_memory": true
+    },
+    "run_id": "live-ollama-gemma3-12b-bestof3-seed42",
+    "sandbox_timeout": 15.0,
+    "seed": 42
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6",
+    "stigdev_version": "0.1.0"
+  },
+  "evaluator_id": "trendevobench.select",
+  "evaluator_version": "1",
+  "fixture_hashes": {
+    "holdout.jsonl": "9f43a93c8a54204d0fe2d0a8e19a6887f7ebf489615f7de9c1a49a0afe6c528f",
+    "train.jsonl": "b187e25be73801dc2f8b674df8ec6a89a7dd2b2e880bb0b1011be2e7e5e49063"
+  },
+  "policy_id": "strict-improve/v1",
+  "prompt_template_hash": "9828460e85b3ff8d63ad5afcd22faa6350268c7ceb4dbeebb8353e1933096ecb",
+  "run_id": "live-ollama-gemma3-12b-bestof3-seed42",
+  "seed_artifact_hash": "218988094a0093e7381e6f3d3c6fa97ccd868a5ee61c4b16649b7d5af989d6ff",
+  "summary": {
+    "accepted_ratio": 0.5,
+    "canonical": {
+      "artifact_hash": "b130dd5d91d19616b718289cf7c3b976635e98ce17ace7820d4d77097911faa3",
+      "generation": 1,
+      "score": 0.66
+    },
+    "condition": "best_of_n",
+    "cost": {
+      "input_tokens": 4110,
+      "output_tokens": 1743,
+      "usd": 0.0
+    },
+    "episodes": 6,
+    "holdout_metrics": {
+      "precision_at_k": 0.6,
+      "selected": 10.0,
+      "unique_group_rate": 0.7
+    },
+    "holdout_score": 0.63,
+    "lineage_depth": 1,
+    "n_workers": 3,
+    "promoted": 3,
+    "proposed": 6,
+    "provider_calls": 6,
+    "rejected": 3,
+    "repeated_failure_attempts": 0,
+    "seed_score_train": 0.55,
+    "selected_worker": 0,
+    "wall_seconds": 81.12,
+    "workers": [
+      {
+        "promoted": 1,
+        "rejected": 1,
+        "score": 0.66,
+        "seed": 42,
+        "worker": 0
+      },
+      {
+        "promoted": 1,
+        "rejected": 1,
+        "score": 0.66,
+        "seed": 43,
+        "worker": 1
+      },
+      {
+        "promoted": 1,
+        "rejected": 1,
+        "score": 0.66,
+        "seed": 44,
+        "worker": 2
+      }
+    ]
+  }
+}

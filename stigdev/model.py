@@ -16,8 +16,8 @@ CONDITIONS = (
     "full_communication",
     "orchestrator",
 )
-# Only the stigmergic condition is exercised by the MVP runtime loop.
-IMPLEMENTED_CONDITIONS = ("artifact_only",)
+# Implemented conditions; full_communication and orchestrator remain config-only.
+IMPLEMENTED_CONDITIONS = ("single_persistent", "best_of_n", "artifact_only")
 
 
 def content_hash(text: str) -> str:
@@ -39,7 +39,7 @@ class Budget:
 
     max_episodes: int = 8
     max_provider_calls: int = 16
-    max_tokens: int = 0  # 0 tokens: offline provider must not spend any
+    max_tokens: int = 0  # 0 = no token budget (offline provider spends none anyway)
     max_usd: float = 0.0
     max_wall_seconds: float = 300.0
 
@@ -66,6 +66,7 @@ class RunConfig:
     provider: ProviderSpec = field(default_factory=ProviderSpec)
     policy_id: str = "strict-improve/v1"
     sandbox_timeout: float = 10.0
+    n_workers: int = 1  # best_of_n only: independent workers sharing nothing
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "RunConfig":

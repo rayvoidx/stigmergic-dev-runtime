@@ -43,9 +43,13 @@ empty until runs exist.
 5. `orchestrator` — central planner delegating to workers, all delegation
    logged.
 
-Implementation status: only condition 3 runs today; 1 and 2 are the next
-milestone (see PROJECT_STATE.md). Configs for all five exist with identical
-budget blocks and are schema-tested.
+Implementation status: conditions 1, 2, and 3 run today (4 and 5 are
+config-only). Configs for all five exist with identical budget blocks and are
+schema-tested. Note: with one sequential worker and no replacement, condition
+1 and condition 3 are informationally equivalent by construction and produce
+identical offline results; they separate under worker replacement (RQ4),
+parallel workers, and live context limits — comparisons between them are only
+meaningful in those regimes.
 
 ## Metrics
 

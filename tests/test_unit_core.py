@@ -226,7 +226,12 @@ def test_ollama_provider_maps_request_and_response(monkeypatch):
     response = provider.generate(ProviderRequest("hi", seed=7, temperature=0.0, max_output_tokens=64))
     assert captured["url"].endswith("/api/generate")
     assert captured["payload"]["model"] == "test-model"
-    assert captured["payload"]["options"] == {"temperature": 0.0, "seed": 7, "num_predict": 64}
+    assert captured["payload"]["options"] == {
+        "temperature": 0.0,
+        "seed": 7,
+        "num_ctx": 8192,
+        "num_predict": 64,
+    }
     assert captured["payload"]["stream"] is False
     assert response.text == "```python\nx = 1\n```"
     assert (response.input_tokens, response.output_tokens, response.usd) == (12, 34, 0.0)

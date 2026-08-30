@@ -70,13 +70,29 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     GPU). First live run committed as `examples/live_run_gemma3_12b/`:
     1 promoted (recency_weighting, train 0.55->0.66, holdout 0.63), 5
     rejected, 6,616 tokens, $0, replay clean.
+12. **single_persistent + best_of_n implemented** (2026-08-30).
+    single_persistent = private full-trajectory memory (`own_history` in the
+    observation), never reads store failure records; with one sequential
+    worker it is informationally equivalent to artifact_only and offline
+    results are identical by construction (tested). best_of_n = n_workers
+    fully isolated sub-stores under `<run>/workers/w<i>`, per-worker budget =
+    total/n, seeds seed+i, winner copied into the parent store as a logged
+    `promoted` event (parent and each worker dir replay clean). Offline
+    matched-budget demo (8 eps, seed 42): artifact_only=single 0.86/0.86,
+    best_of_n(4x2) 0.84/0.74.
+13. **First live 3-condition comparison archived** (gemma3:12b, 6 eps, seed
+    42, $0): artifact_only 0.66/0.63; single_persistent 0/6 promoted (stuck
+    in self-repair micro-edits, +54% tokens, canonical preserved by gate);
+    best_of_n(3x2) all workers redundantly found the same 0.66 improvement.
+    n=1 anecdote — lab note at
+    `docs/experiments/2026-08-30-local-3condition-comparison.md`.
 
 ## Known gaps / next actions (highest value first)
 
-1. **Implement `single_persistent` and `best_of_n` conditions** in
-   `stigdev/runtime.py` (both are small: best_of_n = N independent stores,
-   pick best; single_persistent = one worker with carried context). Needed
-   before any RQ1 comparison.
+1. **RQ4 harness**: mid-run worker/provider replacement schedule — this is
+   the regime where single_persistent vs artifact_only actually separates
+   (they are informationally equivalent with one sequential worker; decision
+   log #12).
 2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
    by user approval; never in tests).
 3. Harder benchmark tier (larger fixture versions, more mutation surface, or a

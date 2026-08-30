@@ -21,5 +21,6 @@
     "use_failure_memory": true
   },
   "policy_id": "strict-improve/v1",
-  "sandbox_timeout": 10.0
+  "sandbox_timeout": 10.0,
+  "n_workers": 4
 }
