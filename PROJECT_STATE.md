@@ -3,7 +3,9 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-08-30 (initial build session).
+Last updated: 2026-08-30 (initial build session + public release + Ollama adapter).
+
+Published: https://github.com/rayvoidx/stigmergic-dev-runtime (public, CI green).
 
 ## Where things stand
 
@@ -60,6 +62,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
 10. **Literature claims verified against arXiv abstracts** before entering
     `docs/related_work.md`; nuances recorded there (e.g. post-deletion
     continuation belongs to EvoX Genesis, not SwarmWorld).
+11. **Local Ollama adapter added (`OllamaProvider`)**, wired via
+    `provider.provider = "ollama"`; unit-tested with mocked transport, never
+    live in tests. Worker prompt asks live models for stdlib-only modules and
+    a `# stigdev-mutation:` marker. Note: `gpt-oss:20b` fails on Ollama
+    0.31.2 ("tensor size overflow"); `gemma3:12b` works (31 tok/s, 100% Metal
+    GPU). First live run committed as `examples/live_run_gemma3_12b/`:
+    1 promoted (recency_weighting, train 0.55->0.66, holdout 0.63), 5
+    rejected, 6,616 tokens, $0, replay clean.
 
 ## Known gaps / next actions (highest value first)
 

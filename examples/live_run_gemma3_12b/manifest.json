@@ -1,11 +1,11 @@
 {
   "config": {
     "budget": {
-      "max_episodes": 8,
-      "max_provider_calls": 16,
-      "max_tokens": 0,
+      "max_episodes": 6,
+      "max_provider_calls": 12,
+      "max_tokens": 400000,
       "max_usd": 0.0,
-      "max_wall_seconds": 300.0
+      "max_wall_seconds": 2400.0
     },
     "condition": "artifact_only",
     "fixture_version": "v1",
@@ -14,14 +14,14 @@
     "policy_id": "strict-improve/v1",
     "provider": {
       "effort": null,
-      "max_output_tokens": 0,
-      "model_id": "offline-deterministic/v1",
-      "provider": "offline",
+      "max_output_tokens": 4096,
+      "model_id": "gemma3:12b",
+      "provider": "ollama",
       "temperature": 0.0,
       "use_failure_memory": true
     },
-    "run_id": "sample_run",
-    "sandbox_timeout": 10.0,
+    "run_id": "live-ollama-gemma3-12b-seed42",
+    "sandbox_timeout": 15.0,
     "seed": 42
   },
   "environment": {
@@ -37,34 +37,34 @@
   },
   "policy_id": "strict-improve/v1",
   "prompt_template_hash": "9828460e85b3ff8d63ad5afcd22faa6350268c7ceb4dbeebb8353e1933096ecb",
-  "run_id": "sample_run",
+  "run_id": "live-ollama-gemma3-12b-seed42",
   "seed_artifact_hash": "218988094a0093e7381e6f3d3c6fa97ccd868a5ee61c4b16649b7d5af989d6ff",
   "summary": {
-    "accepted_ratio": 0.375,
+    "accepted_ratio": 0.1667,
     "canonical": {
-      "artifact_hash": "8a7cdcb1a3700ef29a54acf77ccff85fc3b397c5daf650a15a2f9350204a6e09",
-      "generation": 3,
-      "score": 0.86
+      "artifact_hash": "b9395718020cf3fec9a2c0de37af39556fbd5d9eaecc5c43b626baeb07add952",
+      "generation": 1,
+      "score": 0.66
     },
     "cost": {
-      "input_tokens": 0,
-      "output_tokens": 0,
+      "input_tokens": 4702,
+      "output_tokens": 1914,
       "usd": 0.0
     },
-    "episodes": 8,
+    "episodes": 6,
     "holdout_metrics": {
-      "precision_at_k": 0.8,
+      "precision_at_k": 0.6,
       "selected": 10.0,
-      "unique_group_rate": 1.0
+      "unique_group_rate": 0.7
     },
-    "holdout_score": 0.86,
-    "lineage_depth": 3,
-    "promoted": 3,
-    "proposed": 8,
-    "provider_calls": 8,
+    "holdout_score": 0.63,
+    "lineage_depth": 1,
+    "promoted": 1,
+    "proposed": 6,
+    "provider_calls": 6,
     "rejected": 5,
-    "repeated_failure_attempts": 2,
+    "repeated_failure_attempts": 0,
     "seed_score_train": 0.55,
-    "wall_seconds": 0.322
+    "wall_seconds": 92.312
   }
 }

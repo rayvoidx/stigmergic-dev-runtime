@@ -84,9 +84,28 @@ three promotions, with five rejections recorded as failure evidence.
 The shipped offline provider is a deterministic reference worker that proposes
 predefined mutations ("genes") — it exists to exercise the runtime and tests
 without a model API. It reads inherited failure records and skips known-failed
-mutations (the RQ3 mechanism, toggleable via `use_failure_memory`). Live
+mutations (the RQ3 mechanism, toggleable via `use_failure_memory`). Paid
 provider adapters (Anthropic/OpenAI) are future work behind the same
 `Provider` protocol.
+
+## Running with a live local model
+
+An Ollama adapter (localhost, zero cost, stdlib urllib) is included:
+
+```bash
+stigdev run --config configs/providers/ollama-gemma3-12b.json --runs-root runs
+```
+
+Example outcome of one such run (gemma3:12b on an M4 Pro, 100% Metal GPU
+offload, 92 s wall, 6,616 tokens, $0 — committed as
+`examples/live_run_gemma3_12b/`): the model wrote a free-form
+`recency_weighting` artifact that was promoted (train 0.55 -> 0.66, holdout
+0.52 -> 0.63); five later proposals tied or regressed and were rejected, and
+inherited failure records kept all six proposals distinct. This is a
+mechanism demonstration on a toy benchmark, not a capability or comparison
+claim. Live-model runs are not bit-reproducible; `stigdev replay` still
+re-derives and verifies all recorded evidence (it does for this run: 7
+evaluations, 0 divergences). Tests never call a live model.
 
 ## Experimental conditions
 

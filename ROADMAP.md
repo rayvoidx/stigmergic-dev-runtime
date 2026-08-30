@@ -5,9 +5,10 @@ Ordered by value. Nothing below is a present capability; see README
 
 1. **Baseline conditions** — implement `single_persistent` and `best_of_n`
    runners (RQ1 comparisons are impossible without them).
-2. **Live provider adapters** — Anthropic/OpenAI behind the existing
-   `Provider` protocol; strict budget enforcement (tokens/USD/calls) already
-   present in the run loop; never used in tests.
+2. **Paid provider adapters** — Anthropic/OpenAI behind the existing
+   `Provider` protocol (a local Ollama adapter already exists); strict budget
+   enforcement (tokens/USD/calls) already present in the run loop; never used
+   in tests.
 3. **Pilot experiments** — 5 conditions x 5 seeds on a small live model per
    `docs/research_protocol.md`; variance estimates feed the power analysis.
 4. **Harder benchmark tiers** — fixture v2+ with larger pools, adversarial
