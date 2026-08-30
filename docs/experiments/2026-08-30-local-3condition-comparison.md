@@ -57,3 +57,31 @@ Qualitative observations (single anecdotes, worth testing properly):
 Do not generalize (1)-(2): different prompts across conditions mean the model
 saw different inputs, and n=1. The pre-registered comparisons need the pilot
 and paper tiers in the protocol.
+
+## RQ4 addendum: worker replacement at episode 3 (same day)
+
+Same setup, `replace_at_episode: 3` (worker replaced; persistent private
+memory wiped, store untouched). Archives: `examples/live_run_rq4_single/`,
+`examples/live_run_rq4_artifact/`; both replay with 0 divergences.
+
+| run | promoted | repeated failures | train | holdout | tokens |
+|---|---|---|---|---|---|
+| artifact_only, no replacement | 1 | 0 | 0.66 | 0.63 | 6,616 |
+| artifact_only, replaced @3 | 1 | 0 | 0.66 | 0.63 | 6,616 |
+| single_persistent, no replacement | 0 | 0 | 0.55 | 0.52 | 10,158 |
+| single_persistent, replaced @3 | 0 | **2** | 0.55 | 0.52 | 8,901 |
+
+- Under artifact_only the replacement is **behaviorally invisible**: with
+  temperature 0 and a fixed seed the replaced run reproduced the baseline
+  token-for-token (identical outcomes and token counts), because every
+  episode's input comes from the store, which survived.
+- Under single_persistent the successor repeated its predecessor's recorded
+  failures exactly: at ep3 it re-crashed with the same
+  `NameError: GENES` artifact its predecessor produced at ep0, and at ep5 it
+  re-proposed ep1's failed `keyword_boost_threshold` (both counted by the
+  objective repeated-failure metric, which always checks the store).
+- Offline deterministic versions of both effects, plus a provider-swap
+  degradation (memoryless replacement provider caps the run at 0.84 vs 0.86),
+  are locked in as regression tests (`tests/test_rq4_replacement.py`).
+
+Same caveat as above: n=1 per cell, mechanism demonstration only.

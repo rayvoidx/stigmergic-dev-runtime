@@ -67,6 +67,11 @@ class RunConfig:
     policy_id: str = "strict-improve/v1"
     sandbox_timeout: float = 10.0
     n_workers: int = 1  # best_of_n only: independent workers sharing nothing
+    # RQ4 replacement schedule (-1 / None = never). Worker replacement wipes a
+    # persistent worker's private memory; artifact_only workers are ephemeral
+    # already, so for them it is logged but informationally a no-op.
+    replace_at_episode: int = -1
+    replacement_provider: ProviderSpec | None = None
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "RunConfig":
@@ -75,6 +80,8 @@ class RunConfig:
             data["budget"] = Budget(**data["budget"])
         if isinstance(data.get("provider"), dict):
             data["provider"] = ProviderSpec(**data["provider"])
+        if isinstance(data.get("replacement_provider"), dict):
+            data["replacement_provider"] = ProviderSpec(**data["replacement_provider"])
         return RunConfig(**data)
 
     def to_dict(self) -> dict[str, Any]:

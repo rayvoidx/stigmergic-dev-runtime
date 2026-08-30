@@ -86,13 +86,24 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     best_of_n(3x2) all workers redundantly found the same 0.66 improvement.
     n=1 anecdote — lab note at
     `docs/experiments/2026-08-30-local-3condition-comparison.md`.
+14. **RQ4 replacement harness implemented** (2026-08-30):
+    `replace_at_episode` (worker replacement; wipes persistent private
+    memory, logs `worker_replaced` with lost-entry count) and
+    `replacement_provider` (provider swap, logs `provider_replaced`).
+    Repeated-failure metric now always computed against the store (objective)
+    regardless of condition-scoped observations. Offline regression tests
+    lock in: persistent memory wipe -> immediate repeat of a recorded
+    failure; artifact_only replacement -> bit-identical no-op; memoryless
+    provider swap -> 0.84 cap vs 0.86 baseline. Live gemma3 pair (repl@3):
+    artifact_only reproduced its baseline token-for-token; single_persistent
+    successor re-crashed with its predecessor's exact NameError artifact.
+    Lab note RQ4 addendum + `examples/live_run_rq4_*` archives.
 
 ## Known gaps / next actions (highest value first)
 
-1. **RQ4 harness**: mid-run worker/provider replacement schedule — this is
-   the regime where single_persistent vs artifact_only actually separates
-   (they are informationally equivalent with one sequential worker; decision
-   log #12).
+1. **Harder benchmark tier** (fixture v2: larger pools, adversarial
+   near-duplicates, more headroom) — every mechanism now exists, but the toy
+   landscape saturates too fast for meaningful pilot comparisons.
 2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
    by user approval; never in tests).
 3. Harder benchmark tier (larger fixture versions, more mutation surface, or a

@@ -19,7 +19,7 @@ from __future__ import annotations
 import platform
 import sys
 import time
-from dataclasses import replace
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any
 
@@ -53,10 +53,10 @@ def _fixtures_dir(config: RunConfig) -> Path:
     return default_fixtures_dir(config.fixture_version)
 
 
-def _make_provider(config: RunConfig) -> OfflineTrendProvider | OllamaProvider:
-    if config.provider.provider == "ollama":
-        return OllamaProvider(config.provider)
-    return OfflineTrendProvider(config.provider, config.seed)
+def _make_provider(spec, seed: int) -> OfflineTrendProvider | OllamaProvider:
+    if spec.provider == "ollama":
+        return OllamaProvider(spec)
+    return OfflineTrendProvider(spec, seed)
 
 
 def _environment() -> dict[str, str]:
@@ -80,6 +80,8 @@ def summarize(store: RunStore) -> dict[str, Any]:
         "repeated_failure_attempts": sum(1 for e in proposed if e.get("repeated_failure")),
         "lineage_depth": max((e["generation"] for e in promoted), default=0),
         "canonical": store.canonical(),
+        "worker_replaced_at": [e["episode"] for e in store.events("worker_replaced")],
+        "provider_replaced_at": [e["episode"] for e in store.events("provider_replaced")],
     }
 
 
@@ -145,7 +147,7 @@ def _run_sequential(
     store = RunStore.create(run_dir)
     evaluator = TrendSelectEvaluator(fixtures_dir, SubprocessSandbox(), config.sandbox_timeout)
     policy = StrictImprovementPolicy()
-    provider = _make_provider(config)
+    provider = _make_provider(config.provider, config.seed)
     seed_hash, seed_evidence = _seed_canonical(store, config, evaluator, seed_artifact_path)
 
     manifest = _base_manifest(config, fixtures_dir, seed_hash, policy.policy_id)
@@ -172,6 +174,20 @@ def _run_sequential(
         if time.monotonic() - start >= config.budget.max_wall_seconds:
             store.append_event("budget_exhausted", limit="max_wall_seconds", episode=episode)
             break
+        if episode == config.replace_at_episode:
+            # RQ4: worker replacement. A persistent worker's private memory
+            # dies with it; the store (artifact_only's medium) survives.
+            lost = len(private_history) if private_history is not None else 0
+            store.append_event("worker_replaced", episode=episode, lost_private_entries=lost)
+            if private_history is not None:
+                private_history.clear()
+            if config.replacement_provider is not None:
+                provider = _make_provider(config.replacement_provider, config.seed)
+                store.append_event(
+                    "provider_replaced",
+                    episode=episode,
+                    provider=asdict(config.replacement_provider),
+                )
         outcome = run_episode(
             store, config, provider, evaluator, policy, episode, private_history
         )

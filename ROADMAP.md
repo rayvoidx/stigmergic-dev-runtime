@@ -14,8 +14,9 @@ Ordered by value. Nothing below is a present capability; see README
 4. **Harder benchmark tiers** — fixture v2+ with larger pools, adversarial
    near-duplicates, evidence-citation metrics; a second task family to reduce
    single-task construct risk.
-5. **RQ3/RQ4 harnesses** — failure-memory ablation runner; mid-run
-   worker/provider replacement schedule with injected failures.
+5. ~~RQ3/RQ4 harnesses~~ — done: `use_failure_memory` ablation toggle and
+   `replace_at_episode`/`replacement_provider` schedule (worker and provider
+   replacement, offline-tested). Remaining: injected input-source failures.
 6. **Multi-artifact projects** — directory-tree canonical state, per-artifact
    lineage.
 7. **Stronger sandbox** — containerized execution before accepting artifacts

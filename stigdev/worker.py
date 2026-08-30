@@ -134,11 +134,10 @@ def run_episode(
 
     candidate_hash = store.put_artifact(source)
     mutation = parse_mutation(source)
-    prior_failures = (
-        store.failures()
-        if private_history is None
-        else [h for h in private_history if h["status"] == "rejected"]
-    )
+    # Metric is objective (store = ground truth), even when the worker's
+    # *observation* is condition-scoped: a persistent worker that lost its
+    # memory and repeats a recorded failure must count as a repeat.
+    prior_failures = store.failures()
     repeated_failure = candidate_hash in {f["artifact_hash"] for f in prior_failures} or (
         mutation is not None and mutation in {f.get("mutation") for f in prior_failures}
     )

@@ -18,8 +18,13 @@ empty until runs exist.
 
 ## Variables
 
-- **Independent:** condition (5 levels below); failure-memory toggle (RQ3);
-  replacement schedule (RQ4).
+- **Independent:** condition (5 levels below); failure-memory toggle (RQ3:
+  `provider.use_failure_memory`); replacement schedule (RQ4:
+  `replace_at_episode` wipes a persistent worker's private memory and/or
+  swaps in `replacement_provider`; logged as `worker_replaced` /
+  `provider_replaced` events). The repeated-failure metric is always computed
+  against the store (objective), while the worker's observation stays
+  condition-scoped.
 - **Dependent:** metrics below.
 - **Controlled (matched across arms, pinned in every manifest):** exact model
   id (never a moving alias), effort/temperature/max output, prompt template
