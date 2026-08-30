@@ -17,6 +17,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Repository = "https://github.com/rayvoidx/stigmergic-dev-runtime"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 

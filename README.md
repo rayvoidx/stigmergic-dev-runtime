@@ -1,5 +1,9 @@
 # stigmergic-dev-runtime
 
+[![ci](https://github.com/rayvoidx/stigmergic-dev-runtime/actions/workflows/ci.yml/badge.svg)](https://github.com/rayvoidx/stigmergic-dev-runtime/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+
 A minimal, reproducible research runtime for **evaluator-gated stigmergic software
 evolution**.
 

@@ -5,6 +5,7 @@ version: 0.1.0
 date-released: 2026-08-30
 license: Apache-2.0
 type: software
+repository-code: "https://github.com/rayvoidx/stigmergic-dev-runtime"
 authors:
   - name: "stigmergic-dev-runtime maintainers"
 abstract: >-
