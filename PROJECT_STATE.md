@@ -130,6 +130,15 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     ladder in the lab note. Ollama 0.33.2 standalone runs on port 11500
     (scratchpad binary, app untouched); STIGDEV_OLLAMA_HOST env overrides
     the provider host; gpt-oss:20b blob was corrupt, re-pulled.
+19. **Cross-model replication (gpt-oss:20b)**: same 3x5 matrix -> holdout
+    artifact_only 0.804 > single_persistent 0.786 (overlapping CIs) >
+    best_of_n 0.674. The gemma3 H1-opposite ordering did NOT replicate —
+    model-dependent; best_of_n last on both models (only replicated
+    pattern). 15/15 runs replay clean; merged data at
+    docs/experiments/data/pilot-v2-gptoss-matrix.json. Working hypothesis
+    to pre-register: worker capability interacts with coordination medium
+    (weak workers lean on private continuity; strong workers exploit the
+    selective medium).
 
 ## Known gaps / next actions (highest value first)
 

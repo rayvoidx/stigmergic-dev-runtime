@@ -1,0 +1,379 @@
+{
+  "aggregates": {
+    "artifact_only": {
+      "holdout": {
+        "ci95": [
+          0.76,
+          0.84
+        ],
+        "mean": 0.804,
+        "n": 5,
+        "sd": 0.0513
+      },
+      "promoted": {
+        "ci95": [
+          2.0,
+          2.6
+        ],
+        "mean": 2.2,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "rejected": {
+        "ci95": [
+          3.4,
+          4.0
+        ],
+        "mean": 3.8,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.6
+        ],
+        "mean": 0.2,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "tokens": {
+        "ci95": [
+          16843.0,
+          20533.0
+        ],
+        "mean": 18688.0,
+        "n": 5,
+        "sd": 2461.0624
+      },
+      "train": {
+        "ci95": [
+          0.732,
+          0.874
+        ],
+        "mean": 0.8,
+        "n": 5,
+        "sd": 0.0919
+      }
+    },
+    "best_of_n": {
+      "holdout": {
+        "ci95": [
+          0.594,
+          0.754
+        ],
+        "mean": 0.674,
+        "n": 5,
+        "sd": 0.1019
+      },
+      "promoted": {
+        "ci95": [
+          2.4,
+          3.0
+        ],
+        "mean": 2.8,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "rejected": {
+        "ci95": [
+          3.0,
+          3.6
+        ],
+        "mean": 3.2,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.8
+        ],
+        "mean": 0.4,
+        "n": 5,
+        "sd": 0.5477
+      },
+      "tokens": {
+        "ci95": [
+          11593.0,
+          14020.2
+        ],
+        "mean": 12806.6,
+        "n": 5,
+        "sd": 1566.8246
+      },
+      "train": {
+        "ci95": [
+          0.518,
+          0.64
+        ],
+        "mean": 0.576,
+        "n": 5,
+        "sd": 0.078
+      }
+    },
+    "single_persistent": {
+      "holdout": {
+        "ci95": [
+          0.734,
+          0.832
+        ],
+        "mean": 0.786,
+        "n": 5,
+        "sd": 0.0631
+      },
+      "promoted": {
+        "ci95": [
+          1.2,
+          3.2
+        ],
+        "mean": 2.2,
+        "n": 5,
+        "sd": 1.3038
+      },
+      "rejected": {
+        "ci95": [
+          2.8,
+          4.8
+        ],
+        "mean": 3.8,
+        "n": 5,
+        "sd": 1.3038
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.6
+        ],
+        "mean": 0.2,
+        "n": 5,
+        "sd": 0.4472
+      },
+      "tokens": {
+        "ci95": [
+          16606.2,
+          19559.8
+        ],
+        "mean": 18091.4,
+        "n": 5,
+        "sd": 1921.9246
+      },
+      "train": {
+        "ci95": [
+          0.606,
+          0.85
+        ],
+        "mean": 0.728,
+        "n": 5,
+        "sd": 0.1566
+      }
+    }
+  },
+  "base_config": {
+    "budget": {
+      "max_episodes": 6,
+      "max_provider_calls": 12,
+      "max_tokens": 800000,
+      "max_usd": 0.0,
+      "max_wall_seconds": 2400.0
+    },
+    "condition": "artifact_only",
+    "fixture_version": "v2",
+    "fixtures_dir": null,
+    "k": 10,
+    "n_workers": 3,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 4096,
+      "model_id": "gpt-oss:20b",
+      "provider": "ollama",
+      "temperature": 0.7,
+      "use_failure_memory": true
+    },
+    "run_id": "overridden-by-matrix",
+    "sandbox_timeout": 15.0,
+    "seed": 42
+  },
+  "conditions": [
+    "single_persistent",
+    "best_of_n",
+    "artifact_only"
+  ],
+  "label": "pilot-v2-gptoss-merged",
+  "note": "merged from interrupted pilot-v2-gptoss (10 runs) + pilot-v2-gptoss-ao (5 runs); identical config",
+  "rows": [
+    {
+      "condition": "single_persistent",
+      "holdout": 0.76,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s41",
+      "seed": 41,
+      "tokens": 18465,
+      "train": 0.62
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-single_persistent-s42",
+      "seed": 42,
+      "tokens": 19878,
+      "train": 0.69
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.69,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s43",
+      "seed": 43,
+      "tokens": 19789,
+      "train": 0.55
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 4,
+      "rejected": 2,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s44",
+      "seed": 44,
+      "tokens": 15414,
+      "train": 0.87
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s45",
+      "seed": 45,
+      "tokens": 16911,
+      "train": 0.91
+    },
+    {
+      "condition": "best_of_n",
+      "holdout": 0.8,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-best_of_n-s41",
+      "seed": 41,
+      "tokens": 14196,
+      "train": 0.69
+    },
+    {
+      "condition": "best_of_n",
+      "holdout": 0.76,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-best_of_n-s42",
+      "seed": 42,
+      "tokens": 12233,
+      "train": 0.62
+    },
+    {
+      "condition": "best_of_n",
+      "holdout": 0.65,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-best_of_n-s43",
+      "seed": 43,
+      "tokens": 11265,
+      "train": 0.55
+    },
+    {
+      "condition": "best_of_n",
+      "holdout": 0.58,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-best_of_n-s44",
+      "seed": 44,
+      "tokens": 11601,
+      "train": 0.51
+    },
+    {
+      "condition": "best_of_n",
+      "holdout": 0.58,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-best_of_n-s45",
+      "seed": 45,
+      "tokens": 14738,
+      "train": 0.51
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s41",
+      "seed": 41,
+      "tokens": 15890,
+      "train": 0.88
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s42",
+      "seed": 42,
+      "tokens": 17457,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.77,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s43",
+      "seed": 43,
+      "tokens": 21391,
+      "train": 0.76
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s44",
+      "seed": 44,
+      "tokens": 21181,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.73,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s45",
+      "seed": 45,
+      "tokens": 17521,
+      "train": 0.76
+    }
+  ],
+  "seeds": [
+    41,
+    42,
+    43,
+    44,
+    45
+  ]
+}

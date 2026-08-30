@@ -1,4 +1,8 @@
-# Lab note: local pilot matrix on fixtures v2 (2026-08-30)
+# Lab note: local pilot matrices on fixtures v2 (2026-08-30)
+
+> Later same day, the full matrix was replicated on a stronger open-weights
+> model (gpt-oss:20b) and the condition ordering did not replicate — see the
+> final section. Read the gemma3 sections below with that in mind.
 
 **Status: underpowered pilot (n=5 seeds/arm, one 12B local model, toy
 benchmark). All CIs overlap; nothing here confirms or refutes H1–H4.**
@@ -102,3 +106,36 @@ code) is a feature, while the persistent advantage — if it is real at all at
 this n — comes from narrative continuity of the worker's *own* context
 rather than from any information the medium could carry. Testable next on a
 stronger model and more seeds.
+
+## Cross-model replication: gpt-oss:20b reverses the ordering
+
+Same matrix (3 conditions x seeds 41–45, identical budgets/config except
+`model_id: gpt-oss:20b`, max_tokens 800k for reasoning tokens) on Ollama
+0.33.2 (standalone binary, port 11500; the 12-month-old local gpt-oss blob
+was corrupt — "tensor size overflow" — and was re-pulled). Data:
+`docs/experiments/data/pilot-v2-gptoss-matrix.json` (merged from an
+interrupted 10-run matrix + a 5-run resume, identical config; all 15 runs
+replay with 0 divergences). ~$0, local.
+
+| condition | holdout mean [95% CI] | train mean | promoted/run |
+|---|---|---|---|
+| artifact_only | **0.804** [0.760, 0.840] | 0.800 | 2.2 |
+| single_persistent | 0.786 [0.734, 0.832] | 0.728 | 2.2 |
+| best_of_n (3x2) | 0.674 [0.594, 0.754] | 0.576 | 2.8 |
+
+Honest reading:
+
+1. **The gemma3 ordering did not replicate.** With a stronger worker,
+   artifact_only edges ahead of single_persistent (CIs overlap — call them
+   indistinguishable, not a win). The pilot's H1-opposite signal is
+   model-dependent, not a property of the conditions.
+2. **best_of_n is last on both models** — the budget-split cost is the one
+   pattern that has now replicated across two models (and offline).
+3. **Capability interacts with coordination**: gpt-oss:20b escaped the floor
+   in 15/15 runs and repeatedly beat the v1-gene plateau (best train 0.91 vs
+   calibration probe ceiling 0.97); gemma3:12b escaped in 8/15. Weak workers
+   may lean on private narrative continuity; strong workers seem to exploit
+   the selective medium at least as well — a hypothesis worth pre-registering
+   properly, not a conclusion.
+4. Still n=5 per cell, one benchmark, two models. Paper-tier inference rules
+   remain unmet by design.
