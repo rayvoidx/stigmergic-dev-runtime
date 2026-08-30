@@ -74,3 +74,31 @@ Remaining candidates, untested: (a) pure noise — every CI here overlaps;
 (c) an interaction with temperature-0.7 sampling. Next discriminating step
 is more seeds and/or a stronger worker model; summary-tuple enrichment of
 the medium is not it.
+
+## Second ablation: attempt-level context in the medium BACKFIRED
+
+`observe_failure_sources: true` (medium carries the actual truncated source
+of the last 3 rejected candidates; artifact_only x seeds 41–45, same setup;
+data: `docs/experiments/data/ablation-attemptlevel-matrix.json`, 14.3 min,
+$0): **all five seeds floor-stuck** — 0 promotions in 25 proposals
+(quintuple-zero), holdout pinned at 0.37, tokens +60% vs baseline.
+
+The ablation ladder now reads (holdout mean, n=5 each):
+
+| medium contents (artifact_only) | holdout |
+|---|---|
+| failure summaries only (baseline) | 0.528 |
+| + promotion tuples | 0.498 |
+| + failed-attempt source code | **0.370 (all stuck)** |
+| private full trajectory (single_persistent) | 0.646 |
+
+Tentative mechanism (hypothesis, not established): failed code in the
+observation dominates the 12B model's prompt and pulls it into
+imitate-and-patch loops on known-bad artifacts — structurally the same
+self-repair trap the persistent worker showed on v1. If it holds, it cuts
+against a naive "richer medium is better" reading of stigmergy and suggests
+the medium's *selectivity* (canonical + outcome summaries, not raw failed
+code) is a feature, while the persistent advantage — if it is real at all at
+this n — comes from narrative continuity of the worker's *own* context
+rather than from any information the medium could carry. Testable next on a
+stronger model and more seeds.

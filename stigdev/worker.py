@@ -85,6 +85,17 @@ def build_observation(
             {"mutation": e.get("mutation"), "score": e["score"], "generation": e["generation"]}
             for e in store.events("promoted")[-MAX_OBSERVED_FAILURES:]
         ]
+    if private_history is None and config.observe_failure_sources:
+        # attempt-level context: the actual code of recent failed attempts
+        observation["failure_sources"] = [
+            {
+                "mutation": f.get("mutation"),
+                "score": f["score"],
+                "reason": f["reason"],
+                "source": store.get_artifact(f["artifact_hash"])[:1200],
+            }
+            for f in failures[-3:]
+        ]
     return observation
 
 

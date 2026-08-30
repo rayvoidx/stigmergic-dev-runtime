@@ -122,6 +122,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     closed; summary-tuple enrichment is not the explanation. Remaining
     candidates (untested): noise at n=5; attempt-level context (own prior
     source) as the real persistent advantage; temperature interaction.
+18. **Attempt-level ablation backfired** (`observe_failure_sources`,
+    default off, tested): exposing failed candidates' source in the medium
+    floor-stuck ALL 5 seeds (0/25 promotions, holdout 0.37, +60% tokens).
+    Hypothesis (unestablished): failed code dominates the prompt ->
+    imitate-and-patch trap; medium selectivity may be a feature. Ablation
+    ladder in the lab note. Ollama 0.33.2 standalone runs on port 11500
+    (scratchpad binary, app untouched); STIGDEV_OLLAMA_HOST env overrides
+    the provider host; gpt-oss:20b blob was corrupt, re-pulled.
 
 ## Known gaps / next actions (highest value first)
 

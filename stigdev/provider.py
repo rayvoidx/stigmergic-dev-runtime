@@ -127,11 +127,13 @@ class OllamaProvider:
     def __init__(
         self,
         spec: ProviderSpec,
-        host: str = "http://localhost:11434",
+        host: str | None = None,
         timeout: float = 600.0,
     ):
+        import os
+
         self.spec = spec
-        self._host = host
+        self._host = host or os.environ.get("STIGDEV_OLLAMA_HOST", "http://localhost:11434")
         self._timeout = timeout
 
     def generate(self, request: ProviderRequest) -> ProviderResponse:

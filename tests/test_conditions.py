@@ -95,6 +95,17 @@ def test_observe_promotion_history_enriches_stigmergic_medium(tmp_path: Path):
     persistent_obs = build_observation(store, rich, 99, private_history=[])
     assert "promotions" not in persistent_obs and persistent_obs["own_history"] == []
 
+    # attempt-level ablation: recent failed candidates' actual (truncated) code
+    attempt = replace(base, observe_failure_sources=True)
+    attempt_obs = build_observation(store, attempt, episode=99)
+    sources = attempt_obs["failure_sources"]
+    assert 1 <= len(sources) <= 3
+    assert all(
+        "select_trends" in s["source"] and len(s["source"]) <= 1200 for s in sources
+    )
+    assert "failure_sources" not in build_observation(store, base, episode=99)
+    assert "failure_sources" not in build_observation(store, attempt, 99, private_history=[])
+
 
 def test_best_of_n_isolated_workers_and_selection(tmp_path: Path):
     summary = run(_load("best_of_n"), tmp_path)

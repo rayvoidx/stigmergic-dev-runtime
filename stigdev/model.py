@@ -76,6 +76,11 @@ class RunConfig:
     # also exposes recent promotion history to workers, matching the
     # information richness a persistent worker gets from its own trajectory.
     observe_promotion_history: bool = False
+    # Second ablation rung: medium carries attempt-level context — the actual
+    # source of recent rejected candidates (truncated), not just summary
+    # tuples. Tests whether the persistent worker's advantage is "seeing
+    # prior attempt code" rather than "seeing outcomes".
+    observe_failure_sources: bool = False
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "RunConfig":
