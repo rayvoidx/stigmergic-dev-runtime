@@ -139,6 +139,16 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     to pre-register: worker capability interacts with coordination medium
     (weak workers lean on private continuity; strong workers exploit the
     selective medium).
+20. **n=20 seed extension (gpt-oss:20b, exploratory, 2026-08-31)**: seeds
+    41-60, artifact_only vs single_persistent, 40/40 replay clean. Holdout
+    0.7985 [0.776,0.819] sd 0.049 vs 0.767 [0.727,0.800] sd 0.090; MWU
+    p~0.44 — indistinguishable; variance HALVED under the stigmergic
+    medium (unregistered observation). Thesis-relevant reading: persistent
+    identity not required to match a persistent agent on this setup. RQ5
+    2x2 (weaker-model n=20 arms) remains the registered confirmatory step.
+    Background tasks were killed repeatedly (cause unknown); runs executed
+    in 3-run chunks — merged data notes this. Data:
+    docs/experiments/data/pilot-v2-gptoss-n20-matrix.json.
 
 ## Known gaps / next actions (highest value first)
 

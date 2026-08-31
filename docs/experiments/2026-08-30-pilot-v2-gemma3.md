@@ -139,3 +139,37 @@ Honest reading:
    properly, not a conclusion.
 4. Still n=5 per cell, one benchmark, two models. Paper-tier inference rules
    remain unmet by design.
+
+## Seed extension to n=20 (2026-08-31, gpt-oss:20b, exploratory)
+
+Seeds 41–60 for the two head conditions (best_of_n dropped — its budget-split
+penalty had already replicated three times; decided before running). Executed
+in chunks after repeated background-task terminations; identical config
+throughout; **all 40 runs replay with 0 divergences**. Data:
+`docs/experiments/data/pilot-v2-gptoss-n20-matrix.json`. Registered H5 was
+committed before these data were seen (commit 6327f7b).
+
+| condition | holdout mean [95% CI] | sd | train mean | promoted/run | n |
+|---|---|---|---|---|---|
+| artifact_only | 0.7985 [0.776, 0.819] | **0.049** | 0.783 | 2.15 | 20 |
+| single_persistent | 0.767 [0.727, 0.800] | 0.090 | 0.718 | 1.90 | 20 |
+
+Exploratory Mann-Whitney U on holdout: U=171.5, p≈0.44 (two-sided, normal
+approximation) — **no detectable difference at n=20**.
+
+Honest reading:
+
+1. On a strong open-weights worker, ephemeral stigmergic workers are
+   statistically indistinguishable from a persistent-context agent at
+   matched budgets, with the point estimate slightly favoring
+   artifact_only. For the core thesis ("persistent conversational identity
+   is not required"), indistinguishability is the load-bearing observation
+   — though formal equivalence would need a pre-registered TOST-style
+   bound, which this exploratory extension does not provide.
+2. **Variance halved under the stigmergic medium** (sd 0.049 vs 0.090;
+   single_persistent's worst seeds sink much lower). Consistent with the
+   selective medium acting as a stabilizer — unregistered observation,
+   hypothesis fodder only.
+3. This extension is exploratory (chunked execution, one model, one
+   benchmark); the pre-registered H5 interaction test still requires the
+   full 2x2 with a weaker model at n>=20 per cell.

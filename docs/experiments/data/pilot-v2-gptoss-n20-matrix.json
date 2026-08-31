@@ -1,0 +1,616 @@
+{
+  "aggregates": {
+    "artifact_only": {
+      "holdout": {
+        "ci95": [
+          0.7755,
+          0.8185
+        ],
+        "mean": 0.7985,
+        "n": 20,
+        "sd": 0.0493
+      },
+      "promoted": {
+        "ci95": [
+          1.85,
+          2.4
+        ],
+        "mean": 2.15,
+        "n": 20,
+        "sd": 0.6708
+      },
+      "rejected": {
+        "ci95": [
+          3.6,
+          4.15
+        ],
+        "mean": 3.85,
+        "n": 20,
+        "sd": 0.6708
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.25
+        ],
+        "mean": 0.1,
+        "n": 20,
+        "sd": 0.3078
+      },
+      "tokens": {
+        "ci95": [
+          17496.95,
+          19683.4
+        ],
+        "mean": 18584.65,
+        "n": 20,
+        "sd": 2499.5642
+      },
+      "train": {
+        "ci95": [
+          0.735,
+          0.83
+        ],
+        "mean": 0.7825,
+        "n": 20,
+        "sd": 0.1131
+      }
+    },
+    "single_persistent": {
+      "holdout": {
+        "ci95": [
+          0.727,
+          0.8005
+        ],
+        "mean": 0.767,
+        "n": 20,
+        "sd": 0.09
+      },
+      "promoted": {
+        "ci95": [
+          1.55,
+          2.3
+        ],
+        "mean": 1.9,
+        "n": 20,
+        "sd": 0.8522
+      },
+      "rejected": {
+        "ci95": [
+          3.35,
+          4.15
+        ],
+        "mean": 3.75,
+        "n": 20,
+        "sd": 0.9105
+      },
+      "repeated": {
+        "ci95": [
+          0.0,
+          0.3
+        ],
+        "mean": 0.15,
+        "n": 20,
+        "sd": 0.3663
+      },
+      "tokens": {
+        "ci95": [
+          16971.8,
+          18716.65
+        ],
+        "mean": 17823.1,
+        "n": 20,
+        "sd": 2079.1948
+      },
+      "train": {
+        "ci95": [
+          0.6405,
+          0.789
+        ],
+        "mean": 0.7175,
+        "n": 20,
+        "sd": 0.173
+      }
+    }
+  },
+  "base_config": {
+    "budget": {
+      "max_episodes": 6,
+      "max_provider_calls": 12,
+      "max_tokens": 800000,
+      "max_usd": 0.0,
+      "max_wall_seconds": 2400.0
+    },
+    "condition": "artifact_only",
+    "fixture_version": "v2",
+    "fixtures_dir": null,
+    "k": 10,
+    "n_workers": 3,
+    "policy_id": "strict-improve/v1",
+    "provider": {
+      "effort": null,
+      "max_output_tokens": 4096,
+      "model_id": "gpt-oss:20b",
+      "provider": "ollama",
+      "temperature": 0.7,
+      "use_failure_memory": true
+    },
+    "run_id": "overridden-by-matrix",
+    "sandbox_timeout": 15.0,
+    "seed": 42
+  },
+  "conditions": [
+    "single_persistent",
+    "artifact_only"
+  ],
+  "exploratory_mwu_holdout": {
+    "U": 171.5,
+    "p_two_sided_normal_approx": 0.4407
+  },
+  "label": "pilot-v2-gptoss-n20",
+  "note": "seeds 41-60 merged across chunked labels (background timeouts); identical config throughout; exploratory, not the pre-registered paper tier",
+  "rows": [
+    {
+      "condition": "single_persistent",
+      "holdout": 0.76,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s41",
+      "seed": 41,
+      "tokens": 18465,
+      "train": 0.62
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-single_persistent-s42",
+      "seed": 42,
+      "tokens": 19878,
+      "train": 0.69
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.69,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s43",
+      "seed": 43,
+      "tokens": 19789,
+      "train": 0.55
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 4,
+      "rejected": 2,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s44",
+      "seed": 44,
+      "tokens": 15414,
+      "train": 0.87
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-single_persistent-s45",
+      "seed": 45,
+      "tokens": 16911,
+      "train": 0.91
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s46",
+      "seed": 46,
+      "tokens": 18407,
+      "train": 0.83
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.58,
+      "promoted": 1,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s47",
+      "seed": 47,
+      "tokens": 19042,
+      "train": 0.37
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s48",
+      "seed": 48,
+      "tokens": 20337,
+      "train": 0.9
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s49",
+      "seed": 49,
+      "tokens": 16280,
+      "train": 0.88
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.58,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s50",
+      "seed": 50,
+      "tokens": 19410,
+      "train": 0.37
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.73,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s51",
+      "seed": 51,
+      "tokens": 16818,
+      "train": 0.55
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s52",
+      "seed": 52,
+      "tokens": 19844,
+      "train": 0.83
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.59,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s53",
+      "seed": 53,
+      "tokens": 15173,
+      "train": 0.94
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 2,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ext-single_persistent-s54",
+      "seed": 54,
+      "tokens": 14675,
+      "train": 0.69
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-a-single_persistent-s55",
+      "seed": 55,
+      "tokens": 17506,
+      "train": 0.69
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-b-single_persistent-s56",
+      "seed": 56,
+      "tokens": 21923,
+      "train": 0.72
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-b-single_persistent-s57",
+      "seed": 57,
+      "tokens": 19274,
+      "train": 0.83
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 1,
+      "run_id": "ext-b-single_persistent-s58",
+      "seed": 58,
+      "tokens": 16038,
+      "train": 0.69
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 1,
+      "run_id": "ext-c-single_persistent-s59",
+      "seed": 59,
+      "tokens": 15945,
+      "train": 0.87
+    },
+    {
+      "condition": "single_persistent",
+      "holdout": 0.73,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-c-single_persistent-s60",
+      "seed": 60,
+      "tokens": 15333,
+      "train": 0.55
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s41",
+      "seed": 41,
+      "tokens": 15890,
+      "train": 0.88
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s42",
+      "seed": 42,
+      "tokens": 17457,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.77,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s43",
+      "seed": 43,
+      "tokens": 21391,
+      "train": 0.76
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s44",
+      "seed": 44,
+      "tokens": 21181,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.73,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 1,
+      "run_id": "pilot-v2-gptoss-ao-artifact_only-s45",
+      "seed": 45,
+      "tokens": 17521,
+      "train": 0.76
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-d-artifact_only-s46",
+      "seed": 46,
+      "tokens": 17586,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.73,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-d-artifact_only-s47",
+      "seed": 47,
+      "tokens": 16761,
+      "train": 0.76
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-d-artifact_only-s48",
+      "seed": 48,
+      "tokens": 21557,
+      "train": 0.76
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.83,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 1,
+      "run_id": "ext-e-artifact_only-s49",
+      "seed": 49,
+      "tokens": 19114,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-e-artifact_only-s50",
+      "seed": 50,
+      "tokens": 22173,
+      "train": 0.83
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-e-artifact_only-s51",
+      "seed": 51,
+      "tokens": 16584,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.65,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "ext-f-artifact_only-s52",
+      "seed": 52,
+      "tokens": 13765,
+      "train": 0.51
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-f-artifact_only-s53",
+      "seed": 53,
+      "tokens": 16429,
+      "train": 0.9
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-f-artifact_only-s54",
+      "seed": 54,
+      "tokens": 20763,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.77,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-g-artifact_only-s55",
+      "seed": 55,
+      "tokens": 19960,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-g-artifact_only-s56",
+      "seed": 56,
+      "tokens": 18482,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 2,
+      "rejected": 4,
+      "repeated": 0,
+      "run_id": "ext-g-artifact_only-s57",
+      "seed": 57,
+      "tokens": 17531,
+      "train": 0.66
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.8,
+      "promoted": 1,
+      "rejected": 5,
+      "repeated": 0,
+      "run_id": "ext-h-artifact_only-s58",
+      "seed": 58,
+      "tokens": 16405,
+      "train": 0.69
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.84,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-h-artifact_only-s59",
+      "seed": 59,
+      "tokens": 23385,
+      "train": 0.91
+    },
+    {
+      "condition": "artifact_only",
+      "holdout": 0.81,
+      "promoted": 3,
+      "rejected": 3,
+      "repeated": 0,
+      "run_id": "ext-h-artifact_only-s60",
+      "seed": 60,
+      "tokens": 17758,
+      "train": 0.83
+    }
+  ],
+  "seeds": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ]
+}
