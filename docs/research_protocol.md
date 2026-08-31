@@ -15,6 +15,18 @@ empty until runs exist.
   Mechanism toggle: `provider.use_failure_memory`.
 - **RQ4 / H4.** Mid-run worker/provider replacement degrades `artifact_only`
   less than `single_persistent`.
+- **RQ5 / H5** (added 2026-08-31, motivated by the 2026-08-30 pilots —
+  registered BEFORE any n>=20 or multi-model confirmatory run): worker
+  capability interacts with the coordination medium. Prediction: the
+  advantage of `artifact_only` over `single_persistent` increases with
+  worker capability (weak workers lean on private narrative continuity;
+  strong workers exploit the selective medium at least as well). Test: 2x2
+  (model in {weaker, stronger} x condition in {artifact_only,
+  single_persistent}) at matched budgets, interaction contrast on holdout
+  score, same bootstrap/Holm machinery as H1–H4. Ancillary registered
+  observation: exposing failed-attempt *source code* in the medium is
+  predicted to hurt, not help (2026-08-30 ablation: 0/25 promotions) —
+  medium selectivity treated as a feature.
 
 ## Variables
 

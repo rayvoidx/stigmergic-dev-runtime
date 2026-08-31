@@ -137,6 +137,9 @@ citation.
   reducing distinct-mutation coverage.
 - H4 (RQ4): mid-run worker/provider swaps degrade artifact_only runs less than
   single_persistent runs.
+- H5 (RQ5, registered 2026-08-31 after exploratory pilots, before any
+  confirmatory run): the artifact_only-over-single_persistent advantage
+  grows with worker capability; failed-code exposure in the medium hurts.
 
 No experimental evidence for H1–H4 exists in this repository today. The MVP
 demonstrates the *mechanisms* (implemented capabilities), not the comparative
