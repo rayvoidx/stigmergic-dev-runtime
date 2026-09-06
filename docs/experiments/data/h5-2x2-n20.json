@@ -1,0 +1,865 @@
+{
+  "cells": {
+    "gemma3|artifact_only": {
+      "ci95": [
+        0.4245,
+        0.567
+      ],
+      "holdout_values": [
+        0.37,
+        0.37,
+        0.37,
+        0.37,
+        0.37,
+        0.73,
+        0.65,
+        0.37,
+        0.37,
+        0.37,
+        0.65,
+        0.83,
+        0.76,
+        0.58,
+        0.37,
+        0.65,
+        0.37,
+        0.37,
+        0.37,
+        0.58
+      ],
+      "mean": 0.4935,
+      "n": 20,
+      "sd": 0.1641
+    },
+    "gemma3|single_persistent": {
+      "ci95": [
+        0.595,
+        0.7295
+      ],
+      "holdout_values": [
+        0.76,
+        0.37,
+        0.65,
+        0.83,
+        0.62,
+        0.83,
+        0.65,
+        0.58,
+        0.37,
+        0.83,
+        0.58,
+        0.37,
+        0.83,
+        0.69,
+        0.62,
+        0.8,
+        0.83,
+        0.69,
+        0.8,
+        0.58
+      ],
+      "mean": 0.664,
+      "n": 20,
+      "sd": 0.1573
+    },
+    "gptoss|artifact_only": {
+      "ci95": [
+        0.7755,
+        0.8185
+      ],
+      "holdout_values": [
+        0.84,
+        0.84,
+        0.77,
+        0.84,
+        0.73,
+        0.8,
+        0.73,
+        0.8,
+        0.83,
+        0.8,
+        0.84,
+        0.65,
+        0.84,
+        0.84,
+        0.77,
+        0.8,
+        0.8,
+        0.8,
+        0.84,
+        0.81
+      ],
+      "mean": 0.7985,
+      "n": 20,
+      "sd": 0.0493
+    },
+    "gptoss|single_persistent": {
+      "ci95": [
+        0.727,
+        0.8005
+      ],
+      "holdout_values": [
+        0.76,
+        0.8,
+        0.69,
+        0.84,
+        0.84,
+        0.8,
+        0.58,
+        0.84,
+        0.84,
+        0.58,
+        0.73,
+        0.84,
+        0.59,
+        0.8,
+        0.8,
+        0.8,
+        0.84,
+        0.8,
+        0.84,
+        0.73
+      ],
+      "mean": 0.767,
+      "n": 20,
+      "sd": 0.09
+    }
+  },
+  "date": "2026-09-06",
+  "h5_interaction": {
+    "bootstrap_resamples": 10000,
+    "ci95": [
+      0.093,
+      0.3095
+    ],
+    "point": 0.202
+  },
+  "label": "h5-2x2-n20",
+  "note": "H5 registered at commit 6327f7b AFTER seeing gpt-oss n=5 pilot but BEFORE gpt-oss n=20 extension and BEFORE all gemma3 seeds 46-60 (the only fully novel arm). Chunked execution; gemma3 on Ollama 0.31.2 (app), gpt-oss on 0.33.2 (standalone) - server version confounded with model, held constant within cells.",
+  "rows": {
+    "gemma3": [
+      {
+        "condition": "single_persistent",
+        "holdout": 0.76,
+        "promoted": 2,
+        "run_id": "pilot-v2-gemma3-single_persistent-s41",
+        "seed": 41,
+        "tokens": 9487,
+        "train": 0.66
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "pilot-v2-gemma3-single_persistent-s42",
+        "seed": 42,
+        "tokens": 9742,
+        "train": 0.3
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.65,
+        "promoted": 1,
+        "run_id": "pilot-v2-gemma3-single_persistent-s43",
+        "seed": 43,
+        "tokens": 9369,
+        "train": 0.58
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "pilot-v2-gemma3-single_persistent-s44",
+        "seed": 44,
+        "tokens": 9673,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.62,
+        "promoted": 2,
+        "run_id": "pilot-v2-gemma3-single_persistent-s45",
+        "seed": 45,
+        "tokens": 10066,
+        "train": 0.58
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "g-ext-a-single_persistent-s46",
+        "seed": 46,
+        "tokens": 7940,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.65,
+        "promoted": 1,
+        "run_id": "g-ext-a-single_persistent-s47",
+        "seed": 47,
+        "tokens": 9814,
+        "train": 0.58
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "g-ext-a-single_persistent-s48",
+        "seed": 48,
+        "tokens": 8016,
+        "train": 0.51
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-b-single_persistent-s49",
+        "seed": 49,
+        "tokens": 9910,
+        "train": 0.3
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "g-ext-b-single_persistent-s50",
+        "seed": 50,
+        "tokens": 9850,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "g-ext-b-single_persistent-s51",
+        "seed": 51,
+        "tokens": 8669,
+        "train": 0.37
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-c-single_persistent-s52",
+        "seed": 52,
+        "tokens": 10055,
+        "train": 0.3
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "g-ext-c-single_persistent-s53",
+        "seed": 53,
+        "tokens": 9592,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.69,
+        "promoted": 1,
+        "run_id": "g-ext-c-single_persistent-s54",
+        "seed": 54,
+        "tokens": 7450,
+        "train": 0.62
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.62,
+        "promoted": 1,
+        "run_id": "g-ext-d-single_persistent-s55",
+        "seed": 55,
+        "tokens": 9313,
+        "train": 0.51
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 2,
+        "run_id": "g-ext-d-single_persistent-s56",
+        "seed": 56,
+        "tokens": 9512,
+        "train": 0.8
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "g-ext-d-single_persistent-s57",
+        "seed": 57,
+        "tokens": 7804,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.69,
+        "promoted": 1,
+        "run_id": "g-ext-e-single_persistent-s58",
+        "seed": 58,
+        "tokens": 9328,
+        "train": 0.55
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "g-ext-e-single_persistent-s59",
+        "seed": 59,
+        "tokens": 9077,
+        "train": 0.87
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "g-ext-e-single_persistent-s60",
+        "seed": 60,
+        "tokens": 9269,
+        "train": 0.51
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "pilot-v2-gemma3-artifact_only-s41",
+        "seed": 41,
+        "tokens": 9684,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "ablation-attemptlevel-artifact_only-s42",
+        "seed": 42,
+        "tokens": 15142,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "ablation-attemptlevel-artifact_only-s43",
+        "seed": 43,
+        "tokens": 15190,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "ablation-attemptlevel-artifact_only-s44",
+        "seed": 44,
+        "tokens": 15298,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "ablation-attemptlevel-artifact_only-s45",
+        "seed": 45,
+        "tokens": 15547,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.73,
+        "promoted": 1,
+        "run_id": "g-ext-f-artifact_only-s46",
+        "seed": 46,
+        "tokens": 9927,
+        "train": 0.59
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.65,
+        "promoted": 1,
+        "run_id": "g-ext-f-artifact_only-s47",
+        "seed": 47,
+        "tokens": 8378,
+        "train": 0.58
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-f-artifact_only-s48",
+        "seed": 48,
+        "tokens": 9723,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-g-artifact_only-s49",
+        "seed": 49,
+        "tokens": 9635,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-g-artifact_only-s50",
+        "seed": 50,
+        "tokens": 9352,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.65,
+        "promoted": 2,
+        "run_id": "g-ext-g-artifact_only-s51",
+        "seed": 51,
+        "tokens": 7377,
+        "train": 0.51
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "g-ext-h-artifact_only-s52",
+        "seed": 52,
+        "tokens": 9471,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.76,
+        "promoted": 1,
+        "run_id": "g-ext-h-artifact_only-s53",
+        "seed": 53,
+        "tokens": 7934,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "g-ext-h-artifact_only-s54",
+        "seed": 54,
+        "tokens": 8376,
+        "train": 0.44
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-i-artifact_only-s55",
+        "seed": 55,
+        "tokens": 9676,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.65,
+        "promoted": 1,
+        "run_id": "g-ext-i-artifact_only-s56",
+        "seed": 56,
+        "tokens": 8159,
+        "train": 0.58
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-i-artifact_only-s57",
+        "seed": 57,
+        "tokens": 9635,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-j-artifact_only-s58",
+        "seed": 58,
+        "tokens": 9570,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.37,
+        "promoted": 0,
+        "run_id": "g-ext-j-artifact_only-s59",
+        "seed": 59,
+        "tokens": 9617,
+        "train": 0.3
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "g-ext-j-artifact_only-s60",
+        "seed": 60,
+        "tokens": 9870,
+        "train": 0.37
+      }
+    ],
+    "gptoss": [
+      {
+        "condition": "single_persistent",
+        "holdout": 0.76,
+        "promoted": 1,
+        "run_id": "pilot-v2-gptoss-single_persistent-s41",
+        "seed": 41,
+        "tokens": 18465,
+        "train": 0.62
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "pilot-v2-gptoss-single_persistent-s42",
+        "seed": 42,
+        "tokens": 19878,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.69,
+        "promoted": 3,
+        "run_id": "pilot-v2-gptoss-single_persistent-s43",
+        "seed": 43,
+        "tokens": 19789,
+        "train": 0.55
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 4,
+        "run_id": "pilot-v2-gptoss-single_persistent-s44",
+        "seed": 44,
+        "tokens": 15414,
+        "train": 0.87
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-single_persistent-s45",
+        "seed": 45,
+        "tokens": 16911,
+        "train": 0.91
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 3,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s46",
+        "seed": 46,
+        "tokens": 18407,
+        "train": 0.83
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s47",
+        "seed": 47,
+        "tokens": 19042,
+        "train": 0.37
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s48",
+        "seed": 48,
+        "tokens": 20337,
+        "train": 0.9
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 3,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s49",
+        "seed": 49,
+        "tokens": 16280,
+        "train": 0.88
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.58,
+        "promoted": 1,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s50",
+        "seed": 50,
+        "tokens": 19410,
+        "train": 0.37
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.73,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s51",
+        "seed": 51,
+        "tokens": 16818,
+        "train": 0.55
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s52",
+        "seed": 52,
+        "tokens": 19844,
+        "train": 0.83
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.59,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s53",
+        "seed": 53,
+        "tokens": 15173,
+        "train": 0.94
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "pilot-v2-gptoss-ext-single_persistent-s54",
+        "seed": 54,
+        "tokens": 14675,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "ext-a-single_persistent-s55",
+        "seed": 55,
+        "tokens": 17506,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 2,
+        "run_id": "ext-b-single_persistent-s56",
+        "seed": 56,
+        "tokens": 21923,
+        "train": 0.72
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "ext-b-single_persistent-s57",
+        "seed": 57,
+        "tokens": 19274,
+        "train": 0.83
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "ext-b-single_persistent-s58",
+        "seed": 58,
+        "tokens": 16038,
+        "train": 0.69
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "ext-c-single_persistent-s59",
+        "seed": 59,
+        "tokens": 15945,
+        "train": 0.87
+      },
+      {
+        "condition": "single_persistent",
+        "holdout": 0.73,
+        "promoted": 2,
+        "run_id": "ext-c-single_persistent-s60",
+        "seed": 60,
+        "tokens": 15333,
+        "train": 0.55
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 3,
+        "run_id": "pilot-v2-gptoss-ao-artifact_only-s41",
+        "seed": 41,
+        "tokens": 15890,
+        "train": 0.88
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ao-artifact_only-s42",
+        "seed": 42,
+        "tokens": 17457,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.77,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ao-artifact_only-s43",
+        "seed": 43,
+        "tokens": 21391,
+        "train": 0.76
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ao-artifact_only-s44",
+        "seed": 44,
+        "tokens": 21181,
+        "train": 0.91
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.73,
+        "promoted": 2,
+        "run_id": "pilot-v2-gptoss-ao-artifact_only-s45",
+        "seed": 45,
+        "tokens": 17521,
+        "train": 0.76
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 2,
+        "run_id": "ext-d-artifact_only-s46",
+        "seed": 46,
+        "tokens": 17586,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.73,
+        "promoted": 2,
+        "run_id": "ext-d-artifact_only-s47",
+        "seed": 47,
+        "tokens": 16761,
+        "train": 0.76
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 3,
+        "run_id": "ext-d-artifact_only-s48",
+        "seed": 48,
+        "tokens": 21557,
+        "train": 0.76
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.83,
+        "promoted": 1,
+        "run_id": "ext-e-artifact_only-s49",
+        "seed": 49,
+        "tokens": 19114,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 3,
+        "run_id": "ext-e-artifact_only-s50",
+        "seed": 50,
+        "tokens": 22173,
+        "train": 0.83
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 3,
+        "run_id": "ext-e-artifact_only-s51",
+        "seed": 51,
+        "tokens": 16584,
+        "train": 0.91
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.65,
+        "promoted": 1,
+        "run_id": "ext-f-artifact_only-s52",
+        "seed": 52,
+        "tokens": 13765,
+        "train": 0.51
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "ext-f-artifact_only-s53",
+        "seed": 53,
+        "tokens": 16429,
+        "train": 0.9
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 2,
+        "run_id": "ext-f-artifact_only-s54",
+        "seed": 54,
+        "tokens": 20763,
+        "train": 0.91
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.77,
+        "promoted": 2,
+        "run_id": "ext-g-artifact_only-s55",
+        "seed": 55,
+        "tokens": 19960,
+        "train": 0.91
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 2,
+        "run_id": "ext-g-artifact_only-s56",
+        "seed": 56,
+        "tokens": 18482,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 2,
+        "run_id": "ext-g-artifact_only-s57",
+        "seed": 57,
+        "tokens": 17531,
+        "train": 0.66
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.8,
+        "promoted": 1,
+        "run_id": "ext-h-artifact_only-s58",
+        "seed": 58,
+        "tokens": 16405,
+        "train": 0.69
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.84,
+        "promoted": 3,
+        "run_id": "ext-h-artifact_only-s59",
+        "seed": 59,
+        "tokens": 23385,
+        "train": 0.91
+      },
+      {
+        "condition": "artifact_only",
+        "holdout": 0.81,
+        "promoted": 3,
+        "run_id": "ext-h-artifact_only-s60",
+        "seed": 60,
+        "tokens": 17758,
+        "train": 0.83
+      }
+    ]
+  }
+}

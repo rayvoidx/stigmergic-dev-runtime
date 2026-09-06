@@ -149,6 +149,16 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     Background tasks were killed repeatedly (cause unknown); runs executed
     in 3-run chunks — merged data notes this. Data:
     docs/experiments/data/pilot-v2-gptoss-n20-matrix.json.
+21. **H5 2x2 completed (2026-09-06)**: gemma3 arms extended to n=20 (80
+    runs total, 80/80 replay clean). Interaction (AO-SP)_strong -
+    (AO-SP)_weak = +0.202, bootstrap 95% CI [0.093, 0.310] — registered
+    direction supported. Weak model: single_persistent wins outright
+    (0.664 vs 0.494, cell CIs disjoint); strong model: parity with halved
+    variance. Framing: persistent identity as a capability crutch.
+    Registration honesty + confounds in
+    docs/experiments/2026-09-06-h5-2x2.md; data in
+    docs/experiments/data/h5-2x2-n20.json. Next: third capability level
+    and/or second task family before paper claims.
 
 ## Known gaps / next actions (highest value first)
 
