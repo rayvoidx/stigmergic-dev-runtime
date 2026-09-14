@@ -19,15 +19,26 @@ output.
 - All committed fixtures are synthetic (`benchmarks/trendevobench/`), produced
   by a seeded generator in this repository. No scraped platform content, no
   personal data, no customer data.
-- Run directories contain only config, synthetic evidence, and artifact code.
-  Manifests record Python/platform versions; no usernames, paths outside the
-  run, or credentials.
+- Run directories contain config, event provenance, evaluator evidence,
+  artifact code, usage summaries, and (for `no_proposal`) a bounded model
+  response excerpt. Manifests record Python/platform versions and may preserve
+  a configured fixture path. Treat live run directories as reviewable research
+  records, not as a safe destination for secrets or private prompts.
 
 ## Secrets
 
-The runtime reads no API keys and makes no network calls. Nothing secret-like
+The offline provider, demo, and tests read no API keys and make no network
+calls. The optional `OllamaProvider` makes HTTP requests to a configurable
+Ollama endpoint (localhost by default); it is never used live in tests. The
+runtime has no paid-provider credential integration today. Nothing secret-like
 may be committed; contributions containing credentials, tokens, or production
 connector configuration are rejected (see ADR 0003, CONTRIBUTING.md).
+
+The proposed Agentic Engineering OS adds no present security boundary. Git
+worktrees isolate files for concurrent work but do not confine processes. Any
+future executor or gateway must use capability-scoped permissions, secret
+references rather than raw values, and explicit human approval for production
+credentials, deployment, destructive actions, or paid execution.
 
 ## Reporting
 

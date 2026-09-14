@@ -1,26 +1,66 @@
 # Roadmap
 
-Ordered by value. Nothing below is a present capability; see README
-"Current limitations" for what exists today.
+Ordered by dependency and evidence value. “Proposed” items are not present
+capabilities. ADR 0005 accepts the offline contract phase; broad operational
+implementation still requires the decisions listed in that ADR.
 
-1. **Baseline conditions** — done: `single_persistent` and `best_of_n`
-   runners implemented (see PROJECT_STATE decision log #12).
-2. **Paid provider adapters** — Anthropic/OpenAI behind the existing
-   `Provider` protocol (a local Ollama adapter already exists); strict budget
-   enforcement (tokens/USD/calls) already present in the run loop; never used
-   in tests.
-3. **Pilot experiments** — 5 conditions x 5 seeds on a small live model per
-   `docs/research_protocol.md`; variance estimates feed the power analysis.
-4. **Harder benchmark tiers** — fixture v2 (adversarial paraphrase
-   duplicates, source-signal spam, calibrated 0.30 floor / 0.97 probed
-   ceiling) is done. Remaining: larger pools, evidence-citation metrics, and
-   a second task family to reduce single-task construct risk.
-5. **RQ3/RQ4 harnesses** — done: `use_failure_memory` ablation toggle and
-   `replace_at_episode`/`replacement_provider` schedule (worker and provider
-   replacement, offline-tested). Remaining: injected input-source failures.
-6. **Multi-artifact projects** — directory-tree canonical state, per-artifact
-   lineage.
-7. **Stronger sandbox** — containerized execution before accepting artifacts
-   from untrusted models or third parties.
-8. **Remaining conditions** — `full_communication` (logged message channel)
-   and `orchestrator` (logged delegation).
+## Research track
+
+1. **State and claim reconciliation — done (2026-09-09).** The README,
+   protocol, paper outline, project state, and roadmap now distinguish
+   mechanism demonstrations, exploratory results, and the partially
+   confirmatory H5 result.
+2. **Baseline conditions — three of five done.** `artifact_only`,
+   `single_persistent`, and `best_of_n` run. Next: `orchestrator` with logged
+   delegation, then `full_communication` with a logged message channel. Both
+   must preserve matched budgets and fail closed until implemented.
+3. **Capability × medium replication.** The H5 2×2 at n=20/cell is complete
+   and supports the registered interaction direction on one benchmark/model
+   pair. Next: pre-register a third capability level and/or second task family;
+   do not generalize from the current model/runtime-confounded two-point test.
+4. **H1–H4 evidence.** Existing H1/H3/H4 pilots, ablations, and replacement
+   runs are mechanism/exploratory records, not confirmatory findings; H2 has no
+   result. Complete the two missing conditions, choose power from pilot
+   variance, and run the remaining registered comparisons only with explicit
+   live-model approval.
+5. **Benchmark breadth.** TrendEvoBench v2 is done (0.30 floor, v1-strategy
+   plateau around 0.69, 0.97 train calibration probe). Next: a second task
+   family, larger pools, and evidence/citation metrics.
+
+## Kernel correctness track
+
+6. **Run integrity v2.** Version event envelopes, add immutable repository
+   checkpoints, make projection recovery explicit, compare complete evidence
+   and policy decisions in replay, and preserve v1 run compatibility.
+7. **Budget correctness.** Add reservation/reconciliation and concurrency
+   budgets. Enforce USD before adding paid providers; current token enforcement
+   is post-response and can overshoot by one call.
+8. **Paid provider adapters.** Anthropic/OpenAI behind `Provider` only after
+   budget correctness, explicit user approval, and offline mocked tests.
+9. **Multi-artifact state.** Generalize the one-module canonical state to a
+   content-addressed directory/repository checkpoint.
+10. **Stronger sandbox.** Container or equivalent enforcement before running
+    untrusted model artifacts or coding agents; worktrees and subprocess `-I`
+    are not security boundaries.
+
+## Agentic Engineering OS track — contracts accepted, implementation pending
+
+11. **Execution contracts.** Add `AgentExecutor`, `WorkspaceBackend`,
+    deterministic fakes, and RunStore execution evidence together while
+    keeping model-level `Provider` separate.
+12. **Workspace implementation.** Implement GitWorktreeBackend with exact-base allocation,
+    one-writer leases, checkpoints, quarantine, and safe release.
+13. **Durable scheduler.** Add task DAGs, leases, retries, cancellation,
+    hierarchical budgets, and restart recovery.
+14. **Evaluator/policy approvals.** Generalize evidence over repository
+    checkpoints and add versioned human approval decisions.
+15. **Control-plane events and projections.** Expose authenticated, idempotent
+    commands and read-only status without direct store/workspace access.
+16. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
+    after the generic contracts are approved and tested. No live external test
+    without explicit approval.
+17. **Private testbed and extraction review.** Validate from the private
+    `social-trend-agent` repository, then create a separate deployable control
+    plane only if ADR 0005 extraction criteria are met.
+
+See `docs/implementation_plan.md` for worktrees and verification gates.
