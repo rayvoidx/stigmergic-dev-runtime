@@ -1,8 +1,8 @@
 # Agentic Engineering OS implementation plan
 
-Status: M0 design baseline accepted on 2026-09-14 together with the scoped M4
-offline-contract task. M5 and later integrations are not authorized by this
-baseline. Milestone numbers identify workstreams, not a single serial queue.
+Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts are implemented
+and verified. M5 and later integrations are not authorized by
+this baseline. Milestone numbers identify workstreams, not a single serial queue.
 
 ## Delivery principles
 
@@ -43,7 +43,7 @@ shared terminology and event-treatment boundary are approved.
 
 ### M0 — Design and state reconciliation
 
-Worktree: `docs/os-design-v1` (this change).
+Worktree: `docs/os-design-v1` (merged in PR #1, `5867f67`).
 
 Deliverables:
 
@@ -131,25 +131,35 @@ Worktree display name: `agent-executor-contract`; branch:
 Purpose: add both generic contracts, typed lifecycle data, minimal execution
 evidence, and deterministic test doubles before any vendor CLI or Git backend.
 
+Implementation: `stigdev/executor.py`, `workspace.py`, `execution.py`, and
+`testing.py`; CLI inspection via `executions` and `recover-executions`.
+Verification: 135 offline tests and all 10 example replays pass.
+See `docs/execution_contracts.md` for exact interfaces
+and limitations. The narrow capability input is an assigned workspace ref,
+explicit environment, timeout, and budget metadata; full capability enforcement
+is deferred.
+
 Acceptance:
 
 - requests identify run/task/attempt/executor/workspace, transient instructions
   and safe environment, timeout, budget metadata, and optional parent attempt;
-- results carry status, timestamps, exit code, log summaries or references,
+- results carry status, timestamps, exit code, omitted-output markers,
   artifact references, before/after revisions, classified failure,
   retryability, and optional usage;
 - workspace create/resolve, prepare, inspect, and retain/dispose form a typed
   lifecycle that does not depend on a local path or choose tasks;
 - `Provider` remains source-compatible and is not used as the executor base;
-- capability and attempt-budget envelopes are required inputs;
+- assigned workspace, explicit environment, timeout, and attempt-budget
+  metadata are required inputs; these do not enforce tool/network permissions;
 - a fake executor proves success, malformed output, crash, timeout, and cancel
   paths offline;
-- no Codex/Claude/OpenCode dependency or live invocation is added.
+- no Codex/Claude/OpenCode dependency or live invocation is added;
 - a separate synchronous execution function accepts the existing `RunStore`,
   writes additive versioned execution events, and never promotes candidates;
 - tests cover workspace preparation failure, event order, lineage, interrupted
   recovery, secret/environment exclusion, and existing Provider compatibility;
-- durable events never copy raw instructions, environments, or exception text;
+- durable events never copy raw instructions, environments, locators, logs,
+  or exception text;
 - replay inspects stored evidence without executing an agent again; the v1
   evaluator replay and canonical recovery behavior remain unchanged.
 
@@ -157,7 +167,9 @@ Heartbeat transport, asynchronous cancellation, process termination, real
 worktree management, scheduler leases, paid-budget reservation, and general
 checkpoint storage remain interface-only or deferred. The runner cannot
 enforce a deadline against arbitrary in-process code; real adapters must add
-supervision before live use.
+supervision before live use. Recovery requires the previous writer to have
+stopped and only appends an interrupted outcome; it does not resume attempts,
+repair torn JSON, supply locks/leases, or guarantee exactly-once execution.
 
 ### M5 — GitWorktreeBackend
 
@@ -266,7 +278,7 @@ Acceptance:
 | 1 | `docs/paper-state-sync` | Independent research-claim review | Yes, after M0 |
 | 2 | `feat/orchestrator-condition` | Experimental condition 5 | No with condition 4 until shared message/delegation schema is agreed |
 | 3 | `feat/full-communication` | Experimental condition 4 | After M2 interface review |
-| 4 | `feat/agent-executor-contract` | Executor/workspace types, fakes, execution evidence | Yes, parallel to research lane; next authorized task |
+| 4 | `feat/agent-executor-contract` | Executor/workspace types, fakes, execution evidence | Implemented and verified offline |
 | 5 | `feat/workspace-backend` | GitWorktreeBackend | After M4; separate future task |
 | 6 | `fix/run-integrity-v2` | Versioned events/checkpoints/full replay | After workspace checkpoint shape is known |
 | 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | After event integrity |

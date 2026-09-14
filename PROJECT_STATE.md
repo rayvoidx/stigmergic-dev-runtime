@@ -3,8 +3,8 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-14 (reviewed design baseline and scoped contract-phase
-acceptance; design-only, no runtime change).
+Last updated: 2026-09-14 (stage 1 merged; stage 2 offline execution contracts
+implemented and verified offline).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -20,9 +20,10 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 55 pytest tests, all passing (unit + e2e: promotion, rejection, lineage,
+- 135 pytest tests passing: 55 existing tests plus 80 execution-contract tests.
+  Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
-  runner, v2 calibration, RQ4 replacement, and observation ablations).
+  runner, v2 calibration, RQ4 replacement, and observation ablations.
 - Committed deterministic and local-model examples in `examples/`.
 - Five matched-budget condition configs. `artifact_only`,
   `single_persistent`, and `best_of_n` are implemented;
@@ -31,18 +32,24 @@ The research runtime is **implemented and verified locally**:
 - A conditions × seeds matrix runner and committed live-model evidence:
   two 3×5 pilots, two n=5 medium ablations, an exploratory gpt-oss n=20
   extension, and the registered/partially-confirmatory H5 2×2 (80 runs).
-- Agentic Engineering OS scope and the offline contract phase are accepted in
-  ADR 0005 and `docs/`; there is no `AgentExecutor`,
-  `WorkspaceBackend`, durable scheduler, gateway, or control plane yet.
+- Agentic Engineering OS design baseline merged in PR #1 (`5867f67`).
+  Typed `AgentExecutor`/`WorkspaceBackend`, deterministic fakes, and opt-in
+  RunStore execution evidence are implemented and verified offline.
+  No production executor/backend, scheduler, gateway, or control
+  plane exists. See `docs/execution_contracts.md`.
 
-## Verification commands (all confirmed passing in build session)
+## Verification commands (stage 2, 2026-09-14)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 55 passed
+.venv/bin/python -m pytest                     # 135 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
+
+All 10 committed example stores replayed successfully (56 evaluations).
+The runnable example in `docs/execution_contracts.md` also passed. Tests and
+replay require no live agent, model endpoint, private asset, or paid API.
 
 Expected seed-42 demo invariants (tests assert these): promoted=3, rejected=5,
 repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
@@ -188,6 +195,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     Historical entries 20–21 use “parity”/“halved variance”: the recorded SDs
     are 0.0493 vs 0.090 (variance ratio about 0.30); equivalence was not
     established. No experiment record or numeric result was changed.
+24. **Offline execution contracts implemented locally (2026-09-14).** Stage 1
+    merged in PR #1 at `5867f67`; stage 2 uses
+    `feat/agent-executor-contract`. Added typed executor/workspace protocols,
+    deterministic fixtures, additive flat execution-version-1 events, and
+    `executions`/`recover-executions` inspection commands. Provider experiments
+    and canonical promotion paths remain unchanged. Recovery terminalizes
+    unknown outcomes only after the prior writer stops. Full suite: 135 passed;
+    all 10 example stores replayed successfully. No external integration added.
 
 ## Known gaps / next actions (highest value first)
 
@@ -205,11 +220,10 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    full evidence and policy decisions during replay, and implement atomic
    budget reservation/reconciliation. Today `max_usd` is not enforced and a
    token cap can overshoot by one provider call.
-4. **Implement the accepted offline execution contracts next** — typed
-   `AgentExecutor` and `WorkspaceBackend`, deterministic fakes, minimal events,
-   and interrupted-attempt recovery in `feat/agent-executor-contract`. Real
-   backends, checkpoints, scheduler/task DAG, approval gates, and control-plane
-   projections follow as separately scoped milestones.
+4. **Review the verified offline contracts** in
+   `feat/agent-executor-contract`. Production GitWorktreeBackend, OpenCode,
+   Codex CLI, and Hermes remain separately scoped future tasks; supervision,
+   isolation, budget enforcement, and durable control APIs still need work.
 5. **Add paid provider adapters only after budget enforcement** —
    Anthropic/OpenAI behind `Provider`, explicit approval required, never live
    in tests.

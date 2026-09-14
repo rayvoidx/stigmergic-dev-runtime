@@ -173,6 +173,19 @@ H1–H4 remain unconfirmed. H2 cannot be tested until `full_communication` is
 implemented. See `docs/experiments/` and
 `docs/experiments/data/h5-2x2-n20.json` for the committed records.
 
+## Offline agent execution contracts
+
+`AgentExecutor` and `WorkspaceBackend` now provide typed request/result and
+workspace lifecycle contracts with deterministic in-process test doubles.
+`execute_agent` records an already selected attempt in `RunStore` without
+changing Provider-based experiments or promoting canonical state.
+`stigdev executions RUN` inspects evidence; `stigdev recover-executions RUN`
+marks open attempts interrupted after their previous writer has stopped.
+
+See [execution contracts](docs/execution_contracts.md) for an offline example,
+public interfaces, and recovery/security limits. Real Claude Code, Codex CLI,
+OpenCode, Hermes, Slack, and Git worktree adapters are not implemented.
+
 ## Current limitations
 
 - The sandbox (`stigdev/sandbox.py`) is process isolation only: separate
@@ -190,9 +203,10 @@ implemented. See `docs/experiments/` and
   implemented.
 - Replay currently compares evaluator pass/score outcomes plus lineage and the
   canonical pointer, not every evidence field or policy decision.
-- `AgentExecutor` and `WorkspaceBackend` are accepted for the next offline
-  contract phase, not implemented yet. Durable scheduling, approval gates,
-  gateways, and multi-repository orchestration remain future work.
+- Execution contracts include no process supervision, enforced capability or
+  budget envelope, production workspace backend, or concurrent-writer safety.
+  Durable scheduling, approval gates, gateways, and multi-repository
+  orchestration remain future work.
 
 ## Public/private boundary
 
@@ -207,16 +221,18 @@ the dependency is strictly one-way. See `SECURITY.md`.
 
 The paper studies artifact-mediated coordination, evaluator gating, and
 replacement on controlled benchmarks. The proposed Agentic Engineering OS
-adds execution/workspace/scheduler/gateway contracts around that kernel, but
-is not an empirical contribution of the current paper and is not implemented
-yet. See `docs/adr/0005-agentic-engineering-os-scope.md` and
+adds execution/workspace/scheduler/gateway boundaries around that kernel.
+Only offline execution/workspace contracts and evidence are implemented; the
+operational OS remains future work and is not an empirical contribution of the
+current paper. See `docs/adr/0005-agentic-engineering-os-scope.md` and
 `docs/agentic_engineering_os_architecture.md`.
 
 ## Repository map
 
 ```
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
-                          provider, worker, runtime, replay, cli)
+                          provider, worker, runtime, replay, cli,
+                          executor, workspace, execution, testing)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
 configs/conditions/       five matched-budget condition configs
 configs/experiments/      committed live-experiment base configs
