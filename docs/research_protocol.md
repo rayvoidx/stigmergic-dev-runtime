@@ -1,8 +1,11 @@
 # Research protocol
 
-Status: pre-registration draft. No experiment in this protocol has been run.
-The harness implements the mechanisms; results sections are intentionally
-empty until runs exist.
+Status: evolving protocol with preserved registration history. H1–H4 remain
+unconfirmed; their mechanism demonstrations and exploratory pilots have run.
+H5 was added on 2026-08-31 after the gpt-oss n=5 pilot, then tested in a
+registered, partially confirmatory 2×2 completed on 2026-09-06. Results live in
+separate lab notes/data and are summarized below; this file must not be edited
+retroactively to make earlier hypotheses fit observed outcomes.
 
 ## Research questions and hypotheses
 
@@ -28,6 +31,21 @@ empty until runs exist.
   predicted to hurt, not help (2026-08-30 ablation: 0/25 promotions) —
   medium selectivity treated as a feature.
 
+## Experiment status as of 2026-09-09
+
+| Tier | Completed record | Classification |
+|---|---|---|
+| Offline and one-seed live runs | v1 condition and RQ4 replacement archives; first v2 run | Mechanism demonstrations only |
+| Pilots | gemma3 and gpt-oss, three implemented conditions × five seeds | Exploratory; all relevant n=5 comparisons underpowered |
+| Medium ablations | promotion-history and failed-source exposure, n=5 | Exploratory; failed-source exposure produced 0/25 promotions |
+| Seed extension | gpt-oss AO/SP, n=20 per arm | Exploratory; no formal equivalence test |
+| H5 2×2 | two models × AO/SP × 20 seeds = 80 runs | Registered, partially confirmatory; interaction +0.202, bootstrap 95% CI [0.093, 0.310] |
+
+H5 caveats are part of the result: registration followed the gpt-oss n=5
+pilot; only the gemma3 extension arm was fully novel; model is confounded with
+Ollama version; and the design uses one task family and two capability levels.
+See `docs/experiments/2026-09-06-h5-2x2.md`.
+
 ## Variables
 
 - **Independent:** condition (5 levels below); failure-memory toggle (RQ3:
@@ -51,8 +69,9 @@ empty until runs exist.
 ## Conditions
 
 1. `single_persistent` — one agent, persistent context, sequential episodes.
+   **(implemented)**
 2. `best_of_n` — N independent agents, no shared artifacts; best final
-   artifact scored.
+   artifact scored. **(implemented)**
 3. `artifact_only` — ephemeral workers; shared canonical artifacts, lineage,
    evidence, failure records; no messages. **(implemented)**
 4. `full_communication` — condition 3 plus a logged inter-worker message
@@ -104,11 +123,16 @@ future fixture versions may add citation/evidence precision and lead time.
 | Tier | Purpose | Arms x seeds | Provider | Est. cost |
 |---|---|---|---|---|
 | smoke | CI / mechanism checks | 1 x 1 (offline) | offline deterministic | $0 |
-| pilot | variance + harness shakeout | 5 x 5 | one small live model | bounded by per-run max_usd; estimate before launch, requires explicit user approval |
+| pilot | variance + harness shakeout | planned 5 x 5; completed pilots cover 3 implemented conditions x 5 | small live local models | $0 local; any paid launch requires estimate and explicit approval |
 | paper | pre-registered comparisons | 5 x >= 20 (+ RQ3/RQ4 ablations) | >= 2 providers (replacement for RQ4) | budgeted from pilot actuals; requires explicit approval |
 
-All live tiers must set non-zero `max_tokens`/`max_usd` budgets; the runtime
-stops runs that exceed them and records the stop as `budget_exhausted`.
+All live tiers must set a positive `max_tokens`. A zero-cost local provider may
+set `max_usd` to 0; a paid provider must set a positive USD limit and must not
+be added until USD reservation/enforcement exists. Current runtime behavior is
+more limited than the intended protocol: calls and wall time are checked before
+an episode, tokens are checked after a provider response (so one-call overshoot
+is possible), and `max_usd` is recorded but not enforced. These limits must be
+reported for existing runs and fixed before paid experiments.
 
 ## Threats to validity
 

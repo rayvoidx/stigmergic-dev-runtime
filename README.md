@@ -4,17 +4,18 @@
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-A minimal, reproducible research runtime for **evaluator-gated stigmergic software
-evolution**.
+The public, reproducible research kernel of a **human-governed Agentic
+Engineering OS**, centered on evaluator-gated stigmergic software evolution.
 
 **Thesis.** *Persistent projects, ephemeral agents:* finite-lived AI workers can
 accumulate useful software capability through versioned executable artifacts,
 lineage, evidence, and failure records — without depending on persistent
 conversational identity.
 
-Workers never talk to each other. Coordination happens only through the shared
-project state: the canonical artifact, its lineage, evaluator evidence, and the
-recorded failures of earlier (now gone) workers.
+In the thesis-defining `artifact_only` condition, workers never talk to each
+other. Coordination happens only through shared project state: the canonical
+artifact, its lineage, evaluator evidence, and the recorded failures of earlier
+(now gone) workers. The other conditions exist to test this restriction.
 
 ## Research questions
 
@@ -28,6 +29,10 @@ recorded failures of earlier (now gone) workers.
   regressions without suppressing exploration?
 - **RQ4** Does artifact-centric state improve continuity when workers or model
   providers are replaced?
+- **RQ5 / H5** Does worker capability interact with coordination medium, such
+  that the `artifact_only`–`single_persistent` difference increases with
+  worker capability? H5 was registered after exploratory n=5 pilots, before
+  the n=20 extension and the novel gemma3 extension arm.
 
 See `docs/research_protocol.md` for hypotheses, variables, metrics, and the
 statistical plan; `docs/related_work.md` for the claim ledger.
@@ -35,10 +40,10 @@ statistical plan; `docs/related_work.md` for the claim ledger.
 ## Quickstart
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
+python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
 .venv/bin/stigdev demo                      # deterministic offline demo -> runs/demo-seed42
 .venv/bin/stigdev lineage runs/demo-seed42  # promotion chain + failure records
-.venv/bin/stigdev replay runs/demo-seed42   # re-derive all evidence, verify the run
+.venv/bin/stigdev replay runs/demo-seed42   # re-run evals; verify scores + chain
 .venv/bin/python -m pytest                  # full suite
 ```
 
@@ -48,7 +53,7 @@ API calls, no network, no cost.
 
 ## What one run does
 
-Each episode is an ephemeral worker: it sees only a bounded observation
+In an `artifact_only` run, each episode is an ephemeral worker: it sees only a bounded observation
 (canonical artifact + score, recent failure records, budget), proposes a full
 replacement artifact, and disappears. The evaluator executes the candidate in a
 sandbox against versioned fixtures; the promotion gate accepts strict
@@ -65,12 +70,14 @@ flowchart LR
     G -->|reject: failure record| S
 ```
 
-Every transition is an event in an append-only `events.jsonl`; artifacts are
+Every material runtime transition is an event in an append-only
+`events.jsonl`; artifacts are
 immutable `artifacts/<sha256>.py` files; `manifest.json` pins config, seeds,
 fixture hashes, evaluator/policy versions, environment, and cost. `stigdev
-replay` re-executes every recorded evaluation and verifies the promotion chain;
-`stigdev recover` restores the canonical pointer from the event log after
-corruption.
+replay` re-executes every recorded evaluation, compares its pass/score outcome,
+and verifies the promotion chain and canonical pointer; `stigdev recover`
+restores the canonical pointer from the event log after corruption. Full
+metric/reason and policy-decision replay is planned, not present behavior.
 
 ## TrendEvoBench
 
@@ -111,8 +118,8 @@ offload, 92 s wall, 6,616 tokens, $0 — committed as
 inherited failure records kept all six proposals distinct. This is a
 mechanism demonstration on a toy benchmark, not a capability or comparison
 claim. Live-model runs are not bit-reproducible; `stigdev replay` still
-re-derives and verifies all recorded evidence (it does for this run: 7
-evaluations, 0 divergences). Tests never call a live model.
+re-derives the recorded evaluation outcomes and chain integrity (it does for
+this run: 7 evaluations, 0 divergences). Tests never call a live model.
 
 A first archived 3-condition comparison (offline + live gemma3:12b, one seed,
 qualitative only) lives in
@@ -142,6 +149,30 @@ budget run (8 episodes, seed 42) illustrates the structure:
 `best_of_n` (4 workers x 2 episodes) 0.84 train / 0.74 holdout — splitting
 the budget cost search depth. Single runs; mechanism demo, not evidence.
 
+## Evidence status
+
+Committed results are classified by strength rather than collapsed into one
+claim:
+
+- **Mechanism demonstrations:** the deterministic demo, the one-seed v1 live
+  comparison, and RQ4 replacement archives show that promotion gating,
+  persistent media, replacement, replay, and recovery execute as designed.
+- **Exploratory:** two-model n=5 pilots, n=5 medium ablations, and the
+  gpt-oss:20b n=20 extension generate hypotheses and variance estimates. The
+  n=20 extension found `artifact_only` and `single_persistent`
+  indistinguishable by an exploratory Mann–Whitney test; it did not establish
+  equivalence.
+- **Registered, partially confirmatory:** the H5 2×2 contains 80 replay-clean
+  runs. The interaction `(AO-SP)_strong - (AO-SP)_weak` was +0.202 with
+  bootstrap 95% CI [0.093, 0.310], supporting the registered direction on this
+  benchmark/model pair. Registration followed the gpt-oss n=5 pilot, only the
+  gemma3 extension arm was fully novel, and model is confounded with Ollama
+  version.
+
+H1–H4 remain unconfirmed. H2 cannot be tested until `full_communication` is
+implemented. See `docs/experiments/` and
+`docs/experiments/data/h5-2x2-n20.json` for the committed records.
+
 ## Current limitations
 
 - The sandbox (`stigdev/sandbox.py`) is process isolation only: separate
@@ -149,9 +180,19 @@ the budget cost search depth. Single runs; mechanism demo, not evidence.
   or network access and is not a security boundary against malicious code.
 - The offline provider explores a small fixed mutation space; results with it
   demonstrate the runtime mechanics, not model capability.
-- TrendEvoBench is a toy task; no experimental results exist yet. Nothing here
-  claims autonomous continual learning or superiority over other approaches.
-- Four of five experimental conditions are configuration-only.
+- TrendEvoBench is one toy task family. The committed results do not establish
+  autonomous continual learning or general superiority over other approaches.
+- Two of five experimental conditions (`full_communication`, `orchestrator`)
+  are configuration-only and fail closed.
+- The budget model records `max_usd`, but the current loop does not enforce it;
+  token enforcement occurs after a provider response and can overshoot by one
+  call. Do not add a paid provider before reservation/reconciliation is
+  implemented.
+- Replay currently compares evaluator pass/score outcomes plus lineage and the
+  canonical pointer, not every evidence field or policy decision.
+- `AgentExecutor` and `WorkspaceBackend` are accepted for the next offline
+  contract phase, not implemented yet. Durable scheduling, approval gates,
+  gateways, and multi-repository orchestration remain future work.
 
 ## Public/private boundary
 
@@ -162,17 +203,27 @@ prompts. Downstream commercial systems (e.g. a trend agent) may depend on this
 runtime through the interfaces described in `docs/integration_boundary.md`;
 the dependency is strictly one-way. See `SECURITY.md`.
 
+## Research paper versus OS scope
+
+The paper studies artifact-mediated coordination, evaluator gating, and
+replacement on controlled benchmarks. The proposed Agentic Engineering OS
+adds execution/workspace/scheduler/gateway contracts around that kernel, but
+is not an empirical contribution of the current paper and is not implemented
+yet. See `docs/adr/0005-agentic-engineering-os-scope.md` and
+`docs/agentic_engineering_os_architecture.md`.
+
 ## Repository map
 
 ```
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
                           provider, worker, runtime, replay, cli)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
-configs/conditions/       five matched-budget experiment configs
+configs/conditions/       five matched-budget condition configs
+configs/experiments/      committed live-experiment base configs
 examples/sample_run/      committed output of the deterministic demo
 tests/                    unit + end-to-end suite (pytest)
 docs/                     ADRs, related-work claim ledger, research protocol,
-                          paper outline, integration boundary
+                          experiment notes/data, paper and OS design
 PROJECT_STATE.md          durable state + decision log for continuation
 ```
 

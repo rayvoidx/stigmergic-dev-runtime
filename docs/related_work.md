@@ -127,7 +127,7 @@ Search-result-only leads (NOT fetched, unverified): ChainSWE
 motivating references to MOSS remain UNVERIFIED and must be checked before any
 citation.
 
-## Hypotheses this repository exists to test (currently untested)
+## Hypothesis status in this repository
 
 - H1 (RQ1): artifact_only > single_persistent and > best_of_n on milestone
   success at matched budgets.
@@ -137,10 +137,16 @@ citation.
   reducing distinct-mutation coverage.
 - H4 (RQ4): mid-run worker/provider swaps degrade artifact_only runs less than
   single_persistent runs.
-- H5 (RQ5, registered 2026-08-31 after exploratory pilots, before any
-  confirmatory run): the artifact_only-over-single_persistent advantage
-  grows with worker capability; failed-code exposure in the medium hurts.
+- H5 (RQ5, registered 2026-08-31 after the exploratory gpt-oss n=5 pilot,
+  before the n=20 extension and novel gemma3 extension arm): the
+  artifact_only-over-single_persistent advantage grows with worker capability;
+  failed-code exposure in the medium hurts.
 
-No experimental evidence for H1–H4 exists in this repository today. The MVP
-demonstrates the *mechanisms* (implemented capabilities), not the comparative
-claims.
+H1, H3, and H4 have mechanism demonstrations or exploratory records but no
+confirmatory evidence. H2 has no result and is not executable because
+`full_communication` remains config-only. H5 has a registered, partially
+confirmatory 2×2 result:
+the interaction direction is supported on one benchmark/model pair (+0.202,
+bootstrap 95% CI [0.093, 0.310]), with the registration and runtime/model
+confounds recorded in `docs/experiments/2026-09-06-h5-2x2.md`. This does not
+support a general claim that stigmergy outperforms persistent agents.

@@ -173,3 +173,8 @@ Honest reading:
 3. This extension is exploratory (chunked execution, one model, one
    benchmark); the pre-registered H5 interaction test still requires the
    full 2x2 with a weaker model at n>=20 per cell.
+
+**Later status (2026-09-06):** that 2×2 was completed. The registered,
+partially confirmatory result and its caveats are recorded in
+`docs/experiments/2026-09-06-h5-2x2.md`; do not read the “still requires” line
+above as current project state.

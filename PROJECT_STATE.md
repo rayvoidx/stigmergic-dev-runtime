@@ -3,13 +3,14 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-08-30 (initial build session + public release + Ollama adapter).
+Last updated: 2026-09-14 (reviewed design baseline and scoped contract-phase
+acceptance; design-only, no runtime change).
 
-Published: https://github.com/rayvoidx/stigmergic-dev-runtime (public, CI green).
+Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
 ## Where things stand
 
-MVP vertical slice is **implemented and verified locally**:
+The research runtime is **implemented and verified locally**:
 
 - `stigdev` package (stdlib-only, Python >= 3.12): run store (content-addressed
   artifacts, append-only events.jsonl, canonical pointer, manifest), subprocess
@@ -17,18 +18,28 @@ MVP vertical slice is **implemented and verified locally**:
   ephemeral worker episodes, deterministic offline provider, run loop with
   explicit budgets, replay/recover, argparse CLI (`demo`, `run`, `evaluate`,
   `replay`, `recover`, `lineage`).
-- TrendEvoBench fixtures v1 (synthetic, committed) + seeded generator.
-- 41 pytest tests, all passing (unit + e2e: promotion, rejection, lineage,
-  replay, recovery, bit-for-bit reproducibility, condition configs).
-- Committed sample run in `examples/sample_run/`.
-- Five matched-budget condition configs; only `artifact_only` implemented,
-  others raise `ConditionNotImplementedError`.
+- TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
+  synthetic and committed with a seeded generator and calibration probes.
+- 55 pytest tests, all passing (unit + e2e: promotion, rejection, lineage,
+  replay, recovery, bit-for-bit reproducibility, condition configs, matrix
+  runner, v2 calibration, RQ4 replacement, and observation ablations).
+- Committed deterministic and local-model examples in `examples/`.
+- Five matched-budget condition configs. `artifact_only`,
+  `single_persistent`, and `best_of_n` are implemented;
+  `full_communication` and `orchestrator` raise
+  `ConditionNotImplementedError` with no silent fallback.
+- A conditions × seeds matrix runner and committed live-model evidence:
+  two 3×5 pilots, two n=5 medium ablations, an exploratory gpt-oss n=20
+  extension, and the registered/partially-confirmatory H5 2×2 (80 runs).
+- Agentic Engineering OS scope and the offline contract phase are accepted in
+  ADR 0005 and `docs/`; there is no `AgentExecutor`,
+  `WorkspaceBackend`, durable scheduler, gateway, or control plane yet.
 
 ## Verification commands (all confirmed passing in build session)
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 41 passed
+python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
+.venv/bin/python -m pytest                     # 55 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -144,8 +155,9 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     0.7985 [0.776,0.819] sd 0.049 vs 0.767 [0.727,0.800] sd 0.090; MWU
     p~0.44 — indistinguishable; variance HALVED under the stigmergic
     medium (unregistered observation). Thesis-relevant reading: persistent
-    identity not required to match a persistent agent on this setup. RQ5
-    2x2 (weaker-model n=20 arms) remains the registered confirmatory step.
+    identity not required to match a persistent agent on this setup. At that
+    milestone, the weaker-model n=20 arms still remained for the registered
+    RQ5 2x2 and were completed in decision #21.
     Background tasks were killed repeatedly (cause unknown); runs executed
     in 3-run chunks — merged data notes this. Data:
     docs/experiments/data/pilot-v2-gptoss-n20-matrix.json.
@@ -159,25 +171,58 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     docs/experiments/2026-09-06-h5-2x2.md; data in
     docs/experiments/data/h5-2x2-n20.json. Next: third capability level
     and/or second task family before paper claims.
+22. **Agentic Engineering OS scope drafted (2026-09-09, design-only).** Keep
+    the `stigmergic-dev-runtime` repository and `stigdev` package as the public
+    research kernel. Separate `Provider` (model inference) from the proposed
+    `AgentExecutor`, `WorkspaceBackend`, `Scheduler`, `PolicyGate`, `RunStore`,
+    and `GatewayAdapter` contracts. Do not create a control-plane repository
+    until deployment, multi-repo, operational-dependency, or security evidence
+    justifies extraction. ADR 0005 remains proposed pending review; no runtime
+    or external integration was added.
+23. **Design baseline accepted for offline contracts (2026-09-14).** The user
+    authorized completing the first-stage baseline and the specified second
+    stage. ADR 0005 now accepts both `AgentExecutor` and `WorkspaceBackend`
+    contracts/fakes together, with a separate RunStore-backed execution path.
+    Actual Git, OpenCode, Codex CLI, Hermes, and Slack integrations remain
+    deferred. Verified 55 tests and all 10 committed example stores offline.
+    Historical entries 20–21 use “parity”/“halved variance”: the recorded SDs
+    are 0.0493 vs 0.090 (variance ratio about 0.30); equivalence was not
+    established. No experiment record or numeric result was changed.
 
 ## Known gaps / next actions (highest value first)
 
-1. **Scale or strengthen before further interpretation** — the ablation
-   (decision log #17) weakened the simple richness explanation; every CI
-   still overlaps at n=5. Two paths, user's call: (a) more seeds locally
-   (n>=20 per arm, ~2h+ on gemma3:12b), (b) stronger worker model (paid
-   adapter — requires approval; or update Ollama.app to unlock gpt-oss:20b).
-   Candidate hypothesis to test then: the persistent advantage lives in
-   attempt-level context (own prior code), not summary tuples.
-2. Anthropic/OpenAI provider adapters behind `Provider` protocol (paid; gated
-   by user approval; never in tests).
-3. Harder benchmark tier (larger fixture versions, more mutation surface, or a
-   second task family) — current toy saturates at 0.86 quickly.
-4. Multi-artifact projects (currently one canonical artifact per run).
-5. Stronger sandbox (e.g. seccomp/container) if untrusted-model artifacts are
-   ever run.
+1. **Replicate before paper-level H5 claims** — use a third capability level
+   and/or a second task family. The current interaction is registered but
+   partially confirmatory, limited to one benchmark/model pair, and model is
+   confounded with Ollama version. Pre-register the replication and any
+   equivalence margin before data collection.
+2. **Complete the experimental condition matrix** — implement
+   `orchestrator` and `full_communication` with logged, matched-budget
+   treatment semantics. H2 is not testable until the message-channel arm
+   exists; H1–H4 still lack confirmatory evidence.
+3. **Close run-integrity gaps before paid/control-plane execution** — version
+   event envelopes, make checkpoint/promotion transitions recoverable, compare
+   full evidence and policy decisions during replay, and implement atomic
+   budget reservation/reconciliation. Today `max_usd` is not enforced and a
+   token cap can overshoot by one provider call.
+4. **Implement the accepted offline execution contracts next** — typed
+   `AgentExecutor` and `WorkspaceBackend`, deterministic fakes, minimal events,
+   and interrupted-attempt recovery in `feat/agent-executor-contract`. Real
+   backends, checkpoints, scheduler/task DAG, approval gates, and control-plane
+   projections follow as separately scoped milestones.
+5. **Add paid provider adapters only after budget enforcement** —
+   Anthropic/OpenAI behind `Provider`, explicit approval required, never live
+   in tests.
+6. **Generalize the research state** — multi-artifact/directory-tree
+   checkpoints; currently one canonical Python module per run.
+7. **Add a stronger sandbox before untrusted execution** — local Git
+   worktrees and the current subprocess sandbox are isolation aids, not
+   security boundaries.
 
 ## Blockers
 
-None. External model API usage and any private-repo integration require
-explicit user approval (see `docs/integration_boundary.md`).
+No blocker for documentation, offline research, or the accepted contract phase.
+Broad OS implementation still needs milestone-specific decisions. External
+model API usage, live gateway tests,
+production changes, and any private-repository integration require explicit
+user approval (see `docs/integration_boundary.md`).
