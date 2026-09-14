@@ -33,21 +33,27 @@ points. A private consumer must not monkey-patch the public run loop to hide
 behavior. Generic dependency injection or registries require a reviewed public
 contract and offline tests first.
 
-## Accepted contract scope and future operational boundaries
+## Execution contracts and future operational boundaries
 
-ADR 0005 accepts the offline contract phase but adds no implementation:
+The ADR 0005 offline contract phase is implemented locally:
 
 - `Provider` remains model inference only.
-- `AgentExecutor` supervises Codex, Claude Code, OpenCode, or another coding
-  agent operating in a bounded workspace.
-- `WorkspaceBackend` owns repository/worktree/container lifecycle.
-- `GatewayAdapter` translates authenticated Hermes, Slack, Orca, CLI, or web
-  input into idempotent commands.
+- `AgentExecutor.execute(ExecutionRequest)` returns a validated attempt result;
+  only a deterministic fake is provided, without real process supervision.
+- `WorkspaceBackend` exposes create/resolve, prepare, inspect, retain/dispose;
+  only an in-memory fake is provided.
+- `execute_agent` accepts these implementations and an existing `RunStore`.
+  It records execution evidence without scheduling, evaluating, or promoting.
+- `GatewayAdapter` remains future design, as do real Claude Code, Codex CLI,
+  OpenCode, Hermes, Slack, Git, container, and remote adapters.
 
 Organization-specific gateway routing, credentials, and deployment policy
 belong in a private consumer or a future control-plane repository. Public
-contracts and deterministic executor/workspace fakes are the accepted next step.
-See `docs/agentic_engineering_os_architecture.md`.
+contracts and deterministic executor/workspace fakes are documented in
+`docs/execution_contracts.md`. Instructions, explicit environments, locators,
+and raw logs stay transient; public metadata and artifact contents remain the
+caller's responsibility. No general permission or budget enforcement exists.
+See `docs/agentic_engineering_os_architecture.md` for later boundaries.
 
 ## Rules for private consumers
 

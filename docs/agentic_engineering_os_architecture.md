@@ -1,6 +1,7 @@
 # Agentic Engineering OS architecture
 
-Status: design v1 accepted for offline contracts (2026-09-14; ADR 0005).
+Status: design v1 merged in PR #1 (`5867f67`); offline contracts implemented
+and verified offline on 2026-09-14 (ADR 0005).
 Operational components remain future design. No OS integration described here is
 implemented unless it is explicitly listed under “Current runtime.”
 
@@ -50,7 +51,7 @@ task graphs, workspaces, approvals, and external control-plane gateways.
 |---|---|---|
 | Research paper | Evaluate artifact-mediated coordination under controlled conditions. | Active; three of five conditions implemented, H5 partially confirmatory. |
 | Research kernel | Artifact store, evaluator, gate, replay/recovery, providers, benchmark, matrix runner. | Implemented with documented limits. |
-| Agentic Engineering OS contracts | Agent execution, workspaces, scheduler, generalized events/checkpoints, approvals, gateways. | Proposed only. |
+| Agentic Engineering OS contracts | Agent execution, workspaces, scheduler, generalized events/checkpoints, approvals, gateways. | Execution/workspace protocols, fakes, and evidence implemented; remaining components deferred. |
 | Operational control plane | Multi-repo deployment, gateway services, secrets, schedulers, repository management. | Not present; possible future repository. |
 | Private application | Domain data, prompts, connectors, ranking, production validation. | Separate private repository. |
 
@@ -71,6 +72,7 @@ research runtime.
 | Conditions | `artifact_only`, `single_persistent`, `best_of_n`. | `full_communication` and `orchestrator` fail closed. |
 | Matrix runner | Conditions × seeds with descriptive bootstrap CIs. | Sequential; research statistics beyond aggregation remain external. |
 | Sandbox | Isolated CPython process, timeout, temporary cwd. | Does not confine filesystem or network. |
+| Execution contracts | `AgentExecutor`, `WorkspaceBackend`, deterministic fakes, `execute_agent`, inspection/recovery. | Single writer; no real backend, supervision, capability/budget enforcement, or canonical promotion. |
 
 ## Proposed component model
 
@@ -106,9 +108,10 @@ deployment boundaries are deliberately undecided.
 
 ## Core contracts
 
-The examples below are interface sketches, not implementation-ready APIs.
+The broader OS examples below are future interface sketches. The exact
+implemented APIs and an offline example are in `docs/execution_contracts.md`.
 
-The first implementation combines the `AgentExecutor` and `WorkspaceBackend`
+The current implementation combines the `AgentExecutor` and `WorkspaceBackend`
 contracts in one reviewed change. It uses synchronous typed requests/results,
 deterministic in-process test doubles, and a separate execution entry point
 that accepts an existing `RunStore`. Request instructions and environment
@@ -116,12 +119,16 @@ values are transient. Durable records contain allowlisted metadata, lineage,
 safe outcome classifications, and artifact/revision references only.
 
 This entry point records requested, prepared, started, and terminal execution
-events using the existing flat envelope plus an execution-contract version.
+events using the existing flat envelope plus `execution_version: 1`.
 It does not call `runtime.run`, select a task, evaluate a candidate, or promote
 canonical state. Reopened stores can inspect attempts and terminalize an
 interrupted attempt as an unknown outcome; retry requires a new attempt ID.
 Only complete JSONL records are supported by current recovery; torn writes,
 concurrent writers, and transactional promotion belong to integrity v2.
+The operator must stop the prior writer before recovery; no leases, fsync, or
+exactly-once execution are provided. Instructions, environments, locators,
+exception text, and raw output are omitted from durable records. Callers still
+must review public metadata and artifacts for secrets.
 
 Cancellation has a typed terminal outcome in this phase. Asynchronous cancel,
 heartbeat, process-tree termination, production workspace allocation/cleanup,
@@ -144,7 +151,13 @@ Git worktree, shell process, task retry, checkpoint, or promotion decision.
 
 ### AgentExecutor
 
-`AgentExecutor` supervises one bounded coding-agent attempt:
+The implemented protocol is
+`AgentExecutor.execute(ExecutionRequest) -> ExecutionResult`, with an
+`executor_id`. It handles one assigned attempt; the separate `execute_agent`
+function validates its outcome and records evidence. Process supervision is
+not supplied by the protocol or deterministic fake.
+
+The future supervision sketch is:
 
 ```text
 execute(TaskSpec, WorkspaceHandle, CapabilityEnvelope, AttemptBudget)
@@ -152,7 +165,7 @@ execute(TaskSpec, WorkspaceHandle, CapabilityEnvelope, AttemptBudget)
 cancel(AttemptId) -> CancellationResult
 ```
 
-It owns process lifecycle, stdout/stderr capture, heartbeats, cancellation,
+Future adapters would own process lifecycle, stdout/stderr capture, heartbeats, cancellation,
 tool-side-effect reporting, and agent-session provenance. It may wrap Codex,
 Claude Code, OpenCode, or a deterministic fake. It may use one or more
 providers internally, but the OS treats that as executor behavior unless the
@@ -175,7 +188,11 @@ does not directly change canonical state.
 
 ### WorkspaceBackend
 
-`WorkspaceBackend` manages isolated task files and checkpoints:
+The implemented `WorkspaceBackend` exposes `backend_id`, `create`, `resolve`,
+`prepare`, `inspect`, `retain`, and `dispose` using `WorkspaceSpec`,
+`WorkspaceRef`, and `WorkspaceState`. Only the fake backend exists; the caller
+owns retention/disposal, including after failure. Checkpoint storage remains
+deferred. The future allocation/checkpoint sketch is:
 
 ```text
 allocate(RepositoryRef, BaseRevision, WorkspacePolicy) -> WorkspaceHandle

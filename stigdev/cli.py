@@ -60,6 +60,15 @@ def cmd_recover(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_executions(args: argparse.Namespace) -> int:
+    from .execution import inspect_executions, recover_executions
+
+    store = RunStore.open(Path(args.run_dir))
+    operation = recover_executions if args.command == "recover-executions" else inspect_executions
+    _print(operation(store))
+    return 0
+
+
 def cmd_matrix(args: argparse.Namespace) -> int:
     from .matrix import format_table, run_matrix
 
@@ -129,6 +138,14 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("recover", help="restore canonical pointer from the event log")
     p.add_argument("run_dir")
     p.set_defaults(func=cmd_recover)
+
+    p = sub.add_parser("executions", help="inspect recorded execution attempts without rerunning agents")
+    p.add_argument("run_dir")
+    p.set_defaults(func=cmd_executions)
+
+    p = sub.add_parser("recover-executions", help="mark interrupted attempts after their writer has stopped")
+    p.add_argument("run_dir")
+    p.set_defaults(func=cmd_executions)
 
     p = sub.add_parser("matrix", help="run a conditions x seeds experiment matrix")
     p.add_argument("--config", required=True, help="base RunConfig JSON (run_id/condition/seed overridden)")

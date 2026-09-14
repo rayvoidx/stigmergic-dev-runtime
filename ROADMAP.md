@@ -43,11 +43,12 @@ implementation still requires the decisions listed in that ADR.
     untrusted model artifacts or coding agents; worktrees and subprocess `-I`
     are not security boundaries.
 
-## Agentic Engineering OS track — contracts accepted, implementation pending
+## Agentic Engineering OS track
 
-11. **Execution contracts.** Add `AgentExecutor`, `WorkspaceBackend`,
-    deterministic fakes, and RunStore execution evidence together while
-    keeping model-level `Provider` separate.
+11. **Execution contracts — implemented and verified offline.**
+    `AgentExecutor`, `WorkspaceBackend`, deterministic fakes, RunStore evidence,
+    and inspection/interruption recovery are separate from model-level
+    `Provider`. See `docs/execution_contracts.md` for limits.
 12. **Workspace implementation.** Implement GitWorktreeBackend with exact-base allocation,
     one-writer leases, checkpoints, quarantine, and safe release.
 13. **Durable scheduler.** Add task DAGs, leases, retries, cancellation,

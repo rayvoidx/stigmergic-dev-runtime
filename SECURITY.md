@@ -34,8 +34,22 @@ runtime has no paid-provider credential integration today. Nothing secret-like
 may be committed; contributions containing credentials, tokens, or production
 connector configuration are rejected (see ADR 0003, CONTRIBUTING.md).
 
-The proposed Agentic Engineering OS adds no present security boundary. Git
-worktrees isolate files for concurrent work but do not confine processes. Any
+The offline execution contracts add no present security boundary. Their
+synchronous runner cannot stop arbitrary blocking Python code, enforce paid
+budgets, or confine filesystem/network access. Only in-process deterministic
+fakes are shipped. Recovery requires the previous writer to be stopped; there
+are no locks, leases, fsync guarantees, torn-JSON repair, or exactly-once claims.
+Failed workspaces remain the caller's responsibility.
+
+Execution records omit instructions, environments, workspace locators, raw
+stdout/stderr, and exception text. Known transient values are checked against
+public metadata and referenced artifacts; embedded short, encoded, or unknown
+secrets can evade the checks. This is not a comprehensive secret detector.
+Callers must review opaque IDs, revisions, and artifact contents.
+Rejecting a result does not erase artifacts already stored by a caller. See
+`docs/execution_contracts.md` for the precise evidence and recovery boundary.
+
+Git worktrees isolate files for concurrent work but do not confine processes. Any
 future executor or gateway must use capability-scoped permissions, secret
 references rather than raw values, and explicit human approval for production
 credentials, deployment, destructive actions, or paid execution.
