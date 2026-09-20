@@ -49,6 +49,12 @@ Callers must review opaque IDs, revisions, and artifact contents.
 Rejecting a result does not erase artifacts already stored by a caller. See
 `docs/execution_contracts.md` for the precise evidence and recovery boundary.
 
+The v2 event store (`stigdev/eventstore.py`) adds no security boundary either.
+Its redaction is a forbidden-value check on payloads and blob text, not a
+secret detector; leases fence out late writers but do not stop a process
+from running. One writer per store is a deployment rule enforced only by
+SQLite locking. See `docs/event_store_v2.md`.
+
 Git worktrees isolate files for concurrent work but do not confine processes. Any
 future executor or gateway must use capability-scoped permissions, secret
 references rather than raw values, and explicit human approval for production

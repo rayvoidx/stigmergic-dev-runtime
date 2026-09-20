@@ -11,6 +11,7 @@ Layout of one run directory:
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any, Iterator
@@ -95,7 +96,9 @@ class RunStore:
     # -- canonical pointer -------------------------------------------------
 
     def set_canonical(self, digest: str, generation: int, score: float) -> None:
-        self.canonical_path.write_text(
+        # temp file + os.replace: a crash mid-write never leaves a torn pointer (ADR 0006)
+        tmp = self.canonical_path.with_suffix(".json.tmp")
+        tmp.write_text(
             json.dumps(
                 {"artifact_hash": digest, "generation": generation, "score": score},
                 sort_keys=True,
@@ -103,6 +106,7 @@ class RunStore:
             + "\n",
             encoding="utf-8",
         )
+        os.replace(tmp, self.canonical_path)
 
     def canonical(self) -> dict[str, Any] | None:
         if not self.canonical_path.exists():

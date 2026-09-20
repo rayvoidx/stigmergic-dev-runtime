@@ -1,8 +1,9 @@
 # ADR 0006: Durable event store and run-integrity v2
 
-Status: proposed (2026-09-20). Resolves deferred decisions 1 and 2 of ADR 0005
-for milestone M6. Design only; no runtime, test, or experiment data changes
-accompany this ADR.
+Status: accepted (2026-09-20, user direction to implement M6). Resolves
+deferred decisions 1 and 2 of ADR 0005 for milestone M6. Kernel scope is
+implemented in `stigdev/eventstore.py`, `ledger.py`, and `v1import.py`; see
+`docs/event_store_v2.md` for what remains open.
 
 ## Context
 
