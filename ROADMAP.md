@@ -32,6 +32,7 @@ implementation still requires the decisions listed in that ADR.
 6. **Run integrity v2.** Version event envelopes, add immutable repository
    checkpoints, make projection recovery explicit, compare complete evidence
    and policy decisions in replay, and preserve v1 run compatibility.
+   Design: ADR 0006 (proposed 2026-09-20); precedes item 12.
 7. **Budget correctness.** Add reservation/reconciliation and concurrency
    budgets. Enforce USD before adding paid providers; current token enforcement
    is post-response and can overshoot by one call.
