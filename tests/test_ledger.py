@@ -168,3 +168,14 @@ def test_queue_simulation_more_tasks_than_slots_commits_exactly_once(ledger: Tas
     assert ledger.store.pointer("canonical")[0] == 24
     with pytest.raises(PointerConflict):
         ledger.store.set_pointer("canonical", {"last": "stale"}, expected_version=23)
+
+
+def test_finish_retry_flag_overrides_the_default_requeue_rule(ledger: TaskLedger):
+    ledger.submit("t1")
+    ledger.submit("t2")
+    failed = ledger.acquire("t1", holder="w", now=0.0, ttl=10.0)
+    ledger.finish(failed, "failed", now=1.0, retry=True)
+    assert ledger.state()["t1"].status == "pending"
+    interrupted = ledger.acquire("t2", holder="w", now=0.0, ttl=10.0)
+    ledger.finish(interrupted, "interrupted", now=1.0, retry=False)
+    assert ledger.state()["t2"].status == "finished"

@@ -206,6 +206,12 @@ imports a v1 run directory without touching it and exports it back so
 write the v1 file store. See [event store v2](docs/event_store_v2.md) and
 ADR 0006.
 
+`stigdev.scheduler.Scheduler` ([docs](docs/scheduler.md)) schedules a task
+DAG over the ledger with retries, per-attempt budget reservations reconciled
+at finish, concurrency and workspace limits, cancellation, hard exhaustion,
+and restart from the store; `max_usd` defaults to zero and is checked before
+any lease.
+
 ## Current limitations
 
 - The sandbox (`stigdev/sandbox.py`) is process isolation only: separate
@@ -253,7 +259,8 @@ current paper. See `docs/adr/0005-agentic-engineering-os-scope.md` and
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
                           provider, worker, runtime, replay, cli,
                           executor, workspace, execution, testing,
-                          eventstore, ledger, v1import, gitworkspace)
+                          eventstore, ledger, v1import, gitworkspace,
+                          scheduler)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
 configs/conditions/       five matched-budget condition configs
 configs/experiments/      committed live-experiment base configs
