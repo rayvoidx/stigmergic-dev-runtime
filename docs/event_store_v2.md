@@ -1,9 +1,9 @@
 # Durable event store v2 and task ledger
 
-Status: M6 kernel scope implemented and verified offline on 2026-09-20 under
-ADR 0006. 164 tests pass (135 existing + 29 new); all committed example runs
-replay unchanged. Replay v2 (complete evidence and policy-decision comparison)
-and the remaining corruption matrix stay open in `docs/implementation_plan.md`.
+Status: M6 implemented and verified offline on 2026-09-20 under ADR 0006:
+kernel scope (event store v2, task ledger, v1 bridge) plus replay v2. 178
+tests pass (135 existing + 43 new); all 10 committed example runs replay
+clean with every policy decision re-verified.
 
 ## Public interfaces
 
@@ -82,10 +82,34 @@ byte-identical and `stigdev replay` reports the same result.
 `RunStore.set_canonical` (v1) now writes through a temporary file and
 `os.replace`, so a crash mid-write cannot leave a torn pointer.
 
+### Replay v2
+
+`stigdev.replay.replay(run_dir)` now returns `{ok, checked, decisions,
+divergences}` and:
+
+- parses the event log strictly (every line JSON, `seq` strictly increasing)
+  and reports an unreadable log as a divergence instead of raising;
+- refuses runs recorded under another evaluator or policy version;
+- compares the complete evaluator evidence (`passed`, `score`, every metric,
+  `reason`) for each `evaluated`/`holdout_evaluated` event;
+- re-runs `StrictImprovementPolicy` on the recorded evidence of every
+  `promoted`/`rejected` event in sequence, tracking the canonical score and
+  generation, and checks the decision, reason, `policy_id`, artifact, score,
+  and generation; a decision without evidence or evidence without a decision
+  is a divergence (the best-of-n selection event at episode `-1` carries no
+  local evidence and only advances the chain);
+- keeps the lineage and canonical-pointer checks.
+
+`replay_store(store, run_id)` exports a run from the v2 store to a temporary
+v1 layout and replays it; a tampered blob fails on export and is reported as a
+divergence. The corruption matrix in `tests/test_replay_v2.py` covers events
+(sequence, malformed line, deleted decision), metrics, reasons, policy
+decisions (flipped decision, reason, `policy_id`, score), blobs, and pointers.
+
 ## Verification (2026-09-20)
 
 ```bash
-.venv/bin/python -m pytest                     # 164 passed
+.venv/bin/python -m pytest                     # 178 passed
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
 
@@ -101,7 +125,9 @@ byte-identical and `stigdev replay` reports the same result.
   cancellation transport, DAG, budgets, or retry limits.
 - `lease_released` from ADR 0006 is not implemented; a worker that gives up
   records `finish(..., "cancelled")`.
-- Benchmark runs still use the v1 file store. Replay v2 (complete evidence and
-  policy-decision comparison), corruption tests for events, metrics, reasons,
-  and policy decisions on the v2 store, and budget reservation remain open.
+- Benchmark runs still write the v1 file store; `replay_store` verifies an
+  imported copy by export rather than reading the v2 store natively. Budget
+  reservation remains open (M7).
+- Replay re-runs `strict-improve/v1` only; a run under another policy id is
+  refused, not compared.
 - `export_run` assumes one v1 run per store.
