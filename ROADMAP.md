@@ -52,8 +52,10 @@ implementation still requires the decisions listed in that ADR.
     `AgentExecutor`, `WorkspaceBackend`, deterministic fakes, RunStore evidence,
     and inspection/interruption recovery are separate from model-level
     `Provider`. See `docs/execution_contracts.md` for limits.
-12. **Workspace implementation.** Implement GitWorktreeBackend with exact-base allocation,
-    one-writer leases, checkpoints, quarantine, and safe release.
+12. **Workspace implementation — done (2026-09-20).** `GitWorktreeBackend`
+    with exact-base allocation, one-writer leases, ADR 0006 tree checkpoints,
+    quarantine, and safe release. Not a security boundary; no executor uses
+    it yet (M9).
 13. **Durable scheduler.** Add task DAGs, leases, retries, cancellation,
     hierarchical budgets, and restart recovery.
 14. **Evaluator/policy approvals.** Generalize evidence over repository

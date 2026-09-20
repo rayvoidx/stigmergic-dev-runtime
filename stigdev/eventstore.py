@@ -116,6 +116,11 @@ def _digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def tree_digest(entries: dict[str, str]) -> str:
+    """Content-addressed digest of a path -> blob-digest mapping (order independent)."""
+    return _digest(_canonical_json(entries).encode("utf-8"))
+
+
 class SqliteEventStore:
     def __init__(self, root: Path):
         self.root = Path(root).resolve()
