@@ -17,7 +17,7 @@ from stigdev.lifecycle import (
     scale_gate,
     set_incident_state,
 )
-from stigdev.portfolio import DEFAULT_POLICY, STAGES, GateDecision, PortfolioPolicy
+from stigdev.portfolio import DEFAULT_POLICY, PILOT_STAGES, STAGES, GateDecision, PortfolioPolicy
 
 
 def slot(**kw) -> ChannelSlot:
@@ -57,10 +57,20 @@ def test_records_round_trip_through_dict(record):
 
 def test_every_lifecycle_state_maps_onto_a_real_portfolio_stage():
     assert set(PORTFOLIO_STAGE) == set(LIFECYCLE_STATES)
-    assert set(PORTFOLIO_STAGE.values()) <= set(STAGES)
+    # Exactly one coarse stage is unreachable from the fine machine: `pause`,
+    # whose job the orthogonal incident overlay does better. Asserting the image
+    # rather than a subset means a fourth coarse state cannot appear unnoticed.
+    assert set(PORTFOLIO_STAGE.values()) == set(STAGES) - {"pause"}
     # the mapping is monotonic: it never sends a later state to an earlier stage
     ranks = [STAGES.index(PORTFOLIO_STAGE[s]) for s in LIFECYCLE_STATES]
     assert ranks == sorted(ranks)
+
+
+def test_counting_agrees_with_the_coarse_portfolio_rule():
+    """Both layers must count the same channels until `register_channel` is the only counter."""
+    assert set(COUNTED_STATES) == {s for s in LIFECYCLE_STATES if PORTFOLIO_STAGE[s] != "retire"}
+    fine_pilots = {s for s in LIFECYCLE_STATES if PORTFOLIO_STAGE[s] in PILOT_STAGES}
+    assert fine_pilots == {"proposed", "unlisted_canary", "pilot", "monetization_gating"}
 
 
 def test_retire_is_terminal_and_not_counted_active():

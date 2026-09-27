@@ -441,7 +441,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
 
 9. **Portfolio governance follow-ups (ADR 0011)** — collapse
    `portfolio.STAGES` into the finer `lifecycle` machine once private
-   consumers move off the coarse names; add the audit-event stream and a
+   consumers move off the coarse names. Direction: `lifecycle` becomes the
+   single machine and the coarse stage stays only as a derived view
+   (`ChannelSlot.portfolio_stage`), with `register_channel` the one place that
+   counts; no third machine. `portfolio.pause` is superseded by the
+   `lifecycle` incident overlay, which is orthogonal to the lifecycle rather
+   than a state inside it, so the collapse deletes `pause` and lets
+   `may_publish`/`incident_state` carry it. Until then a test pins the mapping
+   image to `STAGES - {pause}`. Then add the audit-event stream and a
    `Policy Watch` job tracking platform-rule effective dates. The private
    revenue control plane itself is out of scope for this repository.
 
