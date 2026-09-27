@@ -76,8 +76,11 @@ immutable `artifacts/<sha256>.py` files; `manifest.json` pins config, seeds,
 fixture hashes, evaluator/policy versions, environment, and cost. `stigdev
 replay` re-executes every recorded evaluation, compares its pass/score outcome,
 and verifies the promotion chain and canonical pointer; `stigdev recover`
-restores the canonical pointer from the event log after corruption. Full
-metric/reason and policy-decision replay is planned, not present behavior.
+restores the canonical pointer from the event log after corruption. Replay
+compares the complete evidence (every metric and reason), re-runs each
+promotion decision against the recorded evidence, and validates the event
+sequence; a run recorded under another evaluator or policy version is refused
+rather than compared.
 
 ## TrendEvoBench
 
@@ -195,8 +198,8 @@ keeps task/attempt state as a pure reduction over event-sourced leases: the
 lease event is the fencing token, expired leases are recovered as
 `interrupted`, and duplicate completions commit once. `stigdev.v1import`
 imports a v1 run directory without touching it and exports it back so
-`stigdev replay` can verify the result. Benchmark runs still use the v1 file
-store; replay v2 is open. See [event store v2](docs/event_store_v2.md) and
+`stigdev replay` can verify the result (`replay_store`). Benchmark runs still
+write the v1 file store. See [event store v2](docs/event_store_v2.md) and
 ADR 0006.
 
 ## Current limitations

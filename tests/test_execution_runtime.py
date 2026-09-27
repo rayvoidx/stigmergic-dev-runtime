@@ -420,7 +420,7 @@ def test_execution_events_preserve_provider_replay_and_canonical_recovery(demo_r
     assert store.events_path.read_bytes().startswith(old_events)
     assert store.lineage_edges() == old_lineage
     replay_report = replay(run_dir)
-    assert replay_report == {"ok": True, "checked": 9, "divergences": []}
+    assert replay_report == {"ok": True, "checked": 9, "decisions": 8, "divergences": []}
 
     store.set_canonical("0" * 64, 99, -1.0)
     assert recover(run_dir)["recovered"]

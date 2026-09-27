@@ -1,8 +1,8 @@
 # Agentic Engineering OS implementation plan
 
-Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts and the M6
-kernel scope (ADR 0006, 2026-09-20) are implemented and verified offline. M5
-and later integrations are not authorized by this baseline. Milestone numbers identify workstreams, not a single serial queue.
+Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts and M6 (ADR
+0006, 2026-09-20) are implemented and verified offline. M5 and later
+integrations are not authorized by this baseline. Milestone numbers identify workstreams, not a single serial queue.
 
 ## Delivery principles
 
@@ -201,12 +201,12 @@ content-addressed tree checkpoint shape, v1 read-only compatibility, and
 store-boundary redaction. Because the checkpoint shape is fixed here, M6
 precedes M5.
 
-Status (2026-09-20): kernel scope implemented in `fix/run-integrity-v2`
-(`stigdev/eventstore.py`, `ledger.py`, `v1import.py`, atomic v1 pointer); 164
-tests pass and committed example replays are unchanged. Still open in this
-milestone: complete evidence and policy-decision comparison in replay, and
-corruption tests for events, metrics, reasons, and policy decisions on the v2
-store. See `docs/event_store_v2.md`.
+Status (2026-09-20): implemented. Kernel scope in `fix/run-integrity-v2`
+(`stigdev/eventstore.py`, `ledger.py`, `v1import.py`, atomic v1 pointer) and
+replay v2 in `fix/replay-v2` (complete evidence comparison, policy re-run,
+strict event-log parsing, `replay_store`, corruption matrix). 178 tests pass;
+all 10 committed example runs replay clean. Benchmark runs still write the v1
+file store. See `docs/event_store_v2.md`.
 
 Purpose: introduce a versioned event envelope, immutable checkpoint references,
 idempotent append semantics, and complete replay while preserving v1 readers.
@@ -295,7 +295,7 @@ Acceptance:
 | 2 | `feat/orchestrator-condition` | Experimental condition 5 | No with condition 4 until shared message/delegation schema is agreed |
 | 3 | `feat/full-communication` | Experimental condition 4 | After M2 interface review |
 | 4 | `feat/agent-executor-contract` | Executor/workspace types, fakes, execution evidence | Implemented and verified offline |
-| 5 | `fix/run-integrity-v2` | Versioned events/checkpoints/full replay | Kernel scope implemented; replay v2 open |
+| 5 | `fix/run-integrity-v2`, `fix/replay-v2` | Versioned events/checkpoints/full replay | Implemented and verified offline |
 | 6 | `feat/workspace-backend` | GitWorktreeBackend | After M6; produces ADR 0006 tree checkpoints |
 | 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | After event integrity |
 | 8 | `feat/control-plane-events` | Command and projection API | After scheduler domain events |

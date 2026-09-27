@@ -3,8 +3,8 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-20 (M6 kernel scope implemented and verified offline:
-event store v2, task ledger, v1 bridge; ADR 0006 accepted).
+Last updated: 2026-09-20 (M6 complete offline: event store v2, task ledger,
+v1 bridge, replay v2; ADR 0006 accepted).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -20,8 +20,8 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 164 pytest tests passing: 55 research, 80 execution-contract, and 29
-  event-store/ledger/v1-bridge tests.
+- 178 pytest tests passing: 55 research, 80 execution-contract, 29
+  event-store/ledger/v1-bridge, and 14 replay-v2 tests.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
@@ -43,14 +43,16 @@ The research runtime is **implemented and verified locally**:
   content-addressed blobs/trees, store-boundary redaction),
   `stigdev/ledger.py` (event-sourced leases with fencing, recovery, pure
   reducer), `stigdev/v1import.py` (non-destructive import/export), and an
-  atomic v1 canonical pointer. Benchmark runs still use the v1 file store;
-  replay v2 is open. See `docs/event_store_v2.md`.
+  atomic v1 canonical pointer. Replay v2 compares complete evidence, re-runs
+  every policy decision, validates the event sequence, and covers a
+  corruption matrix; all 10 committed examples replay clean. Benchmark runs
+  still write the v1 file store. See `docs/event_store_v2.md`.
 
 ## Verification commands (2026-09-20)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 164 passed
+.venv/bin/python -m pytest                     # 178 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -233,6 +235,18 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     delivery. `RunStore.set_canonical` now uses temp file + `os.replace`.
     Not done: replay v2 evidence/policy comparison, corruption matrix on the
     v2 store, `lease_released`, CLI, budgets. 164 passed; replays unchanged.
+27. **Replay v2 implemented (2026-09-20, `fix/replay-v2`).** `replay` now
+    parses the log strictly (JSON, strictly increasing seq; unreadable logs
+    are reported, not raised), refuses evaluator or policy version
+    mismatches, compares complete evidence (all metrics and reasons), re-runs
+    `strict-improve/v1` on the recorded evidence of every promoted/rejected
+    event (decision, reason, policy_id, artifact, score, generation; missing
+    or orphan decisions are divergences; best-of-n selection at episode -1
+    only advances the chain), and reports `decisions`. `replay_store`
+    replays a v2-store run via export. Corruption matrix: events, metrics,
+    reasons, policy decisions, blobs, pointers. All 10 committed examples
+    replay clean with 0 divergences (sample_run 9 checked/8 decisions).
+    178 passed. ADR 0004's follow-up is now present behavior.
 
 ## Known gaps / next actions (highest value first)
 
@@ -249,9 +263,9 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    event envelopes, make checkpoint/promotion transitions recoverable, compare
    full evidence and policy decisions during replay, and implement atomic
    budget reservation/reconciliation. Today `max_usd` is not enforced and a
-   token cap can overshoot by one provider call. M6 kernel scope is done
-   (ADR 0006); replay v2, the v2 corruption matrix, and budget reservation
-   remain.
+   token cap can overshoot by one provider call. M6 is done (ADR 0006:
+   event store v2, ledger, v1 bridge, replay v2); budget reservation and
+   reconciliation remain for M7.
 4. **Review the verified offline contracts** in
    `feat/agent-executor-contract`. Production GitWorktreeBackend, OpenCode,
    Codex CLI, and Hermes remain separately scoped future tasks; supervision,
