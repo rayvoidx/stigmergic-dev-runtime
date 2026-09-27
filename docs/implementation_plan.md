@@ -1,8 +1,9 @@
 # Agentic Engineering OS implementation plan
 
-Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts are implemented
-and verified. M5 and later integrations are not authorized by
-this baseline. Milestone numbers identify workstreams, not a single serial queue.
+Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts, M6 (ADR 0006),
+M5 GitWorktreeBackend, and M7 scheduler (2026-09-20) are implemented and
+verified offline. M8 and later integrations are not authorized by this
+baseline. Milestone numbers identify workstreams, not a single serial queue.
 
 ## Delivery principles
 
@@ -33,7 +34,7 @@ flowchart TD
     P[Private testbed]
 
     M0 --> R1 --> R2 --> R3
-    M0 --> C1 --> C2 --> C3 --> C4 --> C5 --> G --> P
+    M0 --> C1 --> C3 --> C2 --> C4 --> C5 --> G --> P
 ```
 
 The research and control-core lanes may proceed independently only after their
@@ -178,6 +179,11 @@ Worktree: `feat/workspace-backend`.
 Purpose: implement the M4 workspace contract using local Git. Allocate a
 worktree at an exact base SHA, prepare it, checkpoint
 changes, inspect state, quarantine failures, and release safely.
+Checkpoints use the content-addressed tree shape fixed in ADR 0006, so M5
+follows M6.
+
+Status (2026-09-20): implemented in `feat/workspace-backend`
+(`stigdev/gitworkspace.py`, `docs/git_worktree_backend.md`); 188 tests pass.
 
 Acceptance:
 
@@ -191,6 +197,20 @@ Acceptance:
 ### M6 — RunStore and integrity v2
 
 Suggested worktree: `fix/run-integrity-v2`.
+
+Design: ADR 0006 (accepted 2026-09-20) fixes the transaction model (stdlib
+SQLite WAL, one writer per store), envelope v2, idempotent append and pointer
+compare-and-swap, event-sourced leases with restart recovery, the
+content-addressed tree checkpoint shape, v1 read-only compatibility, and
+store-boundary redaction. Because the checkpoint shape is fixed here, M6
+precedes M5.
+
+Status (2026-09-20): implemented. Kernel scope in `fix/run-integrity-v2`
+(`stigdev/eventstore.py`, `ledger.py`, `v1import.py`, atomic v1 pointer) and
+replay v2 in `fix/replay-v2` (complete evidence comparison, policy re-run,
+strict event-log parsing, `replay_store`, corruption matrix). 178 tests pass;
+all 10 committed example runs replay clean. Benchmark runs still write the v1
+file store. See `docs/event_store_v2.md`.
 
 Purpose: introduce a versioned event envelope, immutable checkpoint references,
 idempotent append semantics, and complete replay while preserving v1 readers.
@@ -208,6 +228,10 @@ Acceptance:
 ### M7 — Durable scheduler, task graph, and budget ledger
 
 Suggested worktree: `feat/task-scheduler`.
+
+Status (2026-09-20): implemented (`stigdev/scheduler.py`, `docs/scheduler.md`);
+200 tests pass. Head-of-line readiness only; the research runtime does not run
+under the scheduler yet.
 
 Purpose: schedule DAG tasks with durable leases, retries, hierarchical budget
 reservations, and concurrency limits.
@@ -279,9 +303,9 @@ Acceptance:
 | 2 | `feat/orchestrator-condition` | Experimental condition 5 | No with condition 4 until shared message/delegation schema is agreed |
 | 3 | `feat/full-communication` | Experimental condition 4 | After M2 interface review |
 | 4 | `feat/agent-executor-contract` | Executor/workspace types, fakes, execution evidence | Implemented and verified offline |
-| 5 | `feat/workspace-backend` | GitWorktreeBackend | After M4; separate future task |
-| 6 | `fix/run-integrity-v2` | Versioned events/checkpoints/full replay | After workspace checkpoint shape is known |
-| 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | After event integrity |
+| 5 | `fix/run-integrity-v2`, `fix/replay-v2` | Versioned events/checkpoints/full replay | Implemented and verified offline |
+| 6 | `feat/workspace-backend` | GitWorktreeBackend | Implemented and verified offline |
+| 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | Implemented and verified offline |
 | 8 | `feat/control-plane-events` | Command and projection API | After scheduler domain events |
 | 9 | product-specific integration worktrees | Orca/Slack/Hermes adapters | After control-plane API, one at a time |
 | 10 | private `integration/social-trend-testbed` | Real-service validation | After stable public contracts |
@@ -290,7 +314,7 @@ Do not start all worktrees at once. Parallelism is safe only across the
 research lane and execution-contract lane after ADR approval; each dependency
 edge is a verification pause.
 
-The integration preference after M4 is GitWorktreeBackend → OpenCode adapter
+The integration preference after M6 is GitWorktreeBackend → OpenCode adapter
 → Codex CLI adapter → Hermes gateway. Each is a separate future task. Real
 execution needs suitable isolation and accounting first; Hermes still depends
 on M6–M8. Research M1–M3 can proceed independently and do not block M4.
@@ -298,7 +322,8 @@ on M6–M8. Research M1–M3 can proceed independently and do not block M4.
 ## Decisions to resolve before later milestones
 
 1. Amend ADR 0005 explicitly if later milestones change its accepted boundary.
-2. Choose the first event-store transaction model and v1 compatibility policy.
+2. Choose the first event-store transaction model and v1 compatibility policy
+   — proposed in ADR 0006.
 3. Choose the minimum isolation level for the first real CLI executor.
 4. Define the default human-approval matrix.
 5. Decide whether research-condition completion precedes OS contract work or

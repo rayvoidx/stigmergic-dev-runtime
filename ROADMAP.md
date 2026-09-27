@@ -32,9 +32,14 @@ implementation still requires the decisions listed in that ADR.
 6. **Run integrity v2.** Version event envelopes, add immutable repository
    checkpoints, make projection recovery explicit, compare complete evidence
    and policy decisions in replay, and preserve v1 run compatibility.
-7. **Budget correctness.** Add reservation/reconciliation and concurrency
-   budgets. Enforce USD before adding paid providers; current token enforcement
-   is post-response and can overshoot by one call.
+   Design: ADR 0006 (accepted 2026-09-20); precedes item 12. Done 2026-09-20:
+   event store v2, task ledger, v1 bridge, replay v2 with the corruption
+   matrix. Benchmark runs still write the v1 file store.
+7. **Budget correctness — scheduler level done (2026-09-20).** Reservation,
+   reconciliation, overshoot, concurrency, and `max_usd` checked before any
+   lease live in `stigdev.scheduler`. The research runtime still enforces
+   tokens post-response and can overshoot by one call until it runs under the
+   scheduler.
 8. **Paid provider adapters.** Anthropic/OpenAI behind `Provider` only after
    budget correctness, explicit user approval, and offline mocked tests.
 9. **Multi-artifact state.** Generalize the one-module canonical state to a
@@ -49,10 +54,13 @@ implementation still requires the decisions listed in that ADR.
     `AgentExecutor`, `WorkspaceBackend`, deterministic fakes, RunStore evidence,
     and inspection/interruption recovery are separate from model-level
     `Provider`. See `docs/execution_contracts.md` for limits.
-12. **Workspace implementation.** Implement GitWorktreeBackend with exact-base allocation,
-    one-writer leases, checkpoints, quarantine, and safe release.
-13. **Durable scheduler.** Add task DAGs, leases, retries, cancellation,
-    hierarchical budgets, and restart recovery.
+12. **Workspace implementation — done (2026-09-20).** `GitWorktreeBackend`
+    with exact-base allocation, one-writer leases, ADR 0006 tree checkpoints,
+    quarantine, and safe release. Not a security boundary; no executor uses
+    it yet (M9).
+13. **Durable scheduler — done (2026-09-20).** Task DAGs, leases, retries,
+    cancellation, run-level budgets, and restart recovery in
+    `stigdev.scheduler`; no priorities, backfilling, or per-task budgets.
 14. **Evaluator/policy approvals.** Generalize evidence over repository
     checkpoints and add versioned human approval decisions. Media-side
     fail-closed gates (rights, release, publish) and the channel stage

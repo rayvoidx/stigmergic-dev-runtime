@@ -3,9 +3,11 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-27 (media portfolio, concept lineage/Truth Firewall,
-revenue intelligence, model radar and portfolio policy contracts; ADR
-0007/0008/0009/0010 proposed, uncommitted on `main`).
+Last updated: 2026-09-27 (M6 event store, M5 GitWorktreeBackend and M7
+scheduler merged to `main` via PRs #3-#7 with ADR 0006 accepted; media
+portfolio, concept lineage/Truth Firewall, revenue intelligence, model radar
+and portfolio policy contracts added on top, ADR 0007/0008/0009/0010
+proposed).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -21,7 +23,9 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 135 pytest tests passing: 55 existing tests plus 80 execution-contract tests.
+- 200 pytest tests passing: 55 research, 80 execution-contract, 30
+  event-store/ledger/v1-bridge, 14 replay-v2, 10 Git worktree, and 11
+  scheduler tests.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
@@ -38,12 +42,33 @@ The research runtime is **implemented and verified locally**:
   RunStore execution evidence are implemented and verified offline.
   No production executor/backend, scheduler, gateway, or control
   plane exists. See `docs/execution_contracts.md`.
+- M6 kernel scope (ADR 0006) implemented: `stigdev/eventstore.py` (SQLite
+  WAL, envelope v2, idempotent append, compare-and-swap pointers,
+  content-addressed blobs/trees, store-boundary redaction),
+  `stigdev/ledger.py` (event-sourced leases with fencing, recovery, pure
+  reducer), `stigdev/v1import.py` (non-destructive import/export), and an
+  atomic v1 canonical pointer. Replay v2 compares complete evidence, re-runs
+  every policy decision, validates the event sequence, and covers a
+  corruption matrix; all 10 committed examples replay clean. Benchmark runs
+  still write the v1 file store. See `docs/event_store_v2.md`.
+- M5 `GitWorktreeBackend` (`stigdev/gitworkspace.py`) implements the M4
+  workspace contract on local Git worktrees: exact-commit allocation on a
+  `stigdev/<id>` branch, file-locked one-writer lease with fencing, ADR 0006
+  tree checkpoints into the event store, quarantine, and disposal that
+  refuses uncheckpointed changes. Worktrees are not a security boundary.
+  See `docs/git_worktree_backend.md`.
+- M7 `Scheduler` (`stigdev/scheduler.py`) over the ledger: DAG readiness in
+  submission order, retries up to `max_attempts`, per-attempt reservations
+  reconciled at finish or recovery (calls, tokens, USD, wall, workspaces,
+  concurrency), hard exhaustion and cancellation as terminal events, and
+  restart from the store. `max_usd` defaults to zero and is checked before
+  any lease. See `docs/scheduler.md`.
 
-## Verification commands (stage 2, 2026-09-14)
+## Verification commands (2026-09-20)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 331 passed (135 + 196 media/revenue/model contracts, 2026-09-27)
+.venv/bin/python -m pytest                     # 396 passed (135 research + 65 kernel + 196 media/revenue/model, 2026-09-27)
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -204,6 +229,67 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     and canonical promotion paths remain unchanged. Recovery terminalizes
     unknown outcomes only after the prior writer stops. Full suite: 135 passed;
     all 10 example stores replayed successfully. No external integration added.
+25. **ADR 0006 proposed (2026-09-20, design-only).** Resolves ADR 0005
+    deferred decisions 1–2 for M6: stdlib `sqlite3` WAL store with one writer
+    per store, envelope v2 (schema/event/causation/idempotency identity),
+    idempotent append and pointer compare-and-swap, event-sourced leases with
+    restart recovery, content-addressed tree checkpoints, read-only v1
+    compatibility plus a tested non-destructive importer, and store-boundary
+    redaction. M6 now precedes M5. No code, test, or experiment changed;
+    135 tests and all example replays still pass on `6dd99f7`.
+26. **M6 kernel scope implemented (2026-09-20, `fix/run-integrity-v2`).**
+    User direction accepted ADR 0006. Added `SqliteEventStore` (stdlib
+    `sqlite3`, WAL, one writer per store, envelope v2, unique idempotency
+    key, causation must exist, CAS pointers, sha256 blobs/trees verified on
+    read, forbidden-value redaction, nested all-or-nothing transactions),
+    `TaskLedger` (lease acquire/renew/finish/recover with the lease event as
+    fencing token; a late finish after expiry or renewal raises, a duplicate
+    from the same lease returns the stored event; interrupted re-queues),
+    and a v1 import/export bridge (sample run round-trips byte-identical and
+    replays equal). Tests include a real SIGKILL mid-transaction and a
+    24-task/2-slot queue simulation with one crash and one duplicate
+    delivery. `RunStore.set_canonical` now uses temp file + `os.replace`.
+    Not done: replay v2 evidence/policy comparison, corruption matrix on the
+    v2 store, `lease_released`, CLI, budgets. 164 passed; replays unchanged.
+27. **Replay v2 implemented (2026-09-20, `fix/replay-v2`).** `replay` now
+    parses the log strictly (JSON, strictly increasing seq; unreadable logs
+    are reported, not raised), refuses evaluator or policy version
+    mismatches, compares complete evidence (all metrics and reasons), re-runs
+    `strict-improve/v1` on the recorded evidence of every promoted/rejected
+    event (decision, reason, policy_id, artifact, score, generation; missing
+    or orphan decisions are divergences; best-of-n selection at episode -1
+    only advances the chain), and reports `decisions`. `replay_store`
+    replays a v2-store run via export. Corruption matrix: events, metrics,
+    reasons, policy decisions, blobs, pointers. All 10 committed examples
+    replay clean with 0 divergences (sample_run 9 checked/8 decisions).
+    178 passed. ADR 0004's follow-up is now present behavior.
+28. **M5 GitWorktreeBackend implemented (2026-09-20, `feat/workspace-backend`).**
+    Local Git worktrees behind the M4 `WorkspaceBackend` protocol: `create`
+    requires an exact 40-hex commit present in a registered repository and
+    allocates `git worktree add -b stigdev/<id>`; ids containing `/` or `..`
+    are refused; `inspect` reports `HEAD` or `HEAD:<tree digest>` when dirty;
+    `checkpoint` writes blobs plus a content-addressed tree into a
+    `SqliteEventStore` and records tree, `HEAD`, patch digest, and file
+    count; `quarantine` retains with a reason; `dispose` removes worktree and
+    branch, refusing changes not captured by the last checkpoint unless
+    `discard=True`, and records the cleanup outcome. One-writer lease per
+    workspace (holder + TTL, `flock`-guarded JSON record) fences a previous
+    holder after expiry. Symlinks and out-of-root paths fail closed; the
+    linked worktree's `.git` file is excluded (found by test: it was counted
+    as a file). 188 passed. Not a security boundary; no executor uses it
+    yet.
+29. **M7 scheduler implemented (2026-09-20, `feat/task-scheduler`).**
+    `Scheduler` reduces ledger + budget events into a `ScheduleState`:
+    submission-order head-of-line readiness over a DAG (dependencies must
+    be submitted first, so no cycles), retry of failed/timed_out/interrupted
+    up to `max_attempts` via an explicit `retry` flag on `attempt_finished`,
+    `budget_reserved` at lease and `budget_reconciled` at finish/recovery
+    with overshoot recorded, hard `budget_exhausted` once per run (cap minus
+    used, wall deadline), `task_cancelled`/`run_cancelled` terminal events,
+    concurrency and workspace limits, and identical state from a restarted
+    instance. A paid reservation cannot be submitted under the default
+    `max_usd=0`. No backfilling, priorities, or per-task budgets. The
+    research runtime does not run under the scheduler yet. 200 passed.
 
 25. **Media portfolio contracts implemented offline (2026-09-27, ADR 0007
     proposed, uncommitted).** Executing
@@ -307,11 +393,15 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    event envelopes, make checkpoint/promotion transitions recoverable, compare
    full evidence and policy decisions during replay, and implement atomic
    budget reservation/reconciliation. Today `max_usd` is not enforced and a
-   token cap can overshoot by one provider call.
-4. **Review the verified offline contracts** in
-   `feat/agent-executor-contract`. Production GitWorktreeBackend, OpenCode,
-   Codex CLI, and Hermes remain separately scoped future tasks; supervision,
-   isolation, budget enforcement, and durable control APIs still need work.
+   token cap can overshoot by one provider call in the research runtime. M6
+   and M7 are done: event store v2, ledger, v1 bridge, replay v2, and
+   scheduler-level reservation/reconciliation with `max_usd` checked before
+   any lease. Moving the research runtime under the scheduler is open.
+4. **Build on the merged M6/M5/M7 kernel** — PRs #3-#7 merged the event
+   store, task ledger, replay v2, GitWorktreeBackend, and scheduler into
+   `main` (CI green on 3.12/3.13). OpenCode, Codex CLI, and
+   Hermes adapters remain separately scoped; supervision, isolation, budget
+   enforcement, and durable control APIs still need work.
 5. **Add paid provider adapters only after budget enforcement** —
    Anthropic/OpenAI behind `Provider`, explicit approval required, never live
    in tests.

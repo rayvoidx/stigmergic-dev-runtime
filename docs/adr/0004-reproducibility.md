@@ -23,8 +23,9 @@ re-derived. Every material transition must be reproducible and auditable.
   evaluation from stored bytes, compares the hard-check pass flag and score,
   and re-checks the promotion chain and canonical pointer; the e2e suite
   additionally proves bit-for-bit rerun equality of the demo (modulo
-  wall-clock fields). Comparing every metric/reason and re-running policy
-  decisions is a documented follow-up, not a current capability.
+  wall-clock fields). Since 2026-09-20 (M6 replay v2) replay also compares every
+  metric and reason and re-runs each policy decision on the recorded
+  evidence; a policy-version mismatch is refused like an evaluator mismatch.
 - **Costs are data**: token/USD/call counts are recorded per episode and
   summed; the offline provider must report zeros.
 

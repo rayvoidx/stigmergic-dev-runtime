@@ -76,8 +76,11 @@ immutable `artifacts/<sha256>.py` files; `manifest.json` pins config, seeds,
 fixture hashes, evaluator/policy versions, environment, and cost. `stigdev
 replay` re-executes every recorded evaluation, compares its pass/score outcome,
 and verifies the promotion chain and canonical pointer; `stigdev recover`
-restores the canonical pointer from the event log after corruption. Full
-metric/reason and policy-decision replay is planned, not present behavior.
+restores the canonical pointer from the event log after corruption. Replay
+compares the complete evidence (every metric and reason), re-runs each
+promotion decision against the recorded evidence, and validates the event
+sequence; a run recorded under another evaluator or policy version is refused
+rather than compared.
 
 ## TrendEvoBench
 
@@ -183,8 +186,31 @@ changing Provider-based experiments or promoting canonical state.
 marks open attempts interrupted after their previous writer has stopped.
 
 See [execution contracts](docs/execution_contracts.md) for an offline example,
-public interfaces, and recovery/security limits. Real Claude Code, Codex CLI,
-OpenCode, Hermes, Slack, and Git worktree adapters are not implemented.
+public interfaces, and recovery/security limits. `GitWorktreeBackend`
+([docs](docs/git_worktree_backend.md)) implements the workspace contract on
+local Git worktrees with a one-writer lease, ADR 0006 tree checkpoints,
+quarantine, and disposal that refuses uncheckpointed changes; worktrees are
+not a security boundary. Real Claude Code, Codex CLI, OpenCode, Hermes, and
+Slack adapters are not implemented.
+
+## Durable event store v2 (M6 kernel scope)
+
+`stigdev.eventstore.SqliteEventStore` is a stdlib SQLite (WAL) store with a
+versioned event envelope, idempotent append, compare-and-swap pointers, and
+content-addressed blobs/trees verified on read. `stigdev.ledger.TaskLedger`
+keeps task/attempt state as a pure reduction over event-sourced leases: the
+lease event is the fencing token, expired leases are recovered as
+`interrupted`, and duplicate completions commit once. `stigdev.v1import`
+imports a v1 run directory without touching it and exports it back so
+`stigdev replay` can verify the result (`replay_store`). Benchmark runs still
+write the v1 file store. See [event store v2](docs/event_store_v2.md) and
+ADR 0006.
+
+`stigdev.scheduler.Scheduler` ([docs](docs/scheduler.md)) schedules a task
+DAG over the ledger with retries, per-attempt budget reservations reconciled
+at finish, concurrency and workspace limits, cancellation, hard exhaustion,
+and restart from the store; `max_usd` defaults to zero and is checked before
+any lease.
 
 ## Current limitations
 
@@ -232,7 +258,9 @@ current paper. See `docs/adr/0005-agentic-engineering-os-scope.md` and
 ```
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
                           provider, worker, runtime, replay, cli,
-                          executor, workspace, execution, testing)
+                          executor, workspace, execution, testing,
+                          eventstore, ledger, v1import, gitworkspace,
+                          scheduler)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
 configs/conditions/       five matched-budget condition configs
 configs/experiments/      committed live-experiment base configs
