@@ -3,8 +3,8 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-20 (M6 complete offline: event store v2, task ledger,
-v1 bridge, replay v2; ADR 0006 accepted).
+Last updated: 2026-09-20 (M6 complete and M5 GitWorktreeBackend implemented,
+both verified offline; ADR 0006 accepted).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -20,8 +20,8 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 178 pytest tests passing: 55 research, 80 execution-contract, 29
-  event-store/ledger/v1-bridge, and 14 replay-v2 tests.
+- 188 pytest tests passing: 55 research, 80 execution-contract, 29
+  event-store/ledger/v1-bridge, 14 replay-v2, and 10 Git worktree tests.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
@@ -47,12 +47,18 @@ The research runtime is **implemented and verified locally**:
   every policy decision, validates the event sequence, and covers a
   corruption matrix; all 10 committed examples replay clean. Benchmark runs
   still write the v1 file store. See `docs/event_store_v2.md`.
+- M5 `GitWorktreeBackend` (`stigdev/gitworkspace.py`) implements the M4
+  workspace contract on local Git worktrees: exact-commit allocation on a
+  `stigdev/<id>` branch, file-locked one-writer lease with fencing, ADR 0006
+  tree checkpoints into the event store, quarantine, and disposal that
+  refuses uncheckpointed changes. Worktrees are not a security boundary.
+  See `docs/git_worktree_backend.md`.
 
 ## Verification commands (2026-09-20)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 178 passed
+.venv/bin/python -m pytest                     # 188 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -247,6 +253,21 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     reasons, policy decisions, blobs, pointers. All 10 committed examples
     replay clean with 0 divergences (sample_run 9 checked/8 decisions).
     178 passed. ADR 0004's follow-up is now present behavior.
+28. **M5 GitWorktreeBackend implemented (2026-09-20, `feat/workspace-backend`).**
+    Local Git worktrees behind the M4 `WorkspaceBackend` protocol: `create`
+    requires an exact 40-hex commit present in a registered repository and
+    allocates `git worktree add -b stigdev/<id>`; ids containing `/` or `..`
+    are refused; `inspect` reports `HEAD` or `HEAD:<tree digest>` when dirty;
+    `checkpoint` writes blobs plus a content-addressed tree into a
+    `SqliteEventStore` and records tree, `HEAD`, patch digest, and file
+    count; `quarantine` retains with a reason; `dispose` removes worktree and
+    branch, refusing changes not captured by the last checkpoint unless
+    `discard=True`, and records the cleanup outcome. One-writer lease per
+    workspace (holder + TTL, `flock`-guarded JSON record) fences a previous
+    holder after expiry. Symlinks and out-of-root paths fail closed; the
+    linked worktree's `.git` file is excluded (found by test: it was counted
+    as a file). 188 passed. Not a security boundary; no executor uses it
+    yet.
 
 ## Known gaps / next actions (highest value first)
 
@@ -266,10 +287,10 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    token cap can overshoot by one provider call. M6 is done (ADR 0006:
    event store v2, ledger, v1 bridge, replay v2); budget reservation and
    reconciliation remain for M7.
-4. **Review the verified offline contracts** in
-   `feat/agent-executor-contract`. Production GitWorktreeBackend, OpenCode,
-   Codex CLI, and Hermes remain separately scoped future tasks; supervision,
-   isolation, budget enforcement, and durable control APIs still need work.
+4. **Review the stacked M6/M5 changes** (`fix/run-integrity-v2`,
+   `fix/replay-v2`, `feat/workspace-backend`). OpenCode, Codex CLI, and
+   Hermes adapters remain separately scoped; supervision, isolation, budget
+   enforcement, and durable control APIs still need work.
 5. **Add paid provider adapters only after budget enforcement** —
    Anthropic/OpenAI behind `Provider`, explicit approval required, never live
    in tests.

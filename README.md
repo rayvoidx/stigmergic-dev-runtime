@@ -186,8 +186,12 @@ changing Provider-based experiments or promoting canonical state.
 marks open attempts interrupted after their previous writer has stopped.
 
 See [execution contracts](docs/execution_contracts.md) for an offline example,
-public interfaces, and recovery/security limits. Real Claude Code, Codex CLI,
-OpenCode, Hermes, Slack, and Git worktree adapters are not implemented.
+public interfaces, and recovery/security limits. `GitWorktreeBackend`
+([docs](docs/git_worktree_backend.md)) implements the workspace contract on
+local Git worktrees with a one-writer lease, ADR 0006 tree checkpoints,
+quarantine, and disposal that refuses uncheckpointed changes; worktrees are
+not a security boundary. Real Claude Code, Codex CLI, OpenCode, Hermes, and
+Slack adapters are not implemented.
 
 ## Durable event store v2 (M6 kernel scope)
 
@@ -249,7 +253,7 @@ current paper. See `docs/adr/0005-agentic-engineering-os-scope.md` and
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
                           provider, worker, runtime, replay, cli,
                           executor, workspace, execution, testing,
-                          eventstore, ledger, v1import)
+                          eventstore, ledger, v1import, gitworkspace)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
 configs/conditions/       five matched-budget condition configs
 configs/experiments/      committed live-experiment base configs
