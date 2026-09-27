@@ -3,8 +3,9 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-14 (stage 1 merged; stage 2 offline execution contracts
-implemented and verified offline).
+Last updated: 2026-09-27 (media portfolio, concept lineage/Truth Firewall,
+revenue intelligence, model radar and portfolio policy contracts; ADR
+0007/0008/0009/0010 proposed, uncommitted on `main`).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -42,7 +43,7 @@ The research runtime is **implemented and verified locally**:
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 135 passed
+.venv/bin/python -m pytest                     # 331 passed (135 + 196 media/revenue/model contracts, 2026-09-27)
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -204,6 +205,93 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     unknown outcomes only after the prior writer stops. Full suite: 135 passed;
     all 10 example stores replayed successfully. No external integration added.
 
+25. **Media portfolio contracts implemented offline (2026-09-27, ADR 0007
+    proposed, uncommitted).** Executing
+    `docs/adr/YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27.md` §13
+    P0 as the public, generic half: `stigdev/portfolio.py` holds
+    `ChannelPlan`, `RightsManifest`, `ReleaseUnit`, `ProfitSnapshot`,
+    `FormatHypothesis`, `RevenueEvent` records, the §5.4 stage machine with
+    the seven scale conditions and the two-`scale`-channel limit, fail-closed
+    `rights_gate`/`release_gate`/`publish_gate`, weekly per-format caps, and a
+    revenue ledger that never sums `estimated`/`influenced` into gross.
+    54 tests, pure functions, caller-supplied `now`, synthetic fixtures only.
+    Operator direction the same day: Signal Stories is mandatory
+    (`product_funnel`, tied to the private Social Trend product) and the
+    web/app <-> YouTube loop needs a design pass once the operator's detailed
+    analysis arrives. Not done: workflow DSL, SQLite tables, RAYV release
+    workflow execution, connectors, the private `saeos-*` repositories
+    (Blueprint v2 §1) — none exist yet.
+
+26. **v3.1 amendment executed offline (2026-09-27, ADR 0008 proposed,
+    uncommitted).** `YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27
+    (1).md` (v3.1, "Organic Ecosystem Amendment") makes Signal Stories a
+    mandatory channel and ties every surface to one `concept_id` behind a
+    Truth Firewall. Added `stigdev/ecosystem.py`: `Concept`,
+    `EvidenceBundle`, `CanonArtifact`, `PlatformDerivative`,
+    `EcosystemEvent` (16 types), `AudienceSignal` (5 groups),
+    `AdaptationDecision`; `authorize_event` role firewall, `approve_canon`
+    (EvidenceUpdated -> CanonReview -> approval, versions chain),
+    `lineage` projection (stale/orphan/closed), `aggregate_signals`,
+    `adaptive_priority`, `approve_adaptation`. `stigdev/portfolio.py` gained
+    the reversible `pause` stage, `existence_floor` + `time_sensitivity_hours`
+    on `ChannelPlan` (mandatory channels cannot retire; `floor_deficit`,
+    `sla_breached`), and optional `concept_id` on five records.
+    106 media-contract test cases (47 functions); full suite 241; sample replay ok.
+    Recorded conflicts (ADR 0008): `pause` missing from the §5.12 diagram,
+    §13.1 repo rename vs ADR 0005, HTTP endpoints vs stdlib kernel, two
+    untracked strategy copies. Not done: correction-task generation,
+    connectors, HTTP API, private `saeos-ops-private`.
+
+27. **v3.2 amendment executed offline (2026-09-27, ADR 0009 proposed,
+    uncommitted).** `YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27
+    (2).md` (v3.2, "Revenue Intelligence Amendment") adds §5.15 and §11.2:
+    external revenue claims as graded evidence, policy snapshots with
+    effective dates, pre-registered experiments, fifteen commerce events with
+    an order state machine, and an isolated Commerce Lab. Added
+    `stigdev/revenue.py`: `RevenueClaim` + `classify_claim`/`modeled_amount`
+    (grade A–D -> policy_rule/hypothesis/sandbox_only/observe_only; missing
+    scope/period/sales interest demotes; only settled grade-A amounts are
+    model inputs), `PolicySnapshot` + `policy_in_effect` (new-entrant rules
+    never bind existing channels), `ExperimentCard` (registered before
+    start, >=2 variants, >=1 guardrail, stop rule), `CommerceEvent` +
+    `order_state`/`commerce_ledger` (attributed -> cancelled/returned/
+    finalized -> paid; estimated/finalized/paid never summed together),
+    role-separated `authorize_commerce_event`, four §11.2 ratios returning
+    `None` when undefined, `commerce_lab_promotion_gate` (seven conditions).
+    `stigdev/portfolio.py`: `REVENUE_KINDS` now claimed/estimated/attributed/
+    finalized/paid/influenced, gross = finalized + paid (attributed excluded),
+    `cash_revenue`, view metrics restricted to raw/engaged/qualified with
+    `view_policy_era` at 2026-08-24, `commerce_lab` role requiring
+    `owner_ref`. 66 new test cases; full suite 307; sample replay ok.
+    Recorded conflicts (ADR 0009): attributed revenue in the target mix
+    (§7.3/§11.3 vs §11.2), three untracked strategy copies, stored vs derived
+    claim decision, UTC boundary for the view-count change, real-video
+    fixtures kept private. Not done: Disclosure Gate text detection, Policy
+    Watch fetch job, Commerce Lab publish worker, tables, connectors.
+
+28. **Capacity policy and Model Radar gate implemented offline (2026-09-27,
+    ADR 0010 proposed, uncommitted).** Operator target restated: a fully
+    autonomous 24/7 OS where plans arrive via a frontier model, channels and
+    monetized services follow, and a separate agent keeps swapping local
+    models; the operator supervises only. Applied the M5 Ultra capacity
+    analysis as data, not prose: `PortfolioPolicy` (`DEFAULT_POLICY` =
+    2 scale / 12 active / 4 pilot / 15 review h per week), `PortfolioEvidence`,
+    `register_channel` gate (duplicate id, active and pilot limits, review
+    hours, incidents), `advance_stage(policy=...)`. Added
+    `stigdev/modelradar.py` from Blueprint §10.2–10.3: `ModelSnapshot`,
+    `BenchmarkResult`, `PromotionBudget`, `model_promotion_gate` (same suite,
+    strict quality gain, memory/p95 budget, no extra human edit time, >=20
+    shadow artifacts, 0 critical regressions, commercial license, named
+    approver), sequential rollout ladder with rollback to quarantine.
+    Revenue figures, domains, the 70% resource split and per-tier concurrency
+    stay private (node profiles are not in the public scheduler). Full suite
+    331; sample replay ok. Three Claude sessions edited this tree the same
+    evening (ADR 0007/0008/0010 here, 0009 elsewhere); all string-replace
+    edits, all reconciled, nothing committed. ADR 0010 lists the six-step gap
+    to the autonomy target: merge the durable stack, Evaluator/PolicyGate
+    injection, receipt-returning local executor, model gateway + radar loop,
+    media workers, approval-gated connectors.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
@@ -232,6 +320,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
 7. **Add a stronger sandbox before untrusted execution** — local Git
    worktrees and the current subprocess sandbox are isolation aids, not
    security boundaries.
+
+8. **Media contracts follow-ups (ADR 0007/0008/0009/0010)** — user review of
+   the four ADRs; resolve the recorded conflicts (pause in the state diagram,
+   repo naming, HTTP surface, three duplicate strategy docs, attributed
+   revenue inside the monthly target); decide public vs private placement of
+   the untracked SAEOS design docs; wire gates, lineage, the firewall, and
+   the commerce ledger into a control plane only after the
+   event-store/scheduler stack merges.
 
 ## Blockers
 

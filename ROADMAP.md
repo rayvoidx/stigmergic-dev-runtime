@@ -54,7 +54,15 @@ implementation still requires the decisions listed in that ADR.
 13. **Durable scheduler.** Add task DAGs, leases, retries, cancellation,
     hierarchical budgets, and restart recovery.
 14. **Evaluator/policy approvals.** Generalize evidence over repository
-    checkpoints and add versioned human approval decisions.
+    checkpoints and add versioned human approval decisions. Media-side
+    fail-closed gates (rights, release, publish) and the channel stage
+    machine exist as pure contracts in `stigdev/portfolio.py` (ADR 0007,
+    proposed); concept lineage, ecosystem events, and the Truth Firewall in
+    `stigdev/ecosystem.py` (ADR 0008, proposed); revenue claim grading,
+    policy snapshots, experiment cards, and the commerce order ledger in
+    `stigdev/revenue.py` (ADR 0009, proposed); portfolio capacity policy and
+    the Model Radar promotion gate in `stigdev/modelradar.py` (ADR 0010,
+    proposed).
 15. **Control-plane events and projections.** Expose authenticated, idempotent
     commands and read-only status without direct store/workspace access.
 16. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
