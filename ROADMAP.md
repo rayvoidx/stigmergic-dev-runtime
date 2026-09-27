@@ -76,12 +76,16 @@ implementation still requires the decisions listed in that ADR.
     ladder, and the K0-K4 incident kill switch in `stigdev/lifecycle.py`,
     `overlap.py`, `payout.py`, and `incident.py` (ADR 0011, proposed), with a
     synthetic 27-channel regression fixture and `docs/anti-evasion.md`.
-16. **Control-plane events and projections.** Expose authenticated, idempotent
+16. **Node profiles and commissioning.** Resource classes, per-node ceilings,
+    fail-closed Metal admission, and a read-only host check in `stigdev/node.py`
+    plus `scripts/commission_node.py` (ADR 0012, proposed). Wiring admission
+    into the scheduler waits on a worker daemon.
+17. **Control-plane events and projections.** Expose authenticated, idempotent
     commands and read-only status without direct store/workspace access.
-17. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
+18. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
     after the generic contracts are approved and tested. No live external test
     without explicit approval.
-18. **Private testbed and extraction review.** Validate from the private
+19. **Private testbed and extraction review.** Validate from the private
     `social-trend-agent` repository, then create a separate deployable control
     plane only if ADR 0005 extraction criteria are met.
 

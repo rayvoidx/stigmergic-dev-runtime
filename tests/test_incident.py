@@ -5,6 +5,7 @@ import pytest
 from stigdev.incident import (
     KILL_LEVELS,
     KILL_SCOPE,
+    SCOPE_KILL,
     IncidentError,
     PolicyIncident,
     PortfolioGraph,
@@ -39,11 +40,40 @@ def test_round_trip_through_dict():
     assert PolicyIncident.from_dict(i.to_dict()) == i
 
 
-def test_severity_sets_a_kill_floor_that_cannot_be_undercut():
-    assert incident(severity="low").effective_kill_level == "K0"
-    assert incident(severity="critical").effective_kill_level == "K3"
-    with pytest.raises(IncidentError, match="below the floor"):
-        incident(severity="critical", kill_level="K1")
+def test_scope_and_severity_both_set_a_floor_and_the_stricter_one_wins():
+    # a mild report on one video really is a K0
+    assert incident(scope="video", subject_id="synthetic-vid-1", severity="low").effective_kill_level == "K0"
+    # but severity raises it above the scope floor
+    assert incident(scope="video", subject_id="synthetic-vid-1", severity="critical").effective_kill_level == "K3"
+    # and scope raises it above the severity floor: this is the case that used
+    # to halt nothing at all, because only severity was consulted
+    credential = incident(scope="credential", subject_id="synthetic-oauth", severity="low")
+    assert credential.effective_kill_level == "K4"
+    assert incident(scope="portfolio", subject_id="synthetic-portfolio", severity="low").effective_kill_level == "K3"
+    assert SCOPE_KILL == {"video": "K0", "channel": "K1", "format_family": "K2",
+                          "portfolio": "K3", "credential": "K4"}
+
+
+def test_a_declared_kill_level_may_not_undercut_either_floor():
+    with pytest.raises(IncidentError, match="below the K3 floor"):
+        incident(scope="video", subject_id="synthetic-vid-1", severity="critical", kill_level="K1")
+    with pytest.raises(IncidentError, match="below the K4 floor"):
+        incident(scope="credential", subject_id="synthetic-oauth", severity="low", kill_level="K2")
+
+
+def test_a_low_severity_credential_incident_still_stops_everything():
+    """Regression: scope was ignored, so this combination halted no channel at all."""
+    quiet = incident(scope="credential", subject_id="synthetic-oauth", severity="low")
+    assert halted_channels(quiet, GRAPH) == GRAPH.channels()
+    for action in ("publish", "schedule", "update", "delete", "upload", "read"):
+        assert not action_allowed(action, channel_id="synthetic-a", incidents=[quiet], graph=GRAPH)
+
+
+def test_a_low_severity_portfolio_incident_freezes_writes_but_allows_reads():
+    quiet = incident(scope="portfolio", subject_id="synthetic-portfolio", severity="low")
+    assert halted_channels(quiet, GRAPH) == GRAPH.channels()
+    assert action_allowed("read", channel_id="synthetic-a", incidents=[quiet], graph=GRAPH)
+    assert not action_allowed("publish", channel_id="synthetic-a", incidents=[quiet], graph=GRAPH)
 
 
 def test_k0_halts_only_the_video_owning_channel():
@@ -77,7 +107,7 @@ def test_k4_stops_reads_too_because_the_credential_is_gone():
 
 
 def test_unaffected_channels_keep_publishing():
-    i = incident(scope="channel", subject_id="synthetic-a", severity="medium")
+    i = incident(scope="channel", subject_id="synthetic-a", severity="low")
     assert not action_allowed("publish", channel_id="synthetic-a", incidents=[i], graph=GRAPH)
     assert action_allowed("publish", channel_id="synthetic-c", incidents=[i], graph=GRAPH)
     assert action_allowed("publish", channel_id="synthetic-c", incidents=[], graph=GRAPH)

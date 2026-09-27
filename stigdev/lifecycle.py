@@ -58,6 +58,7 @@ COUNTED_STATES = tuple(s for s in LIFECYCLE_STATES if s != "retire")
 INCIDENT_STATES = ("clear", "watch", "quarantined", "frozen")
 MIN_POSITIVE_COHORTS = 3
 SCALE_GATE_ID = "channel-scale-gate/v1"
+REUSE_GATE_ID = "cross-channel-reuse/v1"
 
 
 class LifecycleError(ValueError):
@@ -254,3 +255,26 @@ def set_incident_state(slot: ChannelSlot, to: str, *, resolved_by: str | None = 
     if target < current and not resolved_by:
         raise LifecycleError("de-escalating an incident requires a named resolver")
     return replace(slot, incident_state=to)
+
+
+def cross_channel_reuse_gate(
+    candidate: FormatFingerprint, portfolio: Iterable[FormatFingerprint]
+) -> GateDecision:
+    """Refuse a publish that reuses another channel's exact script or asset bytes.
+
+    Exact hash equality only. Near-duplicate detection is a different, fuzzier
+    problem and belongs to human review via :mod:`stigdev.overlap`; this gate
+    exists so that the unambiguous case is a hard failure rather than a report
+    nobody reads.
+    """
+    reasons: list[str] = []
+    for other in portfolio:
+        if other.channel_id == candidate.channel_id:
+            continue
+        for shared, what in (
+            (candidate.shared_assets(other), "asset"),
+            (candidate.shared_scripts(other), "script"),
+        ):
+            for digest in sorted(shared):
+                reasons.append(f"{what} {digest} already published by {other.channel_id}")
+    return GateDecision(REUSE_GATE_ID, not reasons, tuple(reasons))

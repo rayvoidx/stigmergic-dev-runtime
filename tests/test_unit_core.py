@@ -245,3 +245,20 @@ def test_render_and_parse_genes_round_trip():
 def test_extract_code_fence():
     assert extract_code_fence("no code here") is None
     assert extract_code_fence("a\n```python\nx = 1\n```\nb") == "x = 1\n"
+
+
+def test_run_store_refuses_to_append_behind_a_second_writer(tmp_path):
+    """The v1 log keeps its sequence counter in memory, so a second writer would
+    silently issue duplicate seq numbers and make the run unreplayable."""
+    import pytest
+
+    from stigdev.store import RunStore, StoreIntegrityError
+
+    first = RunStore.create(tmp_path / "run")
+    first.append_event("promoted", artifact_hash="a")
+    second = RunStore.open(tmp_path / "run")
+    first.append_event("promoted", artifact_hash="b")
+
+    with pytest.raises(StoreIntegrityError, match="another process is appending"):
+        second.append_event("promoted", artifact_hash="c")
+    assert [e["seq"] for e in RunStore.open(tmp_path / "run").events()] == [1, 2]

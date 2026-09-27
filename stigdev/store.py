@@ -32,6 +32,11 @@ class RunStore:
         self.canonical_path = self.root / "canonical.json"
         self.manifest_path = self.root / "manifest.json"
         self._seq = self._last_seq() + 1
+        # Single-writer store. The sequence counter lives in memory, so a second
+        # writer would silently issue duplicate seq numbers and make the run
+        # unreplayable. Remember how long the log was and refuse if it grew
+        # under us.
+        self._written = self.events_path.stat().st_size if self.events_path.exists() else 0
 
     @staticmethod
     def create(root: Path) -> "RunStore":
@@ -69,9 +74,17 @@ class RunStore:
     # -- events ------------------------------------------------------------
 
     def append_event(self, event_type: str, **payload: Any) -> dict[str, Any]:
+        size = self.events_path.stat().st_size if self.events_path.exists() else 0
+        if size != self._written:
+            raise StoreIntegrityError(
+                f"{self.events_path} changed underneath this writer "
+                f"({self._written} -> {size} bytes); another process is appending"
+            )
         record = {"seq": self._seq, "type": event_type, "ts": time.time(), **payload}
+        line = json.dumps(record, sort_keys=True) + "\n"
         with self.events_path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(record, sort_keys=True) + "\n")
+            fh.write(line)
+        self._written = size + len(line.encode("utf-8"))
         self._seq += 1
         return record
 

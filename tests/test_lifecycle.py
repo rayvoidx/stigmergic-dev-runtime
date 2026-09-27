@@ -4,6 +4,7 @@ import pytest
 
 from stigdev.lifecycle import (
     COUNTED_STATES,
+    REUSE_GATE_ID,
     LIFECYCLE_STATES,
     LIFECYCLE_TRANSITIONS,
     PORTFOLIO_STAGE,
@@ -14,6 +15,7 @@ from stigdev.lifecycle import (
     ScaleEvidence,
     advance_lifecycle,
     counts,
+    cross_channel_reuse_gate,
     scale_gate,
     set_incident_state,
 )
@@ -189,3 +191,26 @@ def test_fingerprint_finds_exact_cross_channel_reuse():
 def test_invalid_records_are_rejected(build):
     with pytest.raises(LifecycleError):
         build()
+
+
+def test_reuse_gate_passes_when_nothing_is_shared():
+    a = FormatFingerprint("synthetic-a", ("s1",), ("a1",))
+    b = FormatFingerprint("synthetic-b", ("s2",), ("a2",))
+    assert cross_channel_reuse_gate(a, [b]) == GateDecision(REUSE_GATE_ID, True, ())
+
+
+def test_reuse_gate_hard_fails_on_an_exact_asset_or_script_match():
+    a = FormatFingerprint("synthetic-a", ("shared-script",), ("shared-asset",))
+    b = FormatFingerprint("synthetic-b", ("shared-script",), ("shared-asset",))
+    decision = cross_channel_reuse_gate(a, [b])
+    assert not decision.passed
+    assert decision.reasons == (
+        "asset shared-asset already published by synthetic-b",
+        "script shared-script already published by synthetic-b",
+    )
+
+
+def test_reuse_gate_ignores_the_channel_s_own_earlier_fingerprint():
+    own = FormatFingerprint("synthetic-a", ("s1",), ("a1",))
+    later = FormatFingerprint("synthetic-a", ("s1",), ("a1",), version=2)
+    assert cross_channel_reuse_gate(later, [own]).passed

@@ -179,3 +179,22 @@ def test_finish_retry_flag_overrides_the_default_requeue_rule(ledger: TaskLedger
     interrupted = ledger.acquire("t2", holder="w", now=0.0, ttl=10.0)
     ledger.finish(interrupted, "interrupted", now=1.0, retry=False)
     assert ledger.state()["t2"].status == "finished"
+
+
+def test_a_lease_is_fenced_by_its_holder_as_well_as_its_event_id(tmp_path):
+    """Two machines, one store: matching ids alone must not prove ownership."""
+    import pytest
+
+    from stigdev.eventstore import SqliteEventStore
+    from stigdev.ledger import Lease, LeaseError, TaskLedger
+
+    store = SqliteEventStore.create(tmp_path / "store", store_id="fence")
+    ledger = TaskLedger(store, run_id="run-1")
+    ledger.submit("task-1")
+    real = ledger.acquire("task-1", holder="studio-m5", now=0.0, ttl=60.0)
+
+    impostor = Lease(real.task_id, real.attempt_id, "mobile-m4", real.lease_event_id, real.expires_at)
+    with pytest.raises(LeaseError, match="superseded or expired"):
+        ledger.finish(impostor, "success", now=1.0)
+    assert ledger.finish(real, "success", now=1.0).payload["status"] == "success"
+    store.close()

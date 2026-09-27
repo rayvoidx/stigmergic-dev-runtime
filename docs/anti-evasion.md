@@ -32,10 +32,11 @@ These are refused as designs, not merely discouraged:
   channel's content must not reappear on a new channel. Ownership obfuscation
   does not reduce that risk — it makes ownership, tax, and security opaque while
   leaving the enforcement exposure intact.
-- **Near-duplicate publishing.** The same script, scene, voice track, or
-  thumbnail lightly varied across channels. `FormatFingerprint.shared_assets`
-  and `shared_scripts` exist to detect exactly this, and an exact match is a
-  hard publish failure rather than a warning.
+- **Republishing the same bytes.** An exact script or asset hash appearing on a
+  second channel is refused by `lifecycle.cross_channel_reuse_gate`, which fails
+  rather than warns. *Near*-duplicates — the same scene lightly varied, the same
+  voice track re-cut — are a fuzzier problem this repository does not claim to
+  solve automatically; `overlap` ranks suspicious pairs for a person to look at.
 - **Manufactured engagement.** Trading views, comments, or subscriptions
   between channels the same operator controls.
 - **Treating generation as originality.** That an image or voice track was
@@ -48,22 +49,34 @@ These are refused as designs, not merely discouraged:
 
 ## How the code enforces it
 
-| Rule | Where |
-|---|---|
-| One independent audience contract per channel | `lifecycle.AudienceContract`, `lifecycle.scale_gate` |
-| Exact cross-channel asset or script reuse is detectable | `lifecycle.FormatFingerprint` |
-| Overlapping channels are queued for human review | `overlap.review_queue` |
-| At most two channels in `scale`; caps on active and pilot counts | `lifecycle.advance_lifecycle`, `portfolio.PortfolioPolicy` |
-| An open incident suspends publishing regardless of lifecycle state | `lifecycle.ChannelSlot.may_publish` |
-| Incidents halt a scoped blast radius, up to revoking credentials | `incident.halted_channels`, `incident.action_allowed` |
-| Unverified external revenue claims cannot enter a forecast | `revenue.classify_claim`, `revenue.modeled_amount` |
-| Estimates, payouts, and balances are never summed | `payout.total_across` |
+| Rule | Where | Enforced how |
+|---|---|---|
+| Exact cross-channel script or asset reuse is refused | `lifecycle.cross_channel_reuse_gate` | Hard fail on hash equality |
+| At most two channels in `scale` | `lifecycle.advance_lifecycle` | Raises on the third |
+| Caps on active and pilot channel counts | `portfolio.register_channel` | Refuses registration |
+| An open incident suspends publishing whatever the lifecycle says | `lifecycle.ChannelSlot.may_publish` | Property returns false |
+| Incidents halt a scoped blast radius, up to revoking credentials | `incident.halted_channels`, `incident.action_allowed` | Fails closed; K4 refuses reads too |
+| Unverified external revenue claims cannot enter a forecast | `revenue.classify_claim`, `revenue.modeled_amount` | Demoted to `sandbox_only`, modelled amount is 0 |
+| Estimates, payouts and balances are never summed | `payout.total_across` | Refuses a mixed set instead of coercing |
+| Overlapping channels are ranked for review | `overlap.review_queue` | Ordering only — **not** a block |
+| Each channel declares its own audience contract | `lifecycle.AudienceContract`, `lifecycle.scale_gate` | Shape is validated; *independence* is a human judgement the caller asserts |
 
 ## On the limits of these checks
+
+Two rows above are weaker than they look, and saying so is the point of this
+section.
+
+`scale_gate` reads `ScaleEvidence.independent_audience_contract`, a boolean the
+caller supplies. Nothing in this repository compares two `AudienceContract`
+records and decides whether they are genuinely different, because that is a
+judgement about audiences and promises, not a string comparison. The gate
+records who asserted it and refuses to promote without the assertion; it does
+not verify it.
 
 The overlap score is an internal review heuristic with weights chosen by the
 operator. It is not a platform threshold, and it never blocks on its own —
 blocking belongs to the rights gate, exact fingerprint matches, and human
-review. None of this substitutes for reading the platform's own policies, which
+review. `review_queue` returns a sorted list; there is no queue, no storage and
+no notification behind it. None of this substitutes for reading the platform's own policies, which
 change; `revenue.PolicySnapshot` exists so that a rule's effective date is
 recorded rather than assumed.

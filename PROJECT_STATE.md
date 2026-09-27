@@ -398,6 +398,39 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     passed; sample replay clean. Decisions 30-33 were renumbered here: merging
     the kernel stack had left two independent sequences both restarting at 25.
 
+35. **Node profiles, Metal admission, and a commissioning check (2026-09-28,
+    ADR 0012 proposed).** An audit found the kernel had no concept of a machine
+    at all — no node, no host, no memory or GPU in the budget dimensions.
+    `stigdev/node.py` adds `ResourceClass`, `NodeProfile` (`mobile-m4`,
+    `studio-m5-ultra`), `HostFacts`, fail-closed `admit`, and a
+    `commissioning_gate`. `scripts/commission_node.py` is the read-only macOS
+    measurement half; `docs/commissioning.md` is the day-one runbook;
+    `deploy/launchd/` carries a daily readiness agent. Stated plainly and
+    asserted by test: the laptop admits one of six resource classes and cannot
+    host the writer alias at 28 GB against 16 GB usable.
+    Nothing is wired into `Scheduler` yet — the prerequisite is a worker
+    daemon, and `Scheduler`/`TaskLedger` still have no production caller.
+
+36. **Defects found by review and fixed (2026-09-28).** Three parallel reviews
+    of the 2026-09-27 work found six real defects, each reproduced before being
+    fixed. (a) `incident`: a credential- or portfolio-scoped incident at low
+    severity halted nothing, because only severity set the kill floor; scope
+    now sets one too, so a credential incident is K4 however mild it reads.
+    (b) `payout`: `amounts` was a plain dict on a frozen dataclass, so a caller
+    could write a `paid` figure the ladder never reached and defeat
+    `total_across`; it is a read-only mapping now. (c) `overlap`: `components`
+    was not copied, so mutating the caller's dict changed a frozen object's
+    score after construction. (d) `payout.cash()` admitted a state its own
+    contract excluded. (e) `ledger`: lease fencing compared ids but not the
+    holder, so with two machines on one store a stale lease could be used by
+    the wrong worker. (f) `store`: the v1 JSONL log keeps its sequence counter
+    in memory, so a second writer silently produced duplicate seq numbers and
+    an unreplayable run — it now refuses to append if the log grew underneath
+    it. Also implemented `lifecycle.cross_channel_reuse_gate`, because
+    `docs/anti-evasion.md` claimed exact reuse was a hard publish failure when
+    nothing enforced it; the remaining overstatements in that document were
+    corrected rather than left flattering.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
@@ -451,6 +484,15 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    image to `STAGES - {pause}`. Then add the audit-event stream and a
    `Policy Watch` job tracking platform-rule effective dates. The private
    revenue control plane itself is out of scope for this repository.
+
+10. **Make the second machine earn its keep (ADR 0012)** — in order: a `worker`
+   command looping recover → acquire → execute → finish, since `Scheduler` and
+   `TaskLedger` have no production caller; a node id carried as the lease holder
+   and added to the execution event identity; a ledger clock derived from the
+   database rather than the caller, so drift cannot move leases between
+   machines; then memory as a scheduler dimension with `node.admit` at the
+   acquire seam. Keep the store on one machine's local disk: WAL is unsafe over
+   network mounts.
 
 ## Blockers
 

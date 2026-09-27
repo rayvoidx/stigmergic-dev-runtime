@@ -236,6 +236,9 @@ class TaskLedger:
             or attempt.status is not None
             or not attempt.lease_valid
             or attempt.lease_event_id != lease.lease_event_id
+            # The holder is part of the fence: with two machines on one store,
+            # matching ids are not enough to prove this worker still owns it.
+            or attempt.holder != lease.holder
         ):
             raise LeaseError(f"lease for {lease.attempt_id} is superseded or expired")
         if now > attempt.expires_at:

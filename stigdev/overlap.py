@@ -9,8 +9,9 @@ review. :func:`review_queue` therefore returns an ordering, never a decision.
 from __future__ import annotations
 
 import math
-from dataclasses import asdict, dataclass
-from typing import Any, Iterable
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Any, Iterable, Mapping
 
 from .workspace import valid_identifier
 
@@ -47,7 +48,7 @@ def _unit(value: object, name: str) -> float:
 class ChannelOverlap:
     left_channel_id: str
     right_channel_id: str
-    components: dict[str, float]
+    components: Mapping[str, float]
     reviewed_at: str | None = None
 
     def __post_init__(self) -> None:
@@ -57,9 +58,13 @@ class ChannelOverlap:
         _require(set(self.components) == set(COMPONENTS), f"components must be exactly {COMPONENTS}")
         for name, value in self.components.items():
             _unit(value, name)
+        # frozen=True does not stop the caller mutating the dict it handed us,
+        # which would change this object's score after construction.
+        object.__setattr__(self, "components", MappingProxyType(dict(self.components)))
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {"left_channel_id": self.left_channel_id, "right_channel_id": self.right_channel_id,
+                "components": dict(self.components), "reviewed_at": self.reviewed_at}
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "ChannelOverlap":

@@ -3,16 +3,17 @@
 Money is tracked through six states because the same money appears in several
 screens at once: an estimate, a pending payout, and an account balance can all
 be the same revenue. They are therefore never summed. Business promotion reads
-``platform_finalized`` at the earliest; a monthly cash target reads ``paid`` or
-``bank_reconciled`` only.
+``platform_finalized`` at the earliest; a cash figure is readable only once the
+ladder has actually reached ``paid``.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from datetime import datetime
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Mapping
 
 from .workspace import valid_identifier
 
@@ -65,13 +66,15 @@ class PayoutReconciliation:
     period_start: str
     period_end: str
     state: str = "observed"
-    amounts: dict[str, float] = None  # type: ignore[assignment]
+    amounts: Mapping[str, float] = MappingProxyType({})
 
     def __post_init__(self) -> None:
         _require(valid_identifier(self.source), "invalid source")
         _require(_timestamp(self.period_start) < _timestamp(self.period_end), "period_end must follow period_start")
         _require(self.state in PAYOUT_STATES, f"unknown state {self.state!r}")
-        object.__setattr__(self, "amounts", dict(self.amounts or {}))
+        # A frozen dataclass does not stop `record.amounts["paid"] = ...`, which would
+        # forge a rung the ladder never reached. Snapshot behind a read-only view.
+        object.__setattr__(self, "amounts", MappingProxyType(dict(self.amounts or {})))
         for name, value in self.amounts.items():
             _require(name in PAYOUT_STATES, f"unknown payout state {name!r}")
             _amount(value, name)
@@ -82,7 +85,9 @@ class PayoutReconciliation:
             _require(name not in self.amounts, f"amount for {name} recorded before reaching that state")
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {"source": self.source, "period_start": self.period_start,
+                "period_end": self.period_end, "state": self.state,
+                "amounts": dict(self.amounts)}
 
     @staticmethod
     def from_dict(raw: dict[str, Any]) -> "PayoutReconciliation":
@@ -98,8 +103,12 @@ class PayoutReconciliation:
         return PAYOUT_STATES.index(self.state) >= PAYOUT_STATES.index(DECISION_FLOOR)
 
     def cash(self) -> float:
-        """Money that actually arrived; raises until the ladder reaches `paid`."""
-        _require(self.state in CASH_STATES or PAYOUT_STATES.index(self.state) >= PAYOUT_STATES.index("paid"),
+        """Money that actually arrived; raises until the ladder reaches `paid`.
+
+        Once reconciled the bank figure wins, because that is the one the
+        account agrees with.
+        """
+        _require(PAYOUT_STATES.index(self.state) >= PAYOUT_STATES.index("paid"),
                  f"{self.source} has not reached a cash state (currently {self.state})")
         return self.amounts["bank_reconciled" if "bank_reconciled" in self.amounts else "paid"]
 

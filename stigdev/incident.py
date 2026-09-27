@@ -33,6 +33,21 @@ SEVERITY_KILL: dict[str, str] = {
     "high": "K2",
     "critical": "K3",
 }
+# Scope sets a floor of its own. A credential incident cannot be a K0 however
+# mild it looks, because the thing at risk is not one video: without this, a
+# low-severity credential report halted nothing at all.
+SCOPE_KILL: dict[str, str] = {
+    "video": "K0",
+    "channel": "K1",
+    "format_family": "K2",
+    "portfolio": "K3",
+    "credential": "K4",
+}
+
+
+def kill_floor(scope: str, severity: str) -> str:
+    """The lowest kill level this incident may run at: the stricter of the two floors."""
+    return max(SCOPE_KILL[scope], SEVERITY_KILL[severity], key=KILL_LEVELS.index)
 
 
 class IncidentError(ValueError):
@@ -95,9 +110,11 @@ class PolicyIncident:
         _require(self.state != "clear", "an open incident is not `clear`; resolve it to close it")
         if self.kill_level is not None:
             _require(self.kill_level in KILL_LEVELS, f"unknown kill_level {self.kill_level!r}")
+            floor = kill_floor(self.scope, self.severity)
             _require(
-                KILL_LEVELS.index(self.kill_level) >= KILL_LEVELS.index(SEVERITY_KILL[self.severity]),
-                f"kill_level {self.kill_level} is below the floor for severity {self.severity}",
+                KILL_LEVELS.index(self.kill_level) >= KILL_LEVELS.index(floor),
+                f"kill_level {self.kill_level} is below the {floor} floor for "
+                f"scope {self.scope} at severity {self.severity}",
             )
         if self.evidence_artifact_id is not None:
             _require(valid_identifier(self.evidence_artifact_id), "invalid evidence_artifact_id")
@@ -111,8 +128,8 @@ class PolicyIncident:
 
     @property
     def effective_kill_level(self) -> str:
-        """The declared level, or the floor implied by severity when none was declared."""
-        return self.kill_level or SEVERITY_KILL[self.severity]
+        """The declared level, or the floor implied by scope and severity together."""
+        return self.kill_level or kill_floor(self.scope, self.severity)
 
 
 def escalate(incident: PolicyIncident, kill_level: str) -> PolicyIncident:
@@ -131,6 +148,8 @@ def halted_channels(incident: PolicyIncident, graph: PortfolioGraph) -> frozense
     level = incident.effective_kill_level
     if level in ("K3", "K4"):
         return graph.channels()
+    if incident.scope in ("portfolio", "credential"):
+        return graph.channels()  # unreachable via `level`, kept so a future scope cannot slip through
     if level == "K2":
         family = (
             incident.subject_id

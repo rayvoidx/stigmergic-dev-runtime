@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Daily readiness check for a node that takes production work.
+
+  It runs read-only: it inspects the machine and writes a JSON report, and it
+  changes nothing. A node that drifts out of commission (FileVault turned off,
+  the archive volume unmounted, the disk filling) says so here instead of
+  failing silently in the middle of a job.
+
+  Install for the service account, not for root:
+    cp deploy/launchd/dev.stigmergic.commission.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/dev.stigmergic.commission.plist
+
+  Replace REPO_PATH before loading. There is deliberately no worker service
+  here: no worker command exists yet (see docs/commissioning.md).
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.stigmergic.commission</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>REPO_PATH/.venv/bin/python</string>
+        <string>REPO_PATH/scripts/commission_node.py</string>
+        <string>--profile</string>
+        <string>studio-m5-ultra</string>
+        <string>--json</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>REPO_PATH</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>6</integer>
+        <key>Minute</key><integer>30</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>REPO_PATH/state/logs/commission.json</string>
+    <key>StandardErrorPath</key>
+    <string>REPO_PATH/state/logs/commission.err</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>LowPriorityIO</key>
+    <true/>
+</dict>
+</plist>
