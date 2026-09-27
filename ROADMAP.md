@@ -71,12 +71,17 @@ implementation still requires the decisions listed in that ADR.
     `stigdev/revenue.py` (ADR 0009, proposed); portfolio capacity policy and
     the Model Radar promotion gate in `stigdev/modelradar.py` (ADR 0010,
     proposed).
-15. **Control-plane events and projections.** Expose authenticated, idempotent
+15. **Multi-channel portfolio governance.** Channel lifecycle, audience
+    contracts, format fingerprints, overlap review, the payout reconciliation
+    ladder, and the K0-K4 incident kill switch in `stigdev/lifecycle.py`,
+    `overlap.py`, `payout.py`, and `incident.py` (ADR 0011, proposed), with a
+    synthetic 27-channel regression fixture and `docs/anti-evasion.md`.
+16. **Control-plane events and projections.** Expose authenticated, idempotent
     commands and read-only status without direct store/workspace access.
-16. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
+17. **External adapters.** Integrate Orca, Slack, and Hermes one at a time only
     after the generic contracts are approved and tested. No live external test
     without explicit approval.
-17. **Private testbed and extraction review.** Validate from the private
+18. **Private testbed and extraction review.** Validate from the private
     `social-trend-agent` repository, then create a separate deployable control
     plane only if ADR 0005 extraction criteria are met.
 

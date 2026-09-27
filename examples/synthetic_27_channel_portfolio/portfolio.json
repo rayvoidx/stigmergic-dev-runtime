@@ -1,0 +1,1034 @@
+{
+  "audience_contracts": [
+    {
+      "audience": "synthetic_audience_01",
+      "channel_id": "synthetic-channel-01",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_01",
+      "version": 1,
+      "viewer_job": "synthetic_job_1"
+    },
+    {
+      "audience": "synthetic_audience_02",
+      "channel_id": "synthetic-channel-02",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_02",
+      "version": 1,
+      "viewer_job": "synthetic_job_2"
+    },
+    {
+      "audience": "synthetic_audience_03",
+      "channel_id": "synthetic-channel-03",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_03",
+      "version": 1,
+      "viewer_job": "synthetic_job_3"
+    },
+    {
+      "audience": "synthetic_audience_04",
+      "channel_id": "synthetic-channel-04",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_04",
+      "version": 1,
+      "viewer_job": "synthetic_job_4"
+    },
+    {
+      "audience": "synthetic_audience_05",
+      "channel_id": "synthetic-channel-05",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_05",
+      "version": 1,
+      "viewer_job": "synthetic_job_5"
+    },
+    {
+      "audience": "synthetic_audience_06",
+      "channel_id": "synthetic-channel-06",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_06",
+      "version": 1,
+      "viewer_job": "synthetic_job_6"
+    },
+    {
+      "audience": "synthetic_audience_07",
+      "channel_id": "synthetic-channel-07",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_07",
+      "version": 1,
+      "viewer_job": "synthetic_job_0"
+    },
+    {
+      "audience": "synthetic_audience_08",
+      "channel_id": "synthetic-channel-08",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_08",
+      "version": 1,
+      "viewer_job": "synthetic_job_1"
+    },
+    {
+      "audience": "synthetic_audience_09",
+      "channel_id": "synthetic-channel-09",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_09",
+      "version": 1,
+      "viewer_job": "synthetic_job_2"
+    },
+    {
+      "audience": "synthetic_audience_10",
+      "channel_id": "synthetic-channel-10",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_10",
+      "version": 1,
+      "viewer_job": "synthetic_job_3"
+    },
+    {
+      "audience": "synthetic_audience_11",
+      "channel_id": "synthetic-channel-11",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_11",
+      "version": 1,
+      "viewer_job": "synthetic_job_4"
+    },
+    {
+      "audience": "synthetic_audience_12",
+      "channel_id": "synthetic-channel-12",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_12",
+      "version": 1,
+      "viewer_job": "synthetic_job_5"
+    },
+    {
+      "audience": "synthetic_audience_13",
+      "channel_id": "synthetic-channel-13",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_13",
+      "version": 1,
+      "viewer_job": "synthetic_job_6"
+    },
+    {
+      "audience": "synthetic_audience_14",
+      "channel_id": "synthetic-channel-14",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_14",
+      "version": 1,
+      "viewer_job": "synthetic_job_0"
+    },
+    {
+      "audience": "synthetic_audience_15",
+      "channel_id": "synthetic-channel-15",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_15",
+      "version": 1,
+      "viewer_job": "synthetic_job_1"
+    },
+    {
+      "audience": "synthetic_audience_16",
+      "channel_id": "synthetic-channel-16",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_16",
+      "version": 1,
+      "viewer_job": "synthetic_job_2"
+    },
+    {
+      "audience": "synthetic_audience_17",
+      "channel_id": "synthetic-channel-17",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_17",
+      "version": 1,
+      "viewer_job": "synthetic_job_3"
+    },
+    {
+      "audience": "synthetic_audience_18",
+      "channel_id": "synthetic-channel-18",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_18",
+      "version": 1,
+      "viewer_job": "synthetic_job_4"
+    },
+    {
+      "audience": "synthetic_audience_19",
+      "channel_id": "synthetic-channel-19",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_19",
+      "version": 1,
+      "viewer_job": "synthetic_job_5"
+    },
+    {
+      "audience": "synthetic_audience_20",
+      "channel_id": "synthetic-channel-20",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_20",
+      "version": 1,
+      "viewer_job": "synthetic_job_6"
+    },
+    {
+      "audience": "synthetic_audience_21",
+      "channel_id": "synthetic-channel-21",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_21",
+      "version": 1,
+      "viewer_job": "synthetic_job_0"
+    },
+    {
+      "audience": "synthetic_audience_22",
+      "channel_id": "synthetic-channel-22",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_22",
+      "version": 1,
+      "viewer_job": "synthetic_job_1"
+    },
+    {
+      "audience": "synthetic_audience_23",
+      "channel_id": "synthetic-channel-23",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_23",
+      "version": 1,
+      "viewer_job": "synthetic_job_2"
+    },
+    {
+      "audience": "synthetic_audience_24",
+      "channel_id": "synthetic-channel-24",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_24",
+      "version": 1,
+      "viewer_job": "synthetic_job_3"
+    },
+    {
+      "audience": "synthetic_audience_25",
+      "channel_id": "synthetic-channel-25",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_25",
+      "version": 1,
+      "viewer_job": "synthetic_job_4"
+    },
+    {
+      "audience": "synthetic_audience_26",
+      "channel_id": "synthetic-channel-26",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_26",
+      "version": 1,
+      "viewer_job": "synthetic_job_5"
+    },
+    {
+      "audience": "synthetic_audience_27",
+      "channel_id": "synthetic-channel-27",
+      "exclusions": [
+        "politics",
+        "medical_advice"
+      ],
+      "promise": "synthetic_promise_27",
+      "version": 1,
+      "viewer_job": "synthetic_job_6"
+    }
+  ],
+  "channel_overlaps": [
+    {
+      "components": {
+        "asset_fingerprint": 0.95,
+        "audience": 0.9,
+        "monetization": 0.9,
+        "script": 0.7,
+        "viewer_job": 0.85,
+        "visual_voice": 0.8
+      },
+      "left_channel_id": "synthetic-channel-08",
+      "reviewed_at": null,
+      "right_channel_id": "synthetic-channel-20"
+    },
+    {
+      "components": {
+        "asset_fingerprint": 0.0,
+        "audience": 0.2,
+        "monetization": 0.4,
+        "script": 0.05,
+        "viewer_job": 0.15,
+        "visual_voice": 0.3
+      },
+      "left_channel_id": "synthetic-channel-01",
+      "reviewed_at": null,
+      "right_channel_id": "synthetic-channel-02"
+    }
+  ],
+  "channel_slots": [
+    {
+      "channel_id": "synthetic-channel-01",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "scale",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-02",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "scale",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-03",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "maintain",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-04",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "maintain",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-05",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "maintain",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-06",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "maintain",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-07",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "monetization_gating",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-08",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "monetization_gating",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-09",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "monetization_gating",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-10",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "pilot",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-11",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "pilot",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-12",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "pilot",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-13",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "pilot",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-14",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "pilot",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-15",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-16",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-17",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-18",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-19",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-20",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "unlisted_canary",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-21",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "proposed",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-22",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "proposed",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-23",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "proposed",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-24",
+      "family_id": "archive-tales",
+      "incident_state": "clear",
+      "lifecycle_state": "proposed",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-25",
+      "family_id": "signal-explainers",
+      "incident_state": "clear",
+      "lifecycle_state": "retire",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-26",
+      "family_id": "synthetic-music",
+      "incident_state": "clear",
+      "lifecycle_state": "retire",
+      "reason_codes": []
+    },
+    {
+      "channel_id": "synthetic-channel-27",
+      "family_id": "commerce-lab",
+      "incident_state": "clear",
+      "lifecycle_state": "retire",
+      "reason_codes": []
+    }
+  ],
+  "external_revenue_claim": {
+    "accounting_basis": "unknown",
+    "amount": 60000000.0,
+    "captured_at": "2026-09-27T00:00:00+00:00",
+    "claim_id": "synthetic-external-multichannel",
+    "content_ownership": null,
+    "currency": "KRW",
+    "evidence_grade": "C",
+    "linked_offer_or_course": null,
+    "period_end": null,
+    "period_start": null,
+    "revenue_streams": [],
+    "scope": "portfolio",
+    "source_url": "https://example.invalid/synthetic-claim",
+    "subject": "synthetic 27-channel operator"
+  },
+  "format_fingerprints": [
+    {
+      "asset_hashes": [
+        "6c6b0067467797c8",
+        "b642c644f5fee774",
+        "35bbf6301bb5c9b2"
+      ],
+      "channel_id": "synthetic-channel-01",
+      "script_hashes": [
+        "34cab3b500322179",
+        "436ff70530029dfe"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "969c3b32256f386b",
+        "4a1bcc28b5b2540f",
+        "5796bc2526dfad61"
+      ],
+      "channel_id": "synthetic-channel-02",
+      "script_hashes": [
+        "ecdc4fe5e46bf295",
+        "a497195c08f7c558"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "d76ea96282cb3231",
+        "d2882461d77f9726",
+        "51e59b7f053bfbd4"
+      ],
+      "channel_id": "synthetic-channel-03",
+      "script_hashes": [
+        "47febdcf386330ab",
+        "6babbefd78b6f265"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.75,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "abcbecdca08eae3d",
+        "5d76c1ebf2e00b41",
+        "3b7a57b7b1930201"
+      ],
+      "channel_id": "synthetic-channel-04",
+      "script_hashes": [
+        "38edfcdafd43ff1d",
+        "a1ce2cf8b62a1f3e"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "6783c6e6a316cdf0",
+        "fa9ce5487ff048db",
+        "bf42e9858fe19cf0"
+      ],
+      "channel_id": "synthetic-channel-05",
+      "script_hashes": [
+        "7704dbf30fcc5f4b",
+        "36ce9dd1405924c8"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "87d372313d7fe0f9",
+        "fc39497d82360ccf",
+        "e87f0cbce3ea6f65"
+      ],
+      "channel_id": "synthetic-channel-06",
+      "script_hashes": [
+        "8ea7057299e71096",
+        "0f255e86314a9b9a"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "a1c6a9cfb5a08db5",
+        "46c5375d0515909d",
+        "9613b01d11e5dc63"
+      ],
+      "channel_id": "synthetic-channel-07",
+      "script_hashes": [
+        "bbac0ad29af5b165",
+        "857147b6da38ddba"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "20ca40cf8d77f134",
+        "3a0dc3be6c7091cc",
+        "4e0938c6f87d1c6e",
+        "9ed9d4b89e9e35c0"
+      ],
+      "channel_id": "synthetic-channel-08",
+      "script_hashes": [
+        "c5b274b28376e17d",
+        "75c8df3b4238f445"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.75,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "7da6396baccb0799",
+        "03535a3861370f72",
+        "8117d690a78dc290"
+      ],
+      "channel_id": "synthetic-channel-09",
+      "script_hashes": [
+        "3c3e7b85e6a7edf9",
+        "b2489a399ff77792"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "1369314894f9eec9",
+        "751008e78e812a88",
+        "890e85483455bdbb"
+      ],
+      "channel_id": "synthetic-channel-10",
+      "script_hashes": [
+        "cc04306b46023c11",
+        "96a9c1c5d6b87d91"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "122ab8def5f543d7",
+        "760558c0bfa0ad96",
+        "49dc8f657006e8ae"
+      ],
+      "channel_id": "synthetic-channel-11",
+      "script_hashes": [
+        "696c7de87e7aeea8",
+        "f318aaeea709a21d"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "1004d3244a3e5386",
+        "ad01bbb0a1c22bb6",
+        "37932b2dee180402"
+      ],
+      "channel_id": "synthetic-channel-12",
+      "script_hashes": [
+        "70aee542f04b1437",
+        "9893fe48eab09776"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "a9901ba5eedac791",
+        "ec92dadcaa0e0719",
+        "91d5bfc121985b5d"
+      ],
+      "channel_id": "synthetic-channel-13",
+      "script_hashes": [
+        "c25896de2472267d",
+        "e66d5a1e5cba4105"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.75,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "9329a9b077efb364",
+        "29b0c06aa1a99531",
+        "854a328e270b055b"
+      ],
+      "channel_id": "synthetic-channel-14",
+      "script_hashes": [
+        "75a3affbdbd417a0",
+        "2e1b046330399f8d"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "a974cc0de4de8ee3",
+        "2adecb9d55f29857",
+        "17548f46695c8464"
+      ],
+      "channel_id": "synthetic-channel-15",
+      "script_hashes": [
+        "c8d8fcec7560ffb0",
+        "75c07717e364618b"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "1c7c91c59131e1c7",
+        "4fc3c541856613ec",
+        "4588ae5261912c94"
+      ],
+      "channel_id": "synthetic-channel-16",
+      "script_hashes": [
+        "c180dafeb9d7b3dd",
+        "41319a93ce64d293"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "b103d4c7f32c95bc",
+        "987b578575479930",
+        "41bae6ab4962afd6"
+      ],
+      "channel_id": "synthetic-channel-17",
+      "script_hashes": [
+        "99fe1b4eedc68a53",
+        "168f423463539143"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "546a1ed20baf58da",
+        "c79ea9fe93add678",
+        "d898922526ced9d1"
+      ],
+      "channel_id": "synthetic-channel-18",
+      "script_hashes": [
+        "dd249c191e725999",
+        "b973bc5ce2f5e46f"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.75,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "76d8ee1f48ac3db8",
+        "1f7448dea0249b82",
+        "06c0e904ca53ddbc"
+      ],
+      "channel_id": "synthetic-channel-19",
+      "script_hashes": [
+        "7b624b26c9c51442",
+        "5ba219adcf59b255"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "cad940e86870d6a9",
+        "2f1a4149a1f66d52",
+        "fb5f03e5b7f51d0c",
+        "9ed9d4b89e9e35c0"
+      ],
+      "channel_id": "synthetic-channel-20",
+      "script_hashes": [
+        "8a715740e4bffdd1",
+        "03544a748a147010"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "8961af79bc517b46",
+        "4d56058602f780be",
+        "b8e217bf8965b592"
+      ],
+      "channel_id": "synthetic-channel-21",
+      "script_hashes": [
+        "56c6cede63262108",
+        "ed73cc00f184e644"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "4c279085d61e2390",
+        "502d9462276c6992",
+        "aeeb28513f203d59"
+      ],
+      "channel_id": "synthetic-channel-22",
+      "script_hashes": [
+        "d4b2156c077a8a61",
+        "ee1621d99edc83df"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "af284385e1357a6d",
+        "ef1ae9d9d20edfc4",
+        "2e39672b0cd02f94"
+      ],
+      "channel_id": "synthetic-channel-23",
+      "script_hashes": [
+        "88393c8a67b81b40",
+        "21eff18b9ee798d9"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.75,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "9a7ba588ba8ae812",
+        "ad4a1e1e1a82dee7",
+        "c0f8ee4626976b83"
+      ],
+      "channel_id": "synthetic-channel-24",
+      "script_hashes": [
+        "4c6a9f25a389f167",
+        "efd62c324895f75a"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "b26b1545a0e334dc",
+        "9c3a1313c54012a3",
+        "abb6cb09c59d5d5b"
+      ],
+      "channel_id": "synthetic-channel-25",
+      "script_hashes": [
+        "364abd28afcfbc7c",
+        "7e29a2448b16eb82"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.0,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "a68207d0ac5e72df",
+        "66fa088c576f7d17",
+        "4fdee2aefe91c955"
+      ],
+      "channel_id": "synthetic-channel-26",
+      "script_hashes": [
+        "cc6710a5e514df9d",
+        "bafdea5c26fdc0f9"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.25,
+        0.5
+      ]
+    },
+    {
+      "asset_hashes": [
+        "544009b5d5ccfcd4",
+        "ceb99acb27b72886",
+        "067d97c56174434d"
+      ],
+      "channel_id": "synthetic-channel-27",
+      "script_hashes": [
+        "af25f50dd89eb963",
+        "61ff4650ea3a3236"
+      ],
+      "version": 1,
+      "visual_voice_vector": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "note": "Synthetic only. No real channel IDs, audiences, revenue, accounts or prompts.",
+  "payout_reconciliations": [
+    {
+      "amounts": {
+        "bank_reconciled": 898.5,
+        "observed": 1000.0,
+        "paid": 900.0,
+        "platform_estimated": 980.0,
+        "platform_finalized": 940.0
+      },
+      "period_end": "2026-09-01T00:00:00+00:00",
+      "period_start": "2026-08-01T00:00:00+00:00",
+      "source": "synthetic-ads",
+      "state": "bank_reconciled"
+    },
+    {
+      "amounts": {
+        "observed": 500.0,
+        "platform_estimated": 460.0
+      },
+      "period_end": "2026-09-01T00:00:00+00:00",
+      "period_start": "2026-08-01T00:00:00+00:00",
+      "source": "synthetic-affiliate",
+      "state": "platform_estimated"
+    }
+  ],
+  "policy_incident": {
+    "detected_at": "2026-09-20T00:00:00+00:00",
+    "incident_id": "synthetic-incident-01",
+    "kill_level": "K2",
+    "scope": "format_family",
+    "severity": "high",
+    "state": "quarantined",
+    "subject_id": "archive-tales"
+  }
+}

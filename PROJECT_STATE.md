@@ -291,7 +291,7 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     `max_usd=0`. No backfilling, priorities, or per-task budgets. The
     research runtime does not run under the scheduler yet. 200 passed.
 
-25. **Media portfolio contracts implemented offline (2026-09-27, ADR 0007
+30. **Media portfolio contracts implemented offline (2026-09-27, ADR 0007
     proposed).** Executing §13 P0 of the private SAEOS Media Foundry strategy
     document v3 (held in `saeos-private`, not here) as the public, generic
     half: `stigdev/portfolio.py` holds
@@ -308,7 +308,7 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     workflow execution, connectors, the private `saeos-*` repositories
     (Blueprint v2 §1) — none exist yet.
 
-26. **v3.1 amendment executed offline (2026-09-27, ADR 0008 proposed).**
+31. **v3.1 amendment executed offline (2026-09-27, ADR 0008 proposed).**
     The private strategy document v3.1 ("Organic Ecosystem Amendment") makes
     Signal Stories a mandatory channel and ties every surface to one
     `concept_id` behind a
@@ -328,7 +328,7 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     untracked strategy copies. Not done: correction-task generation,
     connectors, HTTP API, private `saeos-ops-private`.
 
-27. **v3.2 amendment executed offline (2026-09-27, ADR 0009 proposed).**
+32. **v3.2 amendment executed offline (2026-09-27, ADR 0009 proposed).**
     The private strategy document v3.2 ("Revenue Intelligence Amendment")
     adds §5.15 and §11.2:
     external revenue claims as graded evidence, policy snapshots with
@@ -355,7 +355,7 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     fixtures kept private. Not done: Disclosure Gate text detection, Policy
     Watch fetch job, Commerce Lab publish worker, tables, connectors.
 
-28. **Capacity policy and Model Radar gate implemented offline (2026-09-27,
+33. **Capacity policy and Model Radar gate implemented offline (2026-09-27,
     ADR 0010 proposed).** Operator target restated: a fully autonomous 24/7
     OS where plans arrive via a frontier model, channels and
     monetized services follow, and a separate agent keeps swapping local
@@ -377,6 +377,26 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     to the autonomy target: merge the durable stack, Evaluator/PolicyGate
     injection, receipt-returning local executor, model gateway + radar loop,
     media workers, approval-gated connectors.
+
+34. **Multi-channel portfolio governance implemented offline (2026-09-28,
+    ADR 0011 proposed).** Executing v3.3 §5.16 and Blueprint v2.1 §14.4-14.6,
+    both held privately. Four stdlib modules: `stigdev/lifecycle.py`
+    (`proposed → unlisted_canary → pilot → monetization_gating → scale →
+    maintain → retire`, an orthogonal `clear/watch/quarantined/frozen`
+    incident overlay, `AudienceContract`, `FormatFingerprint`, the
+    seven-condition scale gate, and `PORTFOLIO_STAGE` mapping onto the coarser
+    `portfolio.STAGES`); `stigdev/overlap.py` (six-component weighted review
+    heuristic, never a block); `stigdev/payout.py` (`observed →
+    platform_estimated → platform_finalized → paid → bank_reconciled → net`,
+    where `total_across` refuses to mix rungs, because one payment shows up on
+    several screens at once); `stigdev/incident.py` (K0-K4 blast radius,
+    fail-closed, reads refused at K4). The external 27-channel / 60,000,000
+    KRW claim is graded C and provably cannot reach a forecast. Anti-evasion
+    stance in `docs/anti-evasion.md`: ownership obfuscation, near-duplicate
+    publishing, and flooding are refused as designs. Regression surface is
+    `examples/synthetic_27_channel_portfolio/`, synthetic only. Suite 477
+    passed; sample replay clean. Decisions 30-33 were renumbered here: merging
+    the kernel stack had left two independent sequences both restarting at 25.
 
 ## Known gaps / next actions (highest value first)
 
@@ -418,6 +438,12 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    the untracked SAEOS design docs; wire gates, lineage, the firewall, and
    the commerce ledger into a control plane only after the
    event-store/scheduler stack merges.
+
+9. **Portfolio governance follow-ups (ADR 0011)** — collapse
+   `portfolio.STAGES` into the finer `lifecycle` machine once private
+   consumers move off the coarse names; add the audit-event stream and a
+   `Policy Watch` job tracking platform-rule effective dates. The private
+   revenue control plane itself is out of scope for this repository.
 
 ## Blockers
 
