@@ -3,8 +3,8 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-20 (M6 complete and M5 GitWorktreeBackend implemented,
-both verified offline; ADR 0006 accepted).
+Last updated: 2026-09-20 (M6, M5 GitWorktreeBackend, and M7 scheduler
+implemented and verified offline; ADR 0006 accepted).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -20,8 +20,9 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 188 pytest tests passing: 55 research, 80 execution-contract, 29
-  event-store/ledger/v1-bridge, 14 replay-v2, and 10 Git worktree tests.
+- 200 pytest tests passing: 55 research, 80 execution-contract, 30
+  event-store/ledger/v1-bridge, 14 replay-v2, 10 Git worktree, and 11
+  scheduler tests.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
@@ -53,12 +54,18 @@ The research runtime is **implemented and verified locally**:
   tree checkpoints into the event store, quarantine, and disposal that
   refuses uncheckpointed changes. Worktrees are not a security boundary.
   See `docs/git_worktree_backend.md`.
+- M7 `Scheduler` (`stigdev/scheduler.py`) over the ledger: DAG readiness in
+  submission order, retries up to `max_attempts`, per-attempt reservations
+  reconciled at finish or recovery (calls, tokens, USD, wall, workspaces,
+  concurrency), hard exhaustion and cancellation as terminal events, and
+  restart from the store. `max_usd` defaults to zero and is checked before
+  any lease. See `docs/scheduler.md`.
 
 ## Verification commands (2026-09-20)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 188 passed
+.venv/bin/python -m pytest                     # 200 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -268,6 +275,18 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     linked worktree's `.git` file is excluded (found by test: it was counted
     as a file). 188 passed. Not a security boundary; no executor uses it
     yet.
+29. **M7 scheduler implemented (2026-09-20, `feat/task-scheduler`).**
+    `Scheduler` reduces ledger + budget events into a `ScheduleState`:
+    submission-order head-of-line readiness over a DAG (dependencies must
+    be submitted first, so no cycles), retry of failed/timed_out/interrupted
+    up to `max_attempts` via an explicit `retry` flag on `attempt_finished`,
+    `budget_reserved` at lease and `budget_reconciled` at finish/recovery
+    with overshoot recorded, hard `budget_exhausted` once per run (cap minus
+    used, wall deadline), `task_cancelled`/`run_cancelled` terminal events,
+    concurrency and workspace limits, and identical state from a restarted
+    instance. A paid reservation cannot be submitted under the default
+    `max_usd=0`. No backfilling, priorities, or per-task budgets. The
+    research runtime does not run under the scheduler yet. 200 passed.
 
 ## Known gaps / next actions (highest value first)
 
@@ -284,11 +303,13 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    event envelopes, make checkpoint/promotion transitions recoverable, compare
    full evidence and policy decisions during replay, and implement atomic
    budget reservation/reconciliation. Today `max_usd` is not enforced and a
-   token cap can overshoot by one provider call. M6 is done (ADR 0006:
-   event store v2, ledger, v1 bridge, replay v2); budget reservation and
-   reconciliation remain for M7.
-4. **Review the stacked M6/M5 changes** (`fix/run-integrity-v2`,
-   `fix/replay-v2`, `feat/workspace-backend`). OpenCode, Codex CLI, and
+   token cap can overshoot by one provider call in the research runtime. M6
+   and M7 are done: event store v2, ledger, v1 bridge, replay v2, and
+   scheduler-level reservation/reconciliation with `max_usd` checked before
+   any lease. Moving the research runtime under the scheduler is open.
+4. **Review the stacked M6/M5/M7 changes** (`fix/run-integrity-v2`,
+   `fix/replay-v2`, `feat/workspace-backend`, `feat/task-scheduler`).
+   OpenCode, Codex CLI, and
    Hermes adapters remain separately scoped; supervision, isolation, budget
    enforcement, and durable control APIs still need work.
 5. **Add paid provider adapters only after budget enforcement** —

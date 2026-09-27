@@ -1,8 +1,9 @@
 # Agentic Engineering OS implementation plan
 
-Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts, M6 (ADR 0006)
-and M5 GitWorktreeBackend (2026-09-20) are implemented and verified offline.
-M7 and later integrations are not authorized by this baseline. Milestone numbers identify workstreams, not a single serial queue.
+Status: M0 merged in PR #1 (`5867f67`); M4 offline contracts, M6 (ADR 0006),
+M5 GitWorktreeBackend, and M7 scheduler (2026-09-20) are implemented and
+verified offline. M8 and later integrations are not authorized by this
+baseline. Milestone numbers identify workstreams, not a single serial queue.
 
 ## Delivery principles
 
@@ -228,6 +229,10 @@ Acceptance:
 
 Suggested worktree: `feat/task-scheduler`.
 
+Status (2026-09-20): implemented (`stigdev/scheduler.py`, `docs/scheduler.md`);
+200 tests pass. Head-of-line readiness only; the research runtime does not run
+under the scheduler yet.
+
 Purpose: schedule DAG tasks with durable leases, retries, hierarchical budget
 reservations, and concurrency limits.
 
@@ -300,7 +305,7 @@ Acceptance:
 | 4 | `feat/agent-executor-contract` | Executor/workspace types, fakes, execution evidence | Implemented and verified offline |
 | 5 | `fix/run-integrity-v2`, `fix/replay-v2` | Versioned events/checkpoints/full replay | Implemented and verified offline |
 | 6 | `feat/workspace-backend` | GitWorktreeBackend | Implemented and verified offline |
-| 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | After event integrity |
+| 7 | `feat/task-scheduler` | DAG, leases, retry, budgets/concurrency | Implemented and verified offline |
 | 8 | `feat/control-plane-events` | Command and projection API | After scheduler domain events |
 | 9 | product-specific integration worktrees | Orca/Slack/Hermes adapters | After control-plane API, one at a time |
 | 10 | private `integration/social-trend-testbed` | Real-service validation | After stable public contracts |

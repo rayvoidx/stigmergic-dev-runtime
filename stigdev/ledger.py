@@ -105,7 +105,10 @@ def reduce_tasks(events: Iterable[Event]) -> dict[str, TaskState]:
                 raise LedgerIntegrityError(f"unknown terminal status: {status}")
             attempt.status = status
             attempt.last_event_id = event.event_id
-            task.status = "pending" if status in _REQUEUE else "finished"
+            requeue = payload.get("retry")
+            if requeue is None:
+                requeue = status in _REQUEUE
+            task.status = "pending" if requeue else "finished"
             task.last_event_id = event.event_id
     return tasks
 
@@ -186,9 +189,19 @@ class TaskLedger:
         return Lease(lease.task_id, lease.attempt_id, lease.holder, event.event_id, expires_at)
 
     def finish(
-        self, lease: Lease, status: str, *, now: float, result: dict[str, Any] | None = None
+        self,
+        lease: Lease,
+        status: str,
+        *,
+        now: float,
+        result: dict[str, Any] | None = None,
+        retry: bool | None = None,
     ) -> Event:
-        """Record the attempt outcome once; duplicates return the stored event."""
+        """Record the attempt outcome once; duplicates return the stored event.
+
+        ``retry`` overrides the default re-queue rule (only ``interrupted``
+        re-queues); the scheduler sets it from its retry policy.
+        """
         if status not in TERMINAL:
             raise ValueError(f"status must be one of {TERMINAL}")
         with self.store.transaction():
@@ -196,7 +209,9 @@ class TaskLedger:
             if existing is not None and existing.causation_id == lease.lease_event_id:
                 return existing  # duplicate delivery from the same lease
             self._fenced(lease, now)
-            return self._finish(lease.task_id, lease.attempt_id, status, lease.lease_event_id, result)
+            return self._finish(
+                lease.task_id, lease.attempt_id, status, lease.lease_event_id, result, retry
+            )
 
     def recover(self, *, now: float) -> list[Event]:
         """Expire stale leases and mark their attempts interrupted (idempotent)."""
@@ -241,15 +256,23 @@ class TaskLedger:
             )
             events.append(expired)
             cause = expired.event_id
-        events.append(self._finish(task.task_id, attempt.attempt_id, "interrupted", cause, None))
+        events.append(self._finish(task.task_id, attempt.attempt_id, "interrupted", cause, None, None))
         return events
 
     def _finish(
-        self, task_id: str, attempt_id: str, status: str, causation_id: str, result: dict[str, Any] | None
+        self,
+        task_id: str,
+        attempt_id: str,
+        status: str,
+        causation_id: str,
+        result: dict[str, Any] | None,
+        retry: bool | None,
     ) -> Event:
         payload: dict[str, Any] = {"task_id": task_id, "attempt_id": attempt_id, "status": status}
         if result is not None:
             payload["result"] = result
+        if retry is not None:
+            payload["retry"] = bool(retry)
         return self.store.append(
             "attempt_finished",
             payload,

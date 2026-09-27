@@ -63,7 +63,8 @@ Event types: `task_submitted`, `lease_acquired`, `lease_renewed`,
 - `recover(now)` expires every stale lease, marks the attempts interrupted, and
   returns the appended events; running it again appends nothing.
 - `interrupted` returns the task to `pending`; other terminal statuses finish
-  it. There is no attempt cap or retry policy (M7).
+  it unless `finish(..., retry=True)` says otherwise. The scheduler (M7,
+  `docs/scheduler.md`) sets that flag from its retry policy.
 - `reduce_tasks` is a pure function over events and fails closed on unknown
   tasks, duplicate submissions, events for inactive attempts, and unknown
   terminal statuses.
@@ -122,12 +123,12 @@ decisions (flipped decision, reason, `policy_id`, score), blobs, and pointers.
   transactions may roll back; use `FULL` where that matters.
 - Redaction is a forbidden-value check, not a secret detector.
 - The ledger takes `now` from the caller; it has no clock, heartbeat transport,
-  cancellation transport, DAG, budgets, or retry limits.
+  or cancellation transport. DAG, budgets, and retry limits live in
+  `stigdev.scheduler` (M7).
 - `lease_released` from ADR 0006 is not implemented; a worker that gives up
   records `finish(..., "cancelled")`.
 - Benchmark runs still write the v1 file store; `replay_store` verifies an
-  imported copy by export rather than reading the v2 store natively. Budget
-  reservation remains open (M7).
+  imported copy by export rather than reading the v2 store natively.
 - Replay re-runs `strict-improve/v1` only; a run under another policy id is
   refused, not compared.
 - `export_run` assumes one v1 run per store.
