@@ -186,6 +186,19 @@ See [execution contracts](docs/execution_contracts.md) for an offline example,
 public interfaces, and recovery/security limits. Real Claude Code, Codex CLI,
 OpenCode, Hermes, Slack, and Git worktree adapters are not implemented.
 
+## Durable event store v2 (M6 kernel scope)
+
+`stigdev.eventstore.SqliteEventStore` is a stdlib SQLite (WAL) store with a
+versioned event envelope, idempotent append, compare-and-swap pointers, and
+content-addressed blobs/trees verified on read. `stigdev.ledger.TaskLedger`
+keeps task/attempt state as a pure reduction over event-sourced leases: the
+lease event is the fencing token, expired leases are recovered as
+`interrupted`, and duplicate completions commit once. `stigdev.v1import`
+imports a v1 run directory without touching it and exports it back so
+`stigdev replay` can verify the result. Benchmark runs still use the v1 file
+store; replay v2 is open. See [event store v2](docs/event_store_v2.md) and
+ADR 0006.
+
 ## Current limitations
 
 - The sandbox (`stigdev/sandbox.py`) is process isolation only: separate
@@ -232,7 +245,8 @@ current paper. See `docs/adr/0005-agentic-engineering-os-scope.md` and
 ```
 stigdev/                  runtime package (store, sandbox, evaluator, policy,
                           provider, worker, runtime, replay, cli,
-                          executor, workspace, execution, testing)
+                          executor, workspace, execution, testing,
+                          eventstore, ledger, v1import)
 benchmarks/trendevobench/ fixture generator, versioned fixtures, seed artifact
 configs/conditions/       five matched-budget condition configs
 configs/experiments/      committed live-experiment base configs
