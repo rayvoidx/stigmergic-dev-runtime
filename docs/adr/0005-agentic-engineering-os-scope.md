@@ -167,3 +167,5 @@ Before the affected operational milestone, reviewers must decide:
 4. which actions require human approval by default;
 5. the concrete trigger that moves operational adapters into a separate
    control-plane repository.
+
+Decisions 1 and 2 are addressed by ADR 0006 (proposed 2026-09-20).

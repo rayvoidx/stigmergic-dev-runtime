@@ -3,8 +3,8 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-14 (stage 1 merged; stage 2 offline execution contracts
-implemented and verified offline).
+Last updated: 2026-09-20 (ADR 0006 durable event store proposed; no runtime
+change since stage 2).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -203,6 +203,14 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     and canonical promotion paths remain unchanged. Recovery terminalizes
     unknown outcomes only after the prior writer stops. Full suite: 135 passed;
     all 10 example stores replayed successfully. No external integration added.
+25. **ADR 0006 proposed (2026-09-20, design-only).** Resolves ADR 0005
+    deferred decisions 1–2 for M6: stdlib `sqlite3` WAL store with one writer
+    per store, envelope v2 (schema/event/causation/idempotency identity),
+    idempotent append and pointer compare-and-swap, event-sourced leases with
+    restart recovery, content-addressed tree checkpoints, read-only v1
+    compatibility plus a tested non-destructive importer, and store-boundary
+    redaction. M6 now precedes M5. No code, test, or experiment changed;
+    135 tests and all example replays still pass on `6dd99f7`.
 
 ## Known gaps / next actions (highest value first)
 
@@ -219,7 +227,7 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    event envelopes, make checkpoint/promotion transitions recoverable, compare
    full evidence and policy decisions during replay, and implement atomic
    budget reservation/reconciliation. Today `max_usd` is not enforced and a
-   token cap can overshoot by one provider call.
+   token cap can overshoot by one provider call. Design proposed in ADR 0006.
 4. **Review the verified offline contracts** in
    `feat/agent-executor-contract`. Production GitWorktreeBackend, OpenCode,
    Codex CLI, and Hermes remain separately scoped future tasks; supervision,
