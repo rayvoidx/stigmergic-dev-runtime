@@ -7,21 +7,21 @@ it.
 
 ## Context
 
-`docs/adr/YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27.md` §13 P0
-lists six additions to the SAEOS Media Foundry design: portfolio tables
+The private SAEOS Media Foundry strategy document v3 (2026-09-27; held in the
+private `saeos-private` repository, not here) lists in its §13 P0 six additions
+to that design: portfolio tables
 (`channel_plans`, `rights_assets`, `release_units`, `profit_snapshots`,
 `format_hypotheses`), a Rights Gate forced ahead of publish, a release-unit
 workflow, weekly publish caps with at most two channels in `scale`, revenue
 split into `estimated | paid | attributed | influenced`, and a pre-publish
 check (private upload, Content ID result, AI disclosure).
 
-Its §12 and `SAEOS_Media_Foundry_Integrated_Design_v1.md` §8 place the generic
+Its §12 and the companion Integrated Design v1 §8 place the generic
 `ChannelPlan`, `RightsManifest`, `ReleaseUnit` schemas, the quality/rights/AI
 disclosure evaluators, and the state machine in the public repository, and all
 real channel IDs, revenue, prompts, masters, and scoring weights in private
-storage. `SAEOS_Media_Foundry_Implementation_Blueprint_v2.md` §1 puts the
-control plane and media foundry in a private repository that does not exist
-yet.
+storage. Implementation Blueprint v2 §1 puts the control plane and media
+foundry in a private repository, since created as `saeos-private`.
 
 ## Decision
 

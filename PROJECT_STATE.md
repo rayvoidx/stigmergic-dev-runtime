@@ -68,7 +68,7 @@ The research runtime is **implemented and verified locally**:
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 396 passed (135 research + 65 kernel + 196 media/revenue/model, 2026-09-27)
+.venv/bin/python -m pytest                     # 396 passed (135 research + 65 kernel + 196 media)
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -292,9 +292,9 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     research runtime does not run under the scheduler yet. 200 passed.
 
 25. **Media portfolio contracts implemented offline (2026-09-27, ADR 0007
-    proposed, uncommitted).** Executing
-    `docs/adr/YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27.md` §13
-    P0 as the public, generic half: `stigdev/portfolio.py` holds
+    proposed).** Executing §13 P0 of the private SAEOS Media Foundry strategy
+    document v3 (held in `saeos-private`, not here) as the public, generic
+    half: `stigdev/portfolio.py` holds
     `ChannelPlan`, `RightsManifest`, `ReleaseUnit`, `ProfitSnapshot`,
     `FormatHypothesis`, `RevenueEvent` records, the §5.4 stage machine with
     the seven scale conditions and the two-`scale`-channel limit, fail-closed
@@ -308,10 +308,10 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     workflow execution, connectors, the private `saeos-*` repositories
     (Blueprint v2 §1) — none exist yet.
 
-26. **v3.1 amendment executed offline (2026-09-27, ADR 0008 proposed,
-    uncommitted).** `YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27
-    (1).md` (v3.1, "Organic Ecosystem Amendment") makes Signal Stories a
-    mandatory channel and ties every surface to one `concept_id` behind a
+26. **v3.1 amendment executed offline (2026-09-27, ADR 0008 proposed).**
+    The private strategy document v3.1 ("Organic Ecosystem Amendment") makes
+    Signal Stories a mandatory channel and ties every surface to one
+    `concept_id` behind a
     Truth Firewall. Added `stigdev/ecosystem.py`: `Concept`,
     `EvidenceBundle`, `CanonArtifact`, `PlatformDerivative`,
     `EcosystemEvent` (16 types), `AudienceSignal` (5 groups),
@@ -328,9 +328,9 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     untracked strategy copies. Not done: correction-task generation,
     connectors, HTTP API, private `saeos-ops-private`.
 
-27. **v3.2 amendment executed offline (2026-09-27, ADR 0009 proposed,
-    uncommitted).** `YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27
-    (2).md` (v3.2, "Revenue Intelligence Amendment") adds §5.15 and §11.2:
+27. **v3.2 amendment executed offline (2026-09-27, ADR 0009 proposed).**
+    The private strategy document v3.2 ("Revenue Intelligence Amendment")
+    adds §5.15 and §11.2:
     external revenue claims as graded evidence, policy snapshots with
     effective dates, pre-registered experiments, fifteen commerce events with
     an order state machine, and an isolated Commerce Lab. Added
@@ -356,8 +356,8 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     Watch fetch job, Commerce Lab publish worker, tables, connectors.
 
 28. **Capacity policy and Model Radar gate implemented offline (2026-09-27,
-    ADR 0010 proposed, uncommitted).** Operator target restated: a fully
-    autonomous 24/7 OS where plans arrive via a frontier model, channels and
+    ADR 0010 proposed).** Operator target restated: a fully autonomous 24/7
+    OS where plans arrive via a frontier model, channels and
     monetized services follow, and a separate agent keeps swapping local
     models; the operator supervises only. Applied the M5 Ultra capacity
     analysis as data, not prose: `PortfolioPolicy` (`DEFAULT_POLICY` =

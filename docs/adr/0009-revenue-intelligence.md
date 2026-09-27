@@ -6,9 +6,9 @@ path, CLI, or external integration depends on it.
 
 ## Context
 
-`docs/adr/YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27 (2).md`
-(v3.2, "Revenue Intelligence Amendment") extends v3.1 on five points that
-reach code:
+The private strategy document v3.2 ("Revenue Intelligence Amendment"; held in
+the private `saeos-private` repository, not here) extends v3.1 on five points
+that reach code:
 
 1. External revenue claims are graded evidence (A–D), normalised into a
    `RevenueClaim`, and never model inputs unless settled and complete

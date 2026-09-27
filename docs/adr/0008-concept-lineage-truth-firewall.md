@@ -6,9 +6,9 @@ path, CLI, or external integration depends on it.
 
 ## Context
 
-`docs/adr/YouTube_Portfolio_and_RAYV_Strategy_SAEOS_v3_2026-09-27 (1).md`
-(v3.1, "Organic Ecosystem Amendment") supersedes the v3 strategy on three
-points that reach code:
+The private strategy document v3.1 ("Organic Ecosystem Amendment"; held in the
+private `saeos-private` repository, not here) supersedes v3 on three points
+that reach code:
 
 1. Signal Stories becomes a mandatory public channel with an existence floor,
    minimum cadence, and a time-sensitivity SLA (§4.2, §5.6, §13 P0.4).
