@@ -8,8 +8,11 @@ from pathlib import Path
 
 import pytest
 
-from stigdev.model import CONDITIONS, IMPLEMENTED_CONDITIONS, RunConfig
+from stigdev.model import CONDITIONS, IMPLEMENTED_CONDITIONS, Budget, RunConfig
+from stigdev.replay import replay
 from stigdev.runtime import ConditionNotImplementedError, run
+from stigdev.store import RunStore
+from stigdev.worker import build_observation
 
 CONFIG_DIR = Path(__file__).parents[1] / "configs" / "conditions"
 
@@ -33,10 +36,14 @@ def test_condition_configs_parse_with_matched_budgets(condition: str):
     assert config.seed == reference.seed
 
 
-@pytest.mark.parametrize("condition", sorted(set(CONDITIONS) - set(IMPLEMENTED_CONDITIONS)))
-def test_unimplemented_conditions_fail_loudly(condition: str, tmp_path: Path):
-    with pytest.raises(ConditionNotImplementedError):
-        run(_load(condition), tmp_path)
+def test_an_unknown_condition_still_refuses_to_run(tmp_path: Path):
+    """All five are implemented now, so the fail-closed path is only reachable
+    through an unknown name; the refusal itself must not rot."""
+    from dataclasses import replace as _replace
+
+    with pytest.raises(ValueError):
+        run(_replace(_load("artifact_only"), condition="telepathy"), tmp_path)
+    assert issubclass(ConditionNotImplementedError, NotImplementedError)
 
 
 def test_artifact_only_condition_runs_from_config(tmp_path: Path):
@@ -125,3 +132,102 @@ def test_best_of_n_isolated_workers_and_selection(tmp_path: Path):
     for d in worker_dirs:
         report = replay(d)
         assert report["ok"], (d.name, report["divergences"])
+
+
+# --- full_communication and orchestrator (gap 2) ------------------------------
+
+
+def _cfg(condition: str, tmp_path: Path, **kw) -> RunConfig:
+    base = dict(
+        run_id=f"{condition}-run",
+        condition=condition,
+        seed=42,
+        budget=Budget(max_episodes=6, max_provider_calls=12, max_wall_seconds=120.0),
+    )
+    base.update(kw)
+    return RunConfig(**base)
+
+
+def _run(condition: str, tmp_path: Path, **kw):
+    config = _cfg(condition, tmp_path, **kw)
+    summary = run(config, tmp_path / condition)
+    return config, summary, RunStore.open(tmp_path / condition / config.run_id)
+
+
+def test_both_remaining_conditions_are_implemented():
+    assert set(CONDITIONS) == set(IMPLEMENTED_CONDITIONS)
+
+
+def test_full_communication_is_artifact_only_plus_a_logged_channel(tmp_path: Path):
+    _, summary, store = _run("full_communication", tmp_path)
+    broadcasts = store.events("message_broadcast")
+    assert broadcasts, "workers must leave a logged message trail"
+    assert [b["episode"] for b in broadcasts] == sorted(b["episode"] for b in broadcasts)
+    # the store medium is still there: this arm ADDS a channel, it does not replace one
+    assert summary["condition"] == "full_communication"
+    assert store.canonical() is not None
+
+
+def test_a_full_communication_worker_hears_the_previous_worker(tmp_path: Path):
+    config = _cfg("full_communication", tmp_path)
+    store = RunStore.create(tmp_path / "obs")
+    artifact = store.put_artifact("x = 1\n")
+    store.set_canonical(artifact, 0, 0.5)
+    channel = [{"episode": 0, "worker": "w0", "status": "rejected", "mutation": "m0", "score": 0.4}]
+    observation = build_observation(store, config, 1, None, channel)
+    assert observation["messages"] == channel
+    assert "failures" in observation, "full_communication keeps the stigmergic medium"
+    # strictly more context than the same worker without the channel
+    quiet = build_observation(store, config, 1)
+    assert len(json.dumps(observation, sort_keys=True)) > len(json.dumps(quiet, sort_keys=True))
+
+
+def test_the_offline_provider_cannot_measure_the_cost_half_of_h2(tmp_path: Path):
+    """The channel is strictly more context, but the deterministic offline
+    provider reports zero cost, so H2's token claim needs a live provider.
+    Pinned so nobody reads an offline matrix as evidence about cost."""
+    _, chatty, _ = _run("full_communication", tmp_path)
+    _, quiet, _ = _run("artifact_only", tmp_path)
+    assert chatty["cost"] == quiet["cost"] == {"input_tokens": 0, "output_tokens": 0, "usd": 0.0}
+
+
+def test_orchestrator_logs_every_delegation(tmp_path: Path):
+    _, summary, store = _run("orchestrator", tmp_path)
+    delegations = store.events("delegated")
+    assert delegations, "a central planner must log what it delegated"
+    assert all(d["directive"] for d in delegations)
+    assert [d["episode"] for d in delegations] == sorted(d["episode"] for d in delegations)
+    assert summary["condition"] == "orchestrator"
+
+
+def test_an_orchestrated_worker_sees_the_directive_instead_of_the_raw_medium(tmp_path: Path):
+    config = _cfg("orchestrator", tmp_path)
+    store = RunStore.create(tmp_path / "obs")
+    artifact = store.put_artifact("x = 1\n")
+    store.set_canonical(artifact, 0, 0.5)
+    observation = build_observation(store, config, 0, None, None, {"focus": "recency", "avoid": []})
+    assert observation["directive"] == {"focus": "recency", "avoid": []}
+    assert "failures" not in observation, "the planner distils the medium; the worker does not read it"
+
+
+def test_the_planner_spends_no_provider_call(tmp_path: Path):
+    # matched budgets: delegation must not buy the orchestrator arm extra inference
+    _, orchestrated, store = _run("orchestrator", tmp_path)
+    assert orchestrated["provider_calls"] == len(store.events("episode_started"))
+
+
+@pytest.mark.parametrize("condition", ["full_communication", "orchestrator"])
+def test_new_conditions_are_deterministic_and_replay_clean(condition: str, tmp_path: Path):
+    _, first, _ = _run(condition, tmp_path / "a")
+    _, second, _ = _run(condition, tmp_path / "b")
+    assert first["holdout_score"] == second["holdout_score"]
+    assert first["cost"] == second["cost"]
+    config = _cfg(condition, tmp_path)
+    report = replay(tmp_path / "a" / condition / config.run_id)
+    assert report["ok"], report
+
+
+@pytest.mark.parametrize("condition", ["full_communication", "orchestrator"])
+def test_new_conditions_respect_the_matched_budget(condition: str, tmp_path: Path):
+    _, summary, store = _run(condition, tmp_path, budget=Budget(max_episodes=2, max_provider_calls=4))
+    assert len(store.events("episode_started")) <= 2

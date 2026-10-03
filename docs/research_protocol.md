@@ -79,9 +79,15 @@ See `docs/experiments/2026-09-06-h5-2x2.md`.
 5. `orchestrator` — central planner delegating to workers, all delegation
    logged.
 
-Implementation status: conditions 1, 2, and 3 run today (4 and 5 are
-config-only). Configs for all five exist with identical budget blocks and are
-schema-tested. Note: with one sequential worker and no replacement, condition
+Implementation status: all five run (2026-09-29). Configs for all five exist
+with identical budget blocks and are schema-tested. Condition 4 adds a logged
+message channel on top of condition 3 rather than replacing the medium, so its
+observation is strictly larger. Condition 5's planner is rule-based and spends
+no provider call, which keeps budgets matched but means the arm measures
+centralised routing, not an LLM planner; a generative coordinator would need
+its own budget line. H2's cost half is not measurable offline: the
+deterministic provider reports zero tokens and zero USD, and a test pins that
+so no offline matrix is read as evidence about cost. Note: with one sequential worker and no replacement, condition
 1 and condition 3 are informationally equivalent by construction and produce
 identical offline results; they separate under worker replacement (RQ4),
 parallel workers, and live context limits — comparisons between them are only

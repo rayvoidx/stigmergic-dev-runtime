@@ -37,10 +37,11 @@ with worker capability in this setup.
    artifacts, append-only events, versioned evaluator and policy, promotion
    gate, replay/recovery; TrendEvoBench v1 mechanism tier and v2 discrimination
    tier with deterministic calibration probes.
-2. **Experimental framework (partially implemented):** five matched-budget
-   condition configs; `artifact_only`, `single_persistent`, and `best_of_n`
-   runners; replacement and failure-memory controls; matrix runner; pinned
-   manifests. `full_communication` and `orchestrator` remain config-only.
+2. **Experimental framework:** five matched-budget condition configs and all
+   five runners; replacement and failure-memory controls; matrix runner; pinned
+   manifests. `full_communication` and `orchestrator` were implemented
+   2026-09-29; no confirmatory data has been collected on either arm, and the
+   orchestrator's planner is rule-based by construction.
 3. **Evidence with explicit tiers:**
    - mechanism demonstrations for promotion/rejection, replay/recovery, and
      worker/provider replacement;
@@ -127,7 +128,8 @@ Registration and validity caveats must appear adjacent to the result:
 
 ## Blanks that block submission-level claims
 
-- Complete condition 4 and 5 implementations before five-condition claims.
+- Collect five-condition data: conditions 4 and 5 run but have no evidence
+  behind them, and H2's cost half needs a live provider.
 - Pre-register and run a second task family or third capability level for H5
   replication.
 - Define a formal equivalence margin before claiming strong-worker parity.

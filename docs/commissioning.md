@@ -128,3 +128,60 @@ machine rather than trusted:
   was pinned. Measure peak resident size with the real pipeline and lower them.
 
 Lower a ceiling when evidence says so. Raising one needs the same evidence.
+
+## The laptop bridge (2026-09-29, ADR 0014)
+
+Until the Mac Studio arrives, the MacBook Pro M4 carries unattended work. Two
+things decide what that can be.
+
+**What the laptop can ever host.** `MOBILE_M4` reserves 8 GB of 24, leaving
+16 GB usable against one Metal slot. Two of six resource classes fit:
+
+| Class | Memory | On the laptop |
+|---|---:|---|
+| `text_small` | 10 GB | yes |
+| `render_cpu` | 12 GB | yes |
+| `text_coder` | 28 GB | no |
+| `vision` | 30 GB | no |
+| `image_final` | 40 GB | no |
+| `video_heavy` | 72 GB | no |
+
+Local image generation, vision and video are impossible here, not slow. A
+worker started with one of those classes fails immediately rather than leasing
+a task it cannot run.
+
+**Where the reasoning comes from.** Claude Code runs behind `AgentExecutor`,
+not `Provider` — it is an agent process, not a model endpoint, so the
+local-first rule about commercial inference APIs is untouched. It runs on the
+operator's subscription and `stigdev/claudecode.py` keeps it there: every
+known billing-route variable is stripped before launch, a task that asks for
+one is refused, and reported usage is recorded with `usd = 0` because a
+subscription run moves no cash.
+
+Check the billing route before starting the service:
+
+```bash
+env | grep -E 'ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|CLAUDE_CODE_USE_' || echo "clean: subscription auth"
+claude --version
+```
+
+Drain the queue once, without installing anything:
+
+```bash
+.venv/bin/stigdev worker state/store --run-id <run-id> --once
+```
+
+Run it unattended:
+
+```bash
+mkdir -p state/logs
+sed -e "s|REPO_PATH|$PWD|g" -e "s|HOME_PATH|$HOME|g" -e "s|RUN_ID|<run-id>|g" \
+  deploy/launchd/dev.stigmergic.worker.plist > ~/Library/LaunchAgents/dev.stigmergic.worker.plist
+launchctl load ~/Library/LaunchAgents/dev.stigmergic.worker.plist
+tail -f state/logs/worker.err
+```
+
+The agent runs at `Background` QoS with `Nice 5` so the operator's own editor
+and interactive Claude Code session stay responsive, and `node.admit` stops it
+taking new work whenever memory pressure leaves green. Stop it with
+`launchctl unload`.

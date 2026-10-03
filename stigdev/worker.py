@@ -35,21 +35,61 @@ Prior failures are listed so you do not repeat them.
 _FENCE_RE = re.compile(r"```python\n(.*?)```", re.DOTALL)
 
 
+def plan_directive(store: RunStore, config: RunConfig, episode: int) -> dict[str, Any]:
+    """Central planner for the `orchestrator` arm: distil the store into an assignment.
+
+    Rule-based on purpose. An LLM planner would spend provider calls the other
+    arms do not have, so the budgets would stop being matched and the arm would
+    measure model capability rather than coordination structure. It also stays
+    artifact-agnostic: the planner routes mutation names it has seen and never
+    invents domain knowledge the runtime is not allowed to hold.
+
+    ponytail: rule-based planner, known ceiling — it can only forbid what has
+    already failed. Give the planner its own budget line if H2 ever needs a
+    generative coordinator.
+    """
+    canonical = store.canonical()
+    assert canonical is not None, "runtime must seed canonical state before episodes"
+    return {
+        "attempt": episode,
+        "avoid": sorted({f["mutation"] for f in store.failures() if f.get("mutation")}),
+        "beat_score": canonical["score"],
+        "episodes_remaining": config.budget.max_episodes - episode,
+    }
+
+
 def build_observation(
     store: RunStore,
     config: RunConfig,
     episode: int,
     private_history: list[dict[str, Any]] | None = None,
+    channel: list[dict[str, Any]] | None = None,
+    directive: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Bounded worker view.
+    """Bounded worker view. What differs between conditions is only this view.
 
     Stigmergic (private_history is None): failures come from the shared store —
     the medium left behind by earlier, now-gone workers.
     Persistent (private_history given): the worker sees only its own full
     trajectory (all statuses), never the store's failure records.
+    Full communication (channel given): the stigmergic medium *plus* what every
+    earlier worker said directly. Strictly more context, so strictly more tokens
+    — that difference is what H2 measures.
+    Orchestrated (directive given): the planner has already read the medium, so
+    the worker gets an assignment instead of the failure records.
     """
     canonical = store.canonical()
     assert canonical is not None, "runtime must seed canonical state before episodes"
+    if directive is not None:
+        return {
+            "episode": episode,
+            "canonical_hash": canonical["artifact_hash"],
+            "canonical_score": canonical["score"],
+            "canonical_generation": canonical["generation"],
+            "canonical_source": store.get_artifact(canonical["artifact_hash"]),
+            "directive": directive,
+            "budget": {"episodes_remaining": config.budget.max_episodes - episode},
+        }
     if private_history is None:
         failures = store.failures()[-MAX_OBSERVED_FAILURES:]
     else:
@@ -74,6 +114,9 @@ def build_observation(
         ],
         "budget": {"episodes_remaining": config.budget.max_episodes - episode},
     }
+    if channel is not None:
+        # every earlier worker's own report, on top of the medium they also left
+        observation["messages"] = list(channel)
     if private_history is not None:
         observation["own_history"] = [
             {"status": h["status"], "mutation": h.get("mutation"), "score": h.get("score")}
@@ -117,8 +160,13 @@ def run_episode(
     policy: StrictImprovementPolicy,
     episode: int,
     private_history: list[dict[str, Any]] | None = None,
+    channel: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    observation = build_observation(store, config, episode, private_history)
+    directive = None
+    if config.condition == "orchestrator":
+        directive = plan_directive(store, config, episode)
+        store.append_event("delegated", episode=episode, directive=directive)
+    observation = build_observation(store, config, episode, private_history, channel, directive)
     prompt = PROMPT_TEMPLATE.format(
         obs_begin=OBS_BEGIN,
         observation_json=json.dumps(observation, sort_keys=True),
@@ -147,6 +195,7 @@ def run_episode(
     source = extract_code_fence(response.text)
     if source is None:
         store.append_event("no_proposal", episode=episode, response_text=response.text[:500], **cost)
+        _broadcast(store, channel, episode, "no_proposal", None, None)
         return {"status": "no_proposal", "cost": cost}
 
     candidate_hash = store.put_artifact(source)
@@ -212,4 +261,27 @@ def run_episode(
         private_history.append(
             {k: outcome[k] for k in ("status", "artifact_hash", "mutation", "score", "reason")}
         )
+    _broadcast(store, channel, episode, status, mutation, evidence.score)
     return outcome
+
+
+def _broadcast(
+    store: RunStore,
+    channel: list[dict[str, Any]] | None,
+    episode: int,
+    status: str,
+    mutation: str | None,
+    score: float | None,
+) -> None:
+    """One ephemeral worker telling the next one directly, and on the record."""
+    if channel is None:
+        return
+    message = {
+        "episode": episode,
+        "worker": f"w{episode}",
+        "status": status,
+        "mutation": mutation,
+        "score": score,
+    }
+    channel.append(message)
+    store.append_event("message_broadcast", **message)

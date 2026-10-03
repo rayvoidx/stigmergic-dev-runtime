@@ -1,7 +1,8 @@
 # ADR 0007: Media portfolio, rights, and release contracts (public, generic)
 
 Status: proposed (2026-09-27), amended the same day by ADR 0008 (`pause` stage,
-existence floor, SLA, `concept_id` links). Implemented offline in
+existence floor, SLA, `concept_id` links) and on 2026-09-29 by the external
+hypothesis note below. Implemented offline in
 `stigdev/portfolio.py` pending user review; no runtime path, CLI, or external integration depends on
 it.
 
@@ -100,6 +101,23 @@ YouTube video (v3 §8 single-CTA table, Blueprint §14.2 attribution chain).
 Today the module covers only the money end of that loop (`attributed`
 revenue with a `source`); CTA/product-link records wait for the operator's
 follow-up analysis.
+
+## Amendment 2026-09-29: externally sourced hypotheses
+
+`FormatHypothesis` gained two optional, co-required fields, `source_url` and
+`evidence_grade`, plus an `external` property. An idea taken from outside is
+registered as something to measure, never as a fact, and cannot be recorded
+without saying where it came from and how good that source is.
+
+`EVIDENCE_GRADES` moved from `revenue.py` to `portfolio.py` and is imported
+back, so one vocabulary grades both an external revenue claim and an external
+mechanism claim. `revenue` already depends on `portfolio`, so the constant had
+to move down rather than be duplicated. No caller changed: both fields default
+to `None` and `revenue.EVIDENCE_GRADES` keeps its name and value.
+
+There is still no `classify_claim` equivalent for mechanism claims — a grade
+here records provenance, it does not decide what the claim may be used for.
+First registration: `docs/experiments/2026-09-29-external-qualified-view-ratio.md`.
 
 ## Deferred
 

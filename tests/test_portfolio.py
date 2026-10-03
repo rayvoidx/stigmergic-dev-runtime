@@ -516,3 +516,50 @@ def test_advance_to_scale_uses_policy_max_scale():
     loose = PortfolioPolicy(max_scale=3, max_active=12, max_pilot=4, max_review_hours_per_week=15.0)
     others = [plan(channel_id=f"scale-{i}", stage="scale") for i in range(2)]
     assert advance_stage(plan(), "scale", others, scale_evidence(), loose).stage == "scale"
+
+
+# --- externally sourced hypotheses (2026-09-29) --------------------------------
+
+
+def external_hypothesis(**kw) -> FormatHypothesis:
+    base = dict(
+        hypothesis_id="ext-qualified-view-ratio",
+        channel_id="synthetic-stories",
+        variable="qualified_view_ratio",
+        primary_metric="qualified_views_over_raw_views",
+        cohort_size=0,
+        started_at=NOW,
+        source_url="https://example.invalid/post/1",
+        evidence_grade="C",
+    )
+    base.update(kw)
+    return FormatHypothesis(**base)
+
+
+def test_an_externally_sourced_hypothesis_carries_its_source_and_grade():
+    claim = external_hypothesis()
+    assert claim.status == "open" and claim.external
+    assert FormatHypothesis.from_dict(claim.to_dict()) == claim
+    own = FormatHypothesis("h1", "c", "hook", "retention_30s", 10, NOW)
+    assert not own.external and own.source_url is None
+
+
+@pytest.mark.parametrize(
+    "kw",
+    [
+        dict(evidence_grade=None),
+        dict(source_url=None),
+        dict(evidence_grade="E"),
+        dict(source_url=" "),
+    ],
+)
+def test_a_source_without_a_grade_is_refused_and_so_is_the_reverse(kw):
+    with pytest.raises(PortfolioError):
+        external_hypothesis(**kw)
+
+
+def test_the_grade_vocabulary_is_shared_with_the_revenue_claim_registry():
+    from stigdev import revenue
+    from stigdev.portfolio import EVIDENCE_GRADES
+
+    assert revenue.EVIDENCE_GRADES is EVIDENCE_GRADES

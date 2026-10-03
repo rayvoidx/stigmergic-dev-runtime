@@ -7,6 +7,7 @@ import argparse
 import json
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 from .evaluator import TrendSelectEvaluator
@@ -19,6 +20,40 @@ from .store import RunStore
 
 def _print(obj: object) -> None:
     print(json.dumps(obj, indent=2, sort_keys=True))
+
+
+def _claude_code(*, model: str | None):
+    from .claudecode import ClaudeCodeExecutor
+
+    return ClaudeCodeExecutor(model=model)
+
+
+# Agent CLIs, not model endpoints. Each runs under the operator's own login;
+# none of them takes an API key from this process.
+EXECUTORS = {"claude-code": _claude_code}
+
+
+def read_host_facts():
+    """Measure the machine, or refuse to guess.
+
+    `scripts/commission_node.py` is the macOS measurement half. If it cannot be
+    imported the worker must not invent a calm machine, so this reports red
+    pressure and no disk, which admission treats as "take no new work".
+    """
+    from .node import HostFacts
+
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+        import commission_node  # type: ignore[import-not-found]
+
+        return HostFacts(
+            memory_pressure=commission_node.memory_pressure(),
+            swap_growth_mb_per_min=commission_node.swap_growth_mb_per_min(),
+            free_disk_gb=commission_node.free_disk_gb(),
+            thermal_throttled=commission_node.thermal_throttled(),
+        )
+    except Exception:  # noqa: BLE001 - an unmeasurable host is a stopped worker, not a crash
+        return HostFacts(memory_pressure="red", free_disk_gb=0.0)
 
 
 def cmd_demo(args: argparse.Namespace) -> int:
@@ -84,6 +119,47 @@ def cmd_matrix(args: argparse.Namespace) -> int:
     print(
         f"\nmatrix file: {Path(args.runs_root) / (args.label + '-matrix.json')}", file=sys.stderr
     )
+    return 0
+
+
+def cmd_worker(args: argparse.Namespace) -> int:
+    """Start the unattended loop. `claude-code` runs on the operator's
+    subscription: `stigdev.claudecode` strips every known billing-route
+    variable and refuses any request that sets one."""
+    import os
+
+    from .claudecode import ClaudeCodeExecutor
+    from .eventstore import SqliteEventStore
+    from .node import PROFILES, RESOURCE_CLASSES
+    from .scheduler import Budget, Scheduler
+    from .workerd import WorkerLoop
+
+    store = SqliteEventStore.open(Path(args.store_root))
+    profile = PROFILES[args.node]
+    resource_class = RESOURCE_CLASSES[args.resource_class]
+    executor = EXECUTORS[args.executor](model=args.model)
+    scheduler = Scheduler(
+        store,
+        run_id=args.run_id,
+        budget=Budget(max_concurrency=1, max_usd=0.0),  # no paid work on this path
+        started_at=time.time(),
+    )
+    loop = WorkerLoop(
+        scheduler=scheduler,
+        executor=executor,
+        holder=args.holder or f"{profile.node_id}/{os.getpid()}",
+        profile=profile,
+        resource_class=resource_class,
+        host_facts=read_host_facts,
+        poll_seconds=args.poll_seconds,
+    )
+    if args.once:
+        _print({"ticks": loop.run_until_idle(max_ticks=args.max_ticks)})
+        return 0
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        return 0
     return 0
 
 
@@ -158,6 +234,24 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("lineage", help="print lineage, failures, and canonical state")
     p.add_argument("run_dir")
     p.set_defaults(func=cmd_lineage)
+
+    p = sub.add_parser("worker", help="run the unattended worker loop against an event store")
+    p.add_argument("store_root", help="event store root directory")
+    p.add_argument("--run-id", required=True)
+    p.add_argument(
+        "--executor",
+        default="claude-code",
+        choices=sorted(EXECUTORS),
+        help="claude-code runs the CLI on the operator's subscription; never an API key",
+    )
+    p.add_argument("--model", default=None, help="model alias passed to the agent CLI")
+    p.add_argument("--node", default="mobile-m4", help="node profile id for admission")
+    p.add_argument("--resource-class", default="text_small")
+    p.add_argument("--holder", default=None, help="lease holder id (default: <node>/<pid>)")
+    p.add_argument("--poll-seconds", type=float, default=5.0)
+    p.add_argument("--once", action="store_true", help="drain what is ready, then exit")
+    p.add_argument("--max-ticks", type=int, default=1000)
+    p.set_defaults(func=cmd_worker)
 
     args = parser.parse_args(argv)
     return args.func(args)

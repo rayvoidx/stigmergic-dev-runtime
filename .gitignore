@@ -4,3 +4,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 runs/
+state/
+.DS_Store

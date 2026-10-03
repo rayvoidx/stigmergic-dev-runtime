@@ -139,8 +139,8 @@ silently falling back:
 | `single_persistent` | **implemented** — one worker, private full-trajectory memory, never reads the store's failure records |
 | `best_of_n` | **implemented** — `n_workers` isolated stores, budget split n ways, best final artifact selected (logged as a promotion) |
 | `artifact_only` (stigmergic) | **implemented** — ephemeral workers, coordination only through the shared store |
-| `full_communication` | config only |
-| `orchestrator` | config only |
+| `full_communication` | **implemented** — `artifact_only` plus a logged inter-worker message channel; strictly more context per episode |
+| `orchestrator` | **implemented** — a rule-based central planner delegates a logged assignment per episode and the worker reads it instead of the failure records |
 
 Caveat: with a single sequential offline worker, `single_persistent` and
 `artifact_only` carry the same information and produce identical results by
@@ -172,8 +172,9 @@ claim:
   gemma3 extension arm was fully novel, and model is confounded with Ollama
   version.
 
-H1–H4 remain unconfirmed. H2 cannot be tested until `full_communication` is
-implemented. See `docs/experiments/` and
+H1–H4 remain unconfirmed. All five conditions now run, so H2 is testable in
+principle, but only half of it: the deterministic offline provider reports zero
+cost, so the token-cost side of H2 needs a live provider. See `docs/experiments/` and
 `docs/experiments/data/h5-2x2-n20.json` for the committed records.
 
 ## Offline agent execution contracts

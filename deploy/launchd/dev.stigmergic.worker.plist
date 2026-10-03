@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The unattended worker for the laptop bridge (ADR 0014).
+
+  Runs `stigdev worker`: recover expired leases, ask the machine whether it is
+  calm, take one task, hand it to the agent, record the outcome. It restarts
+  itself if it dies and stops taking work when the machine is hot.
+
+  Billing: the `claude-code` executor runs the CLI on the operator's own
+  subscription. `stigdev.claudecode` strips every known billing-route variable
+  before launching, and refuses outright if a task asks for one, so this
+  service cannot silently become metered API spend. Do NOT add an
+  ANTHROPIC_API_KEY to EnvironmentVariables below — the executor would drop it
+  anyway, but putting it there signals the wrong intent to the next reader.
+
+  Install for the operator's own account, not root:
+    mkdir -p REPO_PATH/state/logs
+    cp deploy/launchd/dev.stigmergic.worker.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/dev.stigmergic.worker.plist
+
+  Stop it:
+    launchctl unload ~/Library/LaunchAgents/dev.stigmergic.worker.plist
+
+  Replace REPO_PATH, HOME_PATH and RUN_ID before loading. The laptop profile
+  admits only `text_small` and `render_cpu`; asking for a bigger class fails at
+  startup rather than after a task has been leased.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.stigmergic.worker</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>REPO_PATH/.venv/bin/stigdev</string>
+        <string>worker</string>
+        <string>REPO_PATH/state/store</string>
+        <string>--run-id</string>
+        <string>RUN_ID</string>
+        <string>--executor</string>
+        <string>claude-code</string>
+        <string>--node</string>
+        <string>mobile-m4</string>
+        <string>--resource-class</string>
+        <string>text_small</string>
+        <string>--poll-seconds</string>
+        <string>15</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>REPO_PATH</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- launchd gives an agent a minimal PATH; the CLI lives in ~/.local/bin. -->
+        <key>PATH</key>
+        <string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:HOME_PATH/.local/bin</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>REPO_PATH/state/logs/worker.log</string>
+    <key>StandardErrorPath</key>
+    <string>REPO_PATH/state/logs/worker.err</string>
+
+    <!-- Background keeps it off the interactive QoS tier: the operator's own
+         Claude Code session and editor stay responsive while this runs. -->
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>LowPriorityIO</key>
+    <true/>
+    <key>Nice</key>
+    <integer>5</integer>
+</dict>
+</plist>

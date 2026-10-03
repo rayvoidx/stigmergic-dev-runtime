@@ -35,6 +35,12 @@ EXCLUSIVITIES = ("exclusive", "non_exclusive", "none")
 DELIVERY_STATES = ("pending", "delivered")
 SNAPSHOT_WINDOWS = ("1h", "6h", "24h", "3d", "7d", "28d", "90d")
 HYPOTHESIS_STATES = ("open", "supported", "rejected", "inconclusive")
+# Evidence grading lives here, not in `revenue`, because both an external revenue
+# claim and an external mechanism claim are graded the same way and `revenue`
+# already depends on this module. A: platform documentation or a settlement
+# ledger. B: structure visible in a public artifact. C: someone's own assertion.
+# D: a title, a comment, or a second-hand summary.
+EVIDENCE_GRADES = ("A", "B", "C", "D")
 # v3.2 §11.2: one row per revenue item at its current status. claimed = someone else's number,
 # estimated = platform screen, attributed = sales analysis only, finalized = contribution margin,
 # paid = owner cash, influenced = side metric. Only finalized/paid ever reach gross.
@@ -298,6 +304,10 @@ class FormatHypothesis:
     ended_at: str | None = None
     status: str = "open"
     concept_id: str | None = None
+    # An idea taken from outside is registered as something to measure, never as
+    # a fact, so it carries where it came from and how good that source is.
+    source_url: str | None = None
+    evidence_grade: str | None = None
 
     def __post_init__(self) -> None:
         _require(valid_identifier(self.hypothesis_id), "invalid hypothesis_id")
@@ -308,6 +318,17 @@ class FormatHypothesis:
         if self.ended_at is not None:
             _timestamp(self.ended_at)
         _require(self.status in HYPOTHESIS_STATES, f"unknown status {self.status!r}")
+        _require(
+            (self.source_url is None) == (self.evidence_grade is None),
+            "an external hypothesis needs both source_url and evidence_grade",
+        )
+        if self.source_url is not None:
+            _require(bool(self.source_url.strip()), "source_url missing")
+            _require(self.evidence_grade in EVIDENCE_GRADES, f"unknown evidence_grade {self.evidence_grade!r}")
+
+    @property
+    def external(self) -> bool:
+        return self.source_url is not None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

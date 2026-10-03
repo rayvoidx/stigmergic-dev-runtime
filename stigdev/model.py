@@ -17,7 +17,7 @@ CONDITIONS = (
     "orchestrator",
 )
 # Implemented conditions; full_communication and orchestrator remain config-only.
-IMPLEMENTED_CONDITIONS = ("single_persistent", "best_of_n", "artifact_only")
+IMPLEMENTED_CONDITIONS = CONDITIONS
 
 
 def content_hash(text: str) -> str:

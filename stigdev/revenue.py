@@ -15,10 +15,11 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any, Iterable
 
-from .portfolio import GateDecision
+# EVIDENCE_GRADES lives in `portfolio`: an external revenue claim and an external
+# mechanism claim (a registered FormatHypothesis) are graded the same way.
+from .portfolio import EVIDENCE_GRADES, GateDecision
 from .workspace import valid_identifier
 
-EVIDENCE_GRADES = ("A", "B", "C", "D")
 # v3.2 §5.15.1 table: what each grade may be used for. Ordered strongest -> weakest.
 CLAIM_DECISIONS = ("policy_rule", "hypothesis", "sandbox_only", "observe_only")
 GRADE_DECISION: dict[str, str] = dict(zip(EVIDENCE_GRADES, CLAIM_DECISIONS))

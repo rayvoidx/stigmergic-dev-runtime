@@ -20,6 +20,9 @@ from .eventstore import Event, SqliteEventStore
 from .ledger import Lease, TaskLedger, reduce_tasks
 
 DIMENSIONS = ("calls", "tokens", "usd", "wall_seconds", "workspaces")
+# Where a submitter's work spec lives inside the task payload, namespaced so it
+# can never shadow the scheduling fields.
+WORK_KEY = "work"
 RETRYABLE = ("failed", "timed_out", "interrupted")
 
 
@@ -208,6 +211,7 @@ class Scheduler:
         depends_on: Iterable[str] = (),
         max_attempts: int = 1,
         reservation: Reservation = Reservation(),
+        payload: dict[str, Any] | None = None,
     ) -> Event:
         depends_on = tuple(depends_on)
         if max_attempts < 1:
@@ -220,14 +224,15 @@ class Scheduler:
             cap = self.budget.cap(dim)
             if cap is not None and getattr(reservation, dim) > cap:
                 raise SchedulerError(f"reservation exceeds budget for {dim}: {getattr(reservation, dim)} > {cap}")
-        return self.ledger.submit(
-            task_id,
-            payload={
-                "depends_on": list(depends_on),
-                "max_attempts": int(max_attempts),
-                "reservation": reservation.to_dict(),
-            },
-        )
+        body: dict[str, Any] = {
+            "depends_on": list(depends_on),
+            "max_attempts": int(max_attempts),
+            "reservation": reservation.to_dict(),
+        }
+        if payload is not None:
+            # Namespaced so a work spec can never shadow the scheduling fields.
+            body[WORK_KEY] = payload
+        return self.ledger.submit(task_id, payload=body)
 
     def acquire_next(self, holder: str, *, now: float) -> Lease | None:
         """Lease the head ready task if its reservation fits; None when nothing can start now."""

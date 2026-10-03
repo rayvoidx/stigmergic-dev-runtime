@@ -9,9 +9,13 @@ Implemented conditions:
   best_of_n          n_workers fully isolated stores (nothing shared), each
                      with budget/n; the best final canonical is selected into
                      the parent store as a logged promotion.
-
-full_communication and orchestrator are representable in RunConfig and refuse
-to run rather than silently falling back.
+  full_communication artifact_only plus a logged inter-worker message channel:
+                     strictly more context per episode, so strictly more tokens.
+                     H2 measures what removing that channel costs.
+  orchestrator       a rule-based central planner reads the store and delegates
+                     an assignment per episode (logged); the worker sees the
+                     assignment instead of the failure records. The planner
+                     spends no provider call, so budgets stay matched.
 """
 
 from __future__ import annotations
@@ -163,6 +167,12 @@ def _run_sequential(
     private_history: list[dict[str, Any]] | None = (
         [] if config.condition == "single_persistent" else None
     )
+    # full_communication: the stigmergic medium stays, and workers additionally
+    # speak to each other. Episodes are the workers here — each one is ephemeral,
+    # so the channel is what lets worker k+1 hear worker k directly.
+    channel: list[dict[str, Any]] | None = (
+        [] if config.condition == "full_communication" else None
+    )
 
     start = time.monotonic()
     provider_calls = 0
@@ -189,7 +199,7 @@ def _run_sequential(
                     provider=asdict(config.replacement_provider),
                 )
         outcome = run_episode(
-            store, config, provider, evaluator, policy, episode, private_history
+            store, config, provider, evaluator, policy, episode, private_history, channel
         )
         provider_calls += 1
         for key in ("input_tokens", "output_tokens", "usd"):

@@ -3,11 +3,11 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-27 (M6 event store, M5 GitWorktreeBackend and M7
+Last updated: 2026-09-29 (M6 event store, M5 GitWorktreeBackend and M7
 scheduler merged to `main` via PRs #3-#7 with ADR 0006 accepted; media
 portfolio, concept lineage/Truth Firewall, revenue intelligence, model radar
-and portfolio policy contracts added on top, ADR 0007/0008/0009/0010
-proposed).
+and portfolio policy, channel lifecycle governance, node profiles and the
+monthly capacity envelope added on top, ADR 0007-0013 proposed).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -23,17 +23,18 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 200 pytest tests passing: 55 research, 80 execution-contract, 30
-  event-store/ledger/v1-bridge, 14 replay-v2, 10 Git worktree, and 11
-  scheduler tests.
+- 596 pytest tests passing (2026-09-29): 200 research and kernel tests plus
+  the media, governance, node, and capacity contracts added since.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
 - Committed deterministic and local-model examples in `examples/`.
-- Five matched-budget condition configs. `artifact_only`,
-  `single_persistent`, and `best_of_n` are implemented;
-  `full_communication` and `orchestrator` raise
-  `ConditionNotImplementedError` with no silent fallback.
+- Five matched-budget condition configs, all five implemented as of
+  2026-09-29 (decision #39). `full_communication` adds a logged inter-worker
+  message channel on top of `artifact_only`; `orchestrator` delegates a logged
+  assignment from a rule-based planner that spends no provider call. Neither
+  new arm has evidence behind it yet. An unknown condition name still refuses
+  to run with no silent fallback.
 - A conditions × seeds matrix runner and committed live-model evidence:
   two 3×5 pilots, two n=5 medium ablations, an exploratory gpt-oss n=20
   extension, and the registered/partially-confirmatory H5 2×2 (80 runs).
@@ -64,11 +65,11 @@ The research runtime is **implemented and verified locally**:
   restart from the store. `max_usd` defaults to zero and is checked before
   any lease. See `docs/scheduler.md`.
 
-## Verification commands (2026-09-20)
+## Verification commands (2026-09-29)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 396 passed (135 research + 65 kernel + 196 media)
+.venv/bin/python -m pytest                     # 596 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -431,6 +432,146 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     nothing enforced it; the remaining overstatements in that document were
     corrected rather than left flattering.
 
+37. **Monthly capacity envelope implemented offline (2026-09-29, ADR 0013
+    proposed).** ADR 0012 answers "may this job start now"; nothing answered
+    "does a month of this publish plan fit". Two gates were taking that on
+    faith: `lifecycle.ScaleEvidence.capacity_available` (a bare bool) and
+    `portfolio.PortfolioEvidence.review_hours_per_week` (a caller-measured
+    number). `stigdev/capacity.py` now computes both from a plan:
+    `ArtifactCost`/`ChannelDemand`/`CapacityBudget`, `budget_from` (504 GPU
+    hours at 70% of a month; memory ceiling = min of the ADR 0012 reserve and
+    the utilisation share), `capacity_report`/`capacity_gate` (GPU hours,
+    review hours, retention-scaled working set, every deficit at once),
+    `months_until_archive_full`, `shorts_pool_floor` (threshold and effective
+    date read from a `revenue.PolicySnapshot`, never hardcoded), and
+    `project_revenue`, which emits `estimated` rows so ADR 0009's
+    `gross_revenue` rule structurally prevents a sensitivity calculation from
+    being counted as money. Shipped `PLANNING_COSTS` are the analysis's
+    assumptions, not measurements, and tests pin what they imply: 10 channels
+    sit inside the 120-180 Shorts / 12-24 long / 60-100 review-hour envelope;
+    at 12 channels the GPU still has headroom while review hours break the
+    15 h/week cap; a 14-day cleanup is what keeps the working set on a 1TB
+    disk. 33 tests, full suite 547, sample replay ok. Conflicts recorded in
+    ADR 0013: the 76GB-vs-67.2GB memory ceiling, channel count capped in two
+    places, the analysis's absolute-15 ceiling deliberately not encoded, music
+    derivatives outside `portfolio.FORMATS`, and revenue bands left out as
+    forecasts. Not wired into any gate yet.
+
+38. **External hypotheses can be registered with their provenance
+    (2026-09-29, amends ADR 0007).** An operator-supplied X thread claimed
+    qualified views are about 45% of nominal views. Registering it exposed a
+    hole: `RevenueClaim` grades external *money* claims, but an external
+    *mechanism* claim had nowhere to keep its source or grade, so recording it
+    would have meant recording a number without the grade the repository's own
+    rule demands. `FormatHypothesis` gained co-required `source_url` and
+    `evidence_grade` plus an `external` property, and `EVIDENCE_GRADES` moved
+    from `revenue.py` down to `portfolio.py` (imported back) so one vocabulary
+    grades both kinds of claim — `revenue` already depends on `portfolio`, so
+    duplicating it was the only alternative. Both fields default to `None`; no
+    caller changed. The claim itself is registered as grade C, status open, in
+    `docs/experiments/2026-09-29-external-qualified-view-ratio.md`, with the
+    source quoted from screenshots because X returns `HTTP 402` to `WebFetch`.
+    Recorded there and not acted on: 0.45 must not become a constant, and
+    `capacity.SHORTS_POOL_SHARE` is already 0.45 meaning something unrelated.
+    6 tests, full suite 553, sample replay ok.
+
+39. **The condition matrix is complete (2026-09-29, closes gap 2).**
+    `full_communication` and `orchestrator` were config-only since the first
+    build. Both now run, following the registered protocol wording rather than
+    a convenient reading of it. `full_communication` is condition 3 *plus* a
+    logged inter-worker message channel: the stigmergic medium stays and each
+    ephemeral worker additionally hears what every earlier worker said, so its
+    observation is strictly larger — that difference is what H2 prices.
+    `orchestrator` runs a rule-based planner (`worker.plan_directive`) that
+    reads the store, logs a `delegated` assignment per episode, and hands the
+    worker that assignment instead of the failure records. The planner spends
+    no provider call, so budgets stay matched; the cost is that the arm
+    measures centralised routing, not an LLM planner, and that ceiling is
+    recorded in the code and the protocol. New events `message_broadcast` and
+    `delegated` replay clean. `artifact_only` is untouched: both new
+    parameters default to `None`, and the seed-42 demo invariants still hold.
+    **Honest limit found while testing:** H2's token-cost half is not
+    measurable offline, because the deterministic provider reports zero cost.
+    A test pins that equality so no offline matrix is misread as cost
+    evidence; the claim needs a live provider. The now-dead
+    "unimplemented conditions fail loudly" parametrisation was replaced with
+    a test of the live refusal path (an unknown condition name).
+    Also closed the first half of gap 11: `capacity.capacity_available`
+    derives `lifecycle.ScaleEvidence.capacity_available` from a plan, with a
+    test showing an over-committed 12-channel portfolio cannot scale another
+    channel. It stays a function, not a record change, because every other
+    field on that evidence record is caller-measured by design.
+    Full suite 565, sample replay ok. README, `docs/research_protocol.md`,
+    and `docs/paper_outline.md` no longer claim the two arms are config-only.
+
+40. **The laptop bridge runs unattended (2026-09-29, ADR 0014 proposed;
+    closes gap 10's first item).** The Mac Studio is about seven weeks out, so
+    24/7 has to happen on the M4. Two pieces were missing and both now exist.
+    `stigdev/workerd.py` is the first production caller `Scheduler` and
+    `TaskLedger` ever had: one tick is recover, admit, acquire, execute,
+    finish. Admission runs *before* the lease so a hot laptop leaves work
+    `pending` instead of stranding it `leased`, and every exit path finishes —
+    an adapter that raises is a failed attempt, never a worker holding a lease
+    the ledger cannot see. `stigdev/claudecode.py` puts Claude Code behind
+    `AgentExecutor`, where ADR 0005 says a coding-agent CLI belongs, not behind
+    `Provider`. The operator's requirement was that this stay off the API, and
+    it is enforced twice: `BILLING_ROUTE_VARS` (seven variables, Claude Code
+    2.1.261) is stripped from the subprocess environment and a request that
+    *sets* one is refused before launch; and `ExecutionUsage.usd` is pinned to
+    zero, because the CLI's `total_cost_usd` is an API-equivalent estimate and
+    recording it would tell every budget that cash moved when none did.
+    Verified on this machine: `claude` 2.1.261 at `~/.local/bin`, no
+    `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` set. Added `stigdev worker`
+    and a launchd agent at `Background` QoS with `Nice 5`.
+    **The honest ceiling:** `MOBILE_M4` leaves 16 GB usable, so of six
+    resource classes only `text_small` (10 GB) and `render_cpu` (12 GB) can
+    ever run there. `text_coder`, `vision`, `image_final` and `video_heavy`
+    are impossible on this machine, not merely slow — local image, vision and
+    video work waits for the Studio, and a worker asking for one of those
+    classes fails at construction. Concurrency stays 1. 31 tests, full suite
+    596, sample replay ok. Recorded in ADR 0014 and not resolved: the billing
+    list is a blocklist pinned to one CLI version, nothing proves a valid
+    subscription positively, and no workspace backend is wired in yet.
+
+41. **Model choice follows public rankings, bounded by memory (2026-09-29,
+    ADR 0015 proposed).** `node.py` knew what a machine holds and knew nothing
+    about models; `modelradar.py` promoted on measurement and knew nothing
+    about where a candidate came from. `stigdev/modelfit.py` joins them:
+    `ModelCandidate` carries a rank, its source, a licence state and an
+    evidence grade that **cannot be A** (grade A is reserved for a benchmark
+    this repository ran), `estimated_memory_gb` sizes it from a deliberately
+    generous table, `fits` requires the estimate inside both the resource
+    class budget and the node, and `shortlist` returns what fits in rank
+    order — commercial licences only by default. `to_snapshot` hands a
+    candidate to Model Radar with the rank stripped, so a leaderboard can pick
+    what to *try* and never what to run. `scripts/fetch_model_rankings.py` is
+    the networked half, kept out of `stigdev/` like `commission_node.py`.
+    Verified live on 2026-09-29 against the Hugging Face API with
+    `--node mobile-m4 --class text_small`: 39 considered, shortlist led by
+    `Qwen/Qwen3-0.6B` (1.86 GB) and `Qwen/Qwen3-8B` (6.3 GB), both Apache-2.0,
+    all under the 10 GB class budget. 24 tests, full suite 620, replay ok.
+    Recorded and not resolved: downloads are popularity, not quality; the
+    sizing table is a guess until a benchmark contradicts it; parameter counts
+    fall back to name parsing; the licence allowlist is conservative and drops
+    real candidates; and nothing yet submits benchmark tasks for a shortlist.
+    Also drafted `docs/archive-channel-launch.md`: name candidates for the
+    Archive lane (recommendation 밤의 사관, with 야사담 for the unofficial-history
+    segment), its audience contract, the `ChannelPlan` to register, and the
+    cadence checked against ADR 0013. Creating the account needs the
+    operator's Google sign-in and is not automated here.
+
+42. **Downstream publication boundary clarified (2026-09-30).** The operator
+    requested daytime laptop uploads and public scheduling at least 24 hours
+    after upload completion, with quantity following finished assets (initial
+    ceiling five/day). This supersedes the older weekly cadence in the Archive
+    launch proposal for that deployment. Implementation and account material
+    stay in the private operations layer; no public runtime code was changed
+    for this request. See `docs/publication_boundary.md`. Channel creation,
+    OAuth consent and live publication were not completed at this handoff.
+    Local verification against the current working tree: 620 public tests;
+    all 10 committed example stores replay clean (56 evaluations). These are
+    correctness checks, not model or publication-performance evidence.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
@@ -438,10 +579,12 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    partially confirmatory, limited to one benchmark/model pair, and model is
    confounded with Ollama version. Pre-register the replication and any
    equivalence margin before data collection.
-2. **Complete the experimental condition matrix** — implement
-   `orchestrator` and `full_communication` with logged, matched-budget
-   treatment semantics. H2 is not testable until the message-channel arm
-   exists; H1–H4 still lack confirmatory evidence.
+2. **Collect data on the completed condition matrix** — all five arms run as
+   of 2026-09-29 (decision #39), but `full_communication` and `orchestrator`
+   have zero evidence behind them. H1–H4 still lack confirmatory evidence, and
+   H2's cost half needs a live provider because the offline one reports zero
+   tokens. The orchestrator arm's planner is rule-based; a generative
+   coordinator would need its own budget line before it could be compared.
 3. **Close run-integrity gaps before paid/control-plane execution** — version
    event envelopes, make checkpoint/promotion transitions recoverable, compare
    full evidence and policy decisions during replay, and implement atomic
@@ -485,14 +628,22 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    `Policy Watch` job tracking platform-rule effective dates. The private
    revenue control plane itself is out of scope for this repository.
 
-10. **Make the second machine earn its keep (ADR 0012)** — in order: a `worker`
-   command looping recover → acquire → execute → finish, since `Scheduler` and
-   `TaskLedger` have no production caller; a node id carried as the lease holder
+10. **Make the second machine earn its keep (ADR 0012)** — the `worker`
+   command exists now (decision #40) and `Scheduler`/`TaskLedger` finally have
+   a production caller. Remaining, in order: a node id carried as the lease holder
    and added to the execution event identity; a ledger clock derived from the
    database rather than the caller, so drift cannot move leases between
    machines; then memory as a scheduler dimension with `node.admit` at the
    acquire seam. Keep the store on one machine's local disk: WAL is unsafe over
    network mounts.
+
+11. **Close the capacity loop (ADR 0013)** — the derivation seams exist now
+   (`capacity.capacity_available` and `capacity.review_hours_per_week`, both
+   tested against the gates they feed), so what is left is a caller: no
+   control plane computes either today. Then replace `PLANNING_COSTS` with
+   measured render costs, because every conclusion above rests on assumed
+   numbers. Model the LLM / image / TTS-render queues separately only once
+   measurement shows one pooled GPU budget hides a real bottleneck.
 
 ## Blockers
 
