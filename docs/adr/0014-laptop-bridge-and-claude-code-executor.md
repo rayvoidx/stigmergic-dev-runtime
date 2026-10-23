@@ -53,13 +53,24 @@ Ollama adapter already follows).
 Two invariants carry the operator's "이건 api아님" requirement into code:
 
 1. **No billing route reaches the subprocess.** `BILLING_ROUTE_VARS` lists
-   every variable that moves Claude Code onto metered billing as of 2.1.261:
-   `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`,
-   `ANTHROPIC_BEDROCK_BASE_URL`, `ANTHROPIC_VERTEX_BASE_URL`,
-   `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX`. Ambient ones are
-   stripped; a request that *sets* one is refused before anything launches.
-   The set is deliberately wide: a false positive costs one refused run, a
-   false negative costs money and breaks the local-first rule.
+   every variable that moves Claude Code onto metered billing. As of 2.1.261
+   that was seven names: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`,
+   `ANTHROPIC_BASE_URL`, `ANTHROPIC_BEDROCK_BASE_URL`,
+   `ANTHROPIC_VERTEX_BASE_URL`, `CLAUDE_CODE_USE_BEDROCK`,
+   `CLAUDE_CODE_USE_VERTEX`. Re-pinned to 2.1.310 on 2026-10-23 from the
+   names the installed binary carries, it is twenty: the same seven plus
+   Mantle (`CLAUDE_CODE_USE_MANTLE`, `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`),
+   "Anthropic on AWS" (`CLAUDE_CODE_USE_ANTHROPIC_AWS`,
+   `ANTHROPIC_AWS_API_KEY`, `ANTHROPIC_AWS_BASE_URL`), "Anthropic on Google
+   Cloud" (`CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD`,
+   `ANTHROPIC_GOOGLE_CLOUD_BASE_URL`), Microsoft Foundry
+   (`CLAUDE_CODE_USE_FOUNDRY`, `ANTHROPIC_FOUNDRY_API_KEY`,
+   `ANTHROPIC_FOUNDRY_AUTH_TOKEN`, `ANTHROPIC_FOUNDRY_BASE_URL`,
+   `ANTHROPIC_FOUNDRY_RESOURCE`) and the gateway switch
+   (`CLAUDE_CODE_USE_GATEWAY`). Ambient ones are stripped; a request that
+   *sets* one is refused before anything launches. The set is deliberately
+   wide: a false positive costs one refused run, a false negative costs money
+   and breaks the local-first rule.
 2. **Subscription usage is never money.** The CLI reports an API-equivalent
    `total_cost_usd`. Recording it as `ExecutionUsage.usd` would tell every
    budget that reads that field that cash moved when none did, so `usd` is
@@ -104,11 +115,14 @@ unmeasurable host takes no work.
 
 ## Conflicts and limits recorded, not resolved
 
-1. **`BILLING_ROUTE_VARS` is a blocklist, not a proof.** It is pinned to
-   Claude Code 2.1.261. A future release could add a new route and this
-   executor would not know. The compensating control is that the list is
-   asserted by test and that `usd` is hard-zero, so an escape would show up as
-   unexpected billing, not as silently accepted spend.
+1. **`BILLING_ROUTE_VARS` is a blocklist, not a proof.** It is pinned to one
+   Claude Code version (2.1.261 at acceptance, 2.1.310 since 2026-10-23). A
+   future release could add a new route and this executor would not know;
+   between those two pins that happened thirteen times, which is why the pin
+   is re-read from the installed binary rather than from memory. The
+   compensating control is that the list is asserted by test and that `usd`
+   is hard-zero, so an escape would show up as unexpected billing, not as
+   silently accepted spend.
 2. **Nothing verifies the subscription positively.** The executor proves the
    absence of known API routes; it cannot prove the presence of a valid
    subscription login. A logged-out CLI fails as `executor_error`.

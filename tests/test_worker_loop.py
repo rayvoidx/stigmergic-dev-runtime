@@ -205,3 +205,29 @@ def test_the_laptop_refuses_a_class_it_could_never_host(tmp_path):
             profile=MOBILE_M4,
             resource_class=RESOURCE_CLASSES["text_coder"],
         )
+
+
+# --- the cli's host-facts bridge -----------------------------------------------
+
+
+def test_reading_host_facts_every_tick_never_grows_sys_path(monkeypatch):
+    """`run_forever` asks the machine on every poll; the scripts directory goes
+    onto sys.path once, not once per tick."""
+    import sys
+    import types
+
+    from stigdev.cli import read_host_facts
+
+    stub = types.SimpleNamespace(
+        memory_pressure=lambda: "green",
+        swap_growth_mb_per_min=lambda: 0.0,
+        free_disk_gb=lambda: 100.0,
+        thermal_throttled=lambda: False,
+    )
+    monkeypatch.setitem(sys.modules, "commission_node", stub)
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    before = len(sys.path)
+    for _ in range(3):
+        facts = read_host_facts()
+        assert (facts.memory_pressure, facts.free_disk_gb) == ("green", 100.0)
+    assert len(sys.path) <= before + 1

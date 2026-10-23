@@ -38,18 +38,37 @@ from .executor import (
 
 EXECUTOR_ID = "claude-code/v1"
 # Every environment variable that routes Claude Code away from the operator's
-# subscription and onto metered billing, as of Claude Code 2.1.261. Widen this
-# set rather than narrowing it: a false positive costs one refused run, a false
-# negative costs real money and breaks the local-first rule.
+# subscription and onto metered billing, as of Claude Code 2.1.310 (the names
+# the installed binary itself carries). Widen this set rather than narrowing
+# it: a false positive costs one refused run, a false negative costs real money
+# and breaks the local-first rule.
 BILLING_ROUTE_VARS = frozenset(
     {
+        # first-party API
         "ANTHROPIC_API_KEY",
         "ANTHROPIC_AUTH_TOKEN",
         "ANTHROPIC_BASE_URL",
-        "ANTHROPIC_BEDROCK_BASE_URL",
-        "ANTHROPIC_VERTEX_BASE_URL",
+        # Amazon Bedrock, Mantle, and "Anthropic on AWS"
         "CLAUDE_CODE_USE_BEDROCK",
+        "ANTHROPIC_BEDROCK_BASE_URL",
+        "CLAUDE_CODE_USE_MANTLE",
+        "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
+        "CLAUDE_CODE_USE_ANTHROPIC_AWS",
+        "ANTHROPIC_AWS_API_KEY",
+        "ANTHROPIC_AWS_BASE_URL",
+        # Google Vertex AI and "Anthropic on Google Cloud"
         "CLAUDE_CODE_USE_VERTEX",
+        "ANTHROPIC_VERTEX_BASE_URL",
+        "CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD",
+        "ANTHROPIC_GOOGLE_CLOUD_BASE_URL",
+        # Microsoft Foundry
+        "CLAUDE_CODE_USE_FOUNDRY",
+        "ANTHROPIC_FOUNDRY_API_KEY",
+        "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+        "ANTHROPIC_FOUNDRY_BASE_URL",
+        "ANTHROPIC_FOUNDRY_RESOURCE",
+        # an LLM gateway in front of any of the above
+        "CLAUDE_CODE_USE_GATEWAY",
     }
 )
 # A subscription run moves no cash, whatever the CLI estimates it would have

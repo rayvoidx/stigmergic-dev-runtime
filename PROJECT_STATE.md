@@ -3,11 +3,13 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-09-29 (M6 event store, M5 GitWorktreeBackend and M7
+Last updated: 2026-10-23 (M6 event store, M5 GitWorktreeBackend and M7
 scheduler merged to `main` via PRs #3-#7 with ADR 0006 accepted; media
 portfolio, concept lineage/Truth Firewall, revenue intelligence, model radar
-and portfolio policy, channel lifecycle governance, node profiles and the
-monthly capacity envelope added on top, ADR 0007-0013 proposed).
+and portfolio policy, channel lifecycle governance, node profiles, the
+monthly capacity envelope, the laptop bridge and model shortlisting added on
+top, ADR 0007-0015 proposed; billing blocklist re-pinned to Claude Code
+2.1.310, decision #43).
 
 Published repository: https://github.com/rayvoidx/stigmergic-dev-runtime.
 
@@ -23,8 +25,9 @@ The research runtime is **implemented and verified locally**:
   `replay`, `recover`, `lineage`).
 - TrendEvoBench fixtures v1 (mechanism tier) and v2 (discrimination tier),
   synthetic and committed with a seeded generator and calibration probes.
-- 596 pytest tests passing (2026-09-29): 200 research and kernel tests plus
-  the media, governance, node, and capacity contracts added since.
+- 635 pytest tests passing (2026-10-23): 200 research and kernel tests plus
+  the media, governance, node, capacity, worker, and model-fit contracts
+  added since.
   Existing unit + e2e coverage includes promotion, rejection, lineage,
   replay, recovery, bit-for-bit reproducibility, condition configs, matrix
   runner, v2 calibration, RQ4 replacement, and observation ablations.
@@ -65,11 +68,11 @@ The research runtime is **implemented and verified locally**:
   restart from the store. `max_usd` defaults to zero and is checked before
   any lease. See `docs/scheduler.md`.
 
-## Verification commands (2026-09-29)
+## Verification commands (2026-10-23)
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/python -m pytest                     # 596 passed
+.venv/bin/python -m pytest                     # 635 passed
 .venv/bin/stigdev demo --runs-root runs        # seed42: 3 promoted, 5 rejected, 0.55->0.86
 .venv/bin/stigdev replay examples/sample_run   # ok: true, checked: 9
 ```
@@ -571,6 +574,23 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     Local verification against the current working tree: 620 public tests;
     all 10 committed example stores replay clean (56 evaluations). These are
     correctness checks, not model or publication-performance evidence.
+
+43. **The billing blocklist caught up with the installed CLI (2026-10-23).**
+    ADR 0014 pinned `BILLING_ROUTE_VARS` to Claude Code 2.1.261 and recorded,
+    as its first unresolved limit, that a later release could add a route the
+    executor would not know. It did: the installed CLI is 2.1.310 and its
+    binary carries thirteen routing variables the list did not name — Mantle,
+    "Anthropic on AWS", "Anthropic on Google Cloud", Microsoft Foundry
+    (resource, base URL, API key, auth token) and the gateway switch. All
+    twenty are now stripped from the subprocess environment and refused when
+    a request sets one; a test pins the seven cloud families so narrowing the
+    list fails loudly. The pin is read from the binary's own strings, not from
+    memory. Same pass, same review: `read_host_facts` pushed the scripts
+    directory onto `sys.path` on every worker tick (every five seconds under
+    `run_forever`), now once, with a test; three unused imports dropped
+    (`cli.py`, `node.py`); pyflakes clean. 635 tests, seed-42 demo invariants
+    unchanged, sample replay ok. Still a blocklist and not a proof — ADR 0014
+    limit 1 stands, and the next CLI upgrade should re-read the binary.
 
 ## Known gaps / next actions (highest value first)
 

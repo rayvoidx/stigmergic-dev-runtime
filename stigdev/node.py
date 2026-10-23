@@ -13,8 +13,8 @@ is the macOS-specific half.
 from __future__ import annotations
 
 import math
-from dataclasses import asdict, dataclass, field
-from typing import Any, Iterable
+from dataclasses import asdict, dataclass
+from typing import Any
 
 from .portfolio import GateDecision
 

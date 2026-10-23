@@ -42,8 +42,10 @@ def read_host_facts():
     """
     from .node import HostFacts
 
+    scripts = str(Path(__file__).resolve().parents[1] / "scripts")
+    if scripts not in sys.path:  # called every tick; never let sys.path grow
+        sys.path.insert(0, scripts)
     try:
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
         import commission_node  # type: ignore[import-not-found]
 
         return HostFacts(
@@ -128,7 +130,6 @@ def cmd_worker(args: argparse.Namespace) -> int:
     variable and refuses any request that sets one."""
     import os
 
-    from .claudecode import ClaudeCodeExecutor
     from .eventstore import SqliteEventStore
     from .node import PROFILES, RESOURCE_CLASSES
     from .scheduler import Budget, Scheduler
