@@ -96,6 +96,27 @@ def test_every_known_billing_route_is_stripped_not_just_the_api_key():
     assert set(runner.calls[0]["env"]) == {"HOME"}
 
 
+def test_the_blocklist_covers_every_cloud_route_the_installed_cli_knows():
+    """Pinned to the routing variables Claude Code 2.1.310 carries. A route the
+    list does not name is the one way subscription work turns into a bill."""
+    families = (
+        "BEDROCK",
+        "MANTLE",
+        "ANTHROPIC_AWS",
+        "VERTEX",
+        "ANTHROPIC_GOOGLE_CLOUD",
+        "FOUNDRY",
+        "GATEWAY",
+    )
+    assert {f"CLAUDE_CODE_USE_{family}" for family in families} <= BILLING_ROUTE_VARS
+    assert {
+        "ANTHROPIC_AWS_API_KEY",
+        "ANTHROPIC_FOUNDRY_API_KEY",
+        "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+        "ANTHROPIC_FOUNDRY_RESOURCE",
+    } <= BILLING_ROUTE_VARS
+
+
 def test_subscription_usage_is_never_recorded_as_money_spent():
     """The CLI reports an API-equivalent estimate; no cash moves on a subscription,
     so reporting it as `usd` would corrupt every budget that reads this field."""
