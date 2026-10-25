@@ -118,6 +118,19 @@ def test_an_executor_that_throws_finishes_the_lease_instead_of_leaking_it(tmp_pa
     assert sched.state().tasks["t1"].status != "leased"
 
 
+def test_a_lease_that_expires_mid_attempt_yields_to_the_fence_not_the_worker(tmp_path):
+    """With lease_ttl shorter than the attempt, finish hits the fencing check.
+    That must not kill the loop: recovery records the attempt as interrupted
+    and the worker keeps polling."""
+    st = store(tmp_path)
+    sched = scheduler(st, lease_ttl=1.0)  # iter_clock advances 1s per call, so the attempt outlives it
+    submit(sched)
+    worker = loop(sched, RecordingExecutor())
+    assert worker.tick() is True  # must not raise LeaseError
+    assert worker.tick() is False  # recovery reclaimed the lease; nothing ready
+    assert sched.state().tasks["t1"].status != "leased"
+
+
 def test_run_until_idle_drains_the_queue_and_stops(tmp_path):
     st = store(tmp_path)
     sched = scheduler(st, budget=Budget(max_concurrency=1, max_usd=0.0))

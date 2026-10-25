@@ -613,6 +613,20 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     blocklist, a green pass proves only that the tests still hold, and the
     first unattended run under launchd is still to be observed.
 
+45. **A slow attempt no longer kills the worker loop (2026-10-25).** When an
+    attempt outlived its lease (the executor timeout and the lease TTL both
+    default to 900 s, so a task that hits its timeout usually does),
+    `WorkerLoop._finish` hit the ledger's fencing check and the resulting
+    `LeaseError` propagated out of `tick()`, crashing `run_forever` — the
+    docstring's "every exit path finishes" did not hold on the one path where
+    the ledger had already taken the lease back. The fence is correct: a
+    superseded worker must not record the outcome. The worker now yields to it
+    (catches `LeaseError` in `_finish` and keeps polling; the next `recover()`
+    records the attempt as interrupted and releases the reservation).
+    Reproduced pre-fix with `lease_ttl=1.0` against the stepping test clock;
+    regression test added. 656 tests, seed-42 demo invariants unchanged,
+    sample replay ok.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level

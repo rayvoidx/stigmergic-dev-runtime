@@ -12,7 +12,9 @@ Two rules it does own:
   second means a hot laptop never strands a task in `leased`.
 * An adapter that raises is still a finished attempt. A worker that dies
   holding a lease is the one failure the ledger cannot see until the lease
-  expires, so every exit path finishes.
+  expires, so every exit path finishes — or yields to the fence: when the
+  lease expired or was superseded mid-attempt, the outcome is recorded as
+  ``interrupted`` by recovery, never by this worker crashing.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import time
 from typing import Any, Callable, Mapping
 
 from .executor import ExecutionRequest, ExecutionResult
+from .ledger import LeaseError
 from .node import Allocation, HostFacts, NodeProfile, ResourceClass, admit
 from .scheduler import WORK_KEY, Scheduler, Usage
 from .workspace import WorkspaceRef
@@ -197,4 +200,12 @@ class WorkerLoop:
         }
 
     def _finish(self, lease: Any, status: str, usage: Usage, result: dict[str, Any]) -> None:
-        self.scheduler.finish(lease, status, now=self.clock(), usage=usage, result=result)
+        try:
+            self.scheduler.finish(lease, status, now=self.clock(), usage=usage, result=result)
+        except LeaseError:
+            # The lease expired or was superseded while the attempt ran. The
+            # fence is doing its job: this worker may no longer speak for the
+            # attempt, and the next recover() records it as interrupted and
+            # releases the reservation. Losing the outcome is the price of the
+            # fence; killing the 24/7 loop over it is not.
+            pass
