@@ -87,6 +87,14 @@ def test_no_change_means_no_message():
     assert daily_pass.commit_message("   \n\n", DATE) is None
 
 
+def test_the_gate_demo_never_collides_with_the_agents_own_demo_run():
+    """The prompt tells the agent to demo into runs/gate; the gate must use its own directory."""
+    commands = dict(daily_pass.gate_commands("py", ["a.py"], "/tmp/gate-x"))
+    assert commands["demo"][-3:] == ["/tmp/gate-x", "--run-id", "gate"]
+    assert commands["replay"][-1] == "/tmp/gate-x/gate" and "runs" not in commands["demo"]
+    assert commands["pyflakes"][-1] == "a.py" and "pyflakes" not in dict(daily_pass.gate_commands("py", [], "/t"))
+
+
 def test_the_subprocess_is_not_told_it_runs_inside_a_session():
     env = daily_pass.clean_env({"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "PATH": "/usr/bin", "HOME": "/h"})
     assert env == {"PATH": "/usr/bin", "HOME": "/h"}

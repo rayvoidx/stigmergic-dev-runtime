@@ -25,6 +25,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
@@ -137,6 +138,7 @@ class Outcome:
     commit: str | None = None
     pushed: bool = False
     agent: dict[str, Any] = field(default_factory=dict)
+    agent_text: str = ""  # the agent's final message, kept so a failed day can still be read
     finished_at: str = ""
 
 
@@ -275,24 +277,34 @@ def staged_change(worktree: Path) -> Change:
     return Change(files, insertions, deletions, added_lines(diff))
 
 
-def verify(worktree: Path, python: str, files: tuple[str, ...]) -> list[str]:
-    """CI's checks, run in the worktree. Stops at the first failure."""
-    py_files = [f for f in files if f.endswith(".py") and (worktree / f).exists()]
+def gate_commands(python: str, py_files: list[str], runs_root: str) -> list[tuple[str, list[str]]]:
     checks: list[tuple[str, list[str]]] = []
     if py_files:
         checks.append(("pyflakes", [python, "-m", "pyflakes", *py_files]))
     checks += [
         ("pytest", [python, "-m", "pytest", "-q", "-p", "no:cacheprovider"]),
-        ("demo", [python, "-m", "stigdev.cli", "demo", "--runs-root", "runs", "--run-id", "gate"]),
-        ("replay", [python, "-m", "stigdev.cli", "replay", "runs/gate"]),
+        ("demo", [python, "-m", "stigdev.cli", "demo", "--runs-root", runs_root, "--run-id", "gate"]),
+        ("replay", [python, "-m", "stigdev.cli", "replay", str(Path(runs_root) / "gate")]),
     ]
-    for name, argv in checks:
-        proc = subprocess.run(argv, cwd=worktree, capture_output=True, text=True, timeout=1800)
-        if name == "pyflakes" and proc.returncode and "No module named" in proc.stderr:
-            continue  # optional linter; its absence is not the agent's fault
-        if proc.returncode:
-            tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-8:])
-            return [f"{name} failed ({proc.returncode}): {tail}"]
+    return checks
+
+
+def verify(worktree: Path, python: str, files: tuple[str, ...]) -> list[str]:
+    """CI's checks, run in the worktree. Stops at the first failure.
+
+    The demo writes into a fresh temporary directory: the agent is told to run
+    the same demo under runs/gate, and a run store refuses an existing directory
+    (the first rehearsal, 2026-10-25, failed on exactly that collision).
+    """
+    py_files = [f for f in files if f.endswith(".py") and (worktree / f).exists()]
+    with tempfile.TemporaryDirectory(prefix="daily-gate-") as runs_root:
+        for name, argv in gate_commands(python, py_files, runs_root):
+            proc = subprocess.run(argv, cwd=worktree, capture_output=True, text=True, timeout=1800)
+            if name == "pyflakes" and proc.returncode and "No module named" in proc.stderr:
+                continue  # optional linter; its absence is not the agent's fault
+            if proc.returncode:
+                tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-8:])
+                return [f"{name} failed ({proc.returncode}): {tail}"]
     return []
 
 
@@ -339,6 +351,7 @@ def run_pass(
         "wall_seconds": round(time.time() - started, 1),
     }
     text = agent_summary(result)
+    outcome.agent_text = text[:4000]
     if result.status != "success":
         outcome.status = "agent_failed"
         outcome.summary = (result.stderr or text or "")[-500:]

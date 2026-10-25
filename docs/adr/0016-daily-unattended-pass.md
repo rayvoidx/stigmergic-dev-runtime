@@ -76,7 +76,8 @@ Exit code 0 for `pushed`, `committed`, `no_change`; 2 for `already_ran`;
 Every run writes `state/daily/<date>.json`: `status`, `summary`, `branch`,
 `worktree`, `files`, `insertions`, `deletions`, `gate`, `verify`, `commit`,
 `pushed`, `agent` (status, exit code, classification, tokens, `usd` which is
-always 0.0 on a subscription, wall seconds) and `finished_at`. One JSON line
+always 0.0 on a subscription, wall seconds), `agent_text` (the agent's final
+message, so a failed day can still be read) and `finished_at`. One JSON line
 goes to stdout. A steward outside this repository reads the file; nothing in
 this repository depends on that steward.
 
