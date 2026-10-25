@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The daily unattended improvement pass (ADR 0016).
+
+  Once a day, before the operator is up: branch a throwaway worktree from
+  origin/main, let the coding agent make one small, test-backed change, run
+  the same gates CI runs (pyflakes, pytest, demo + replay, a secret scan and a
+  size cap), and push to main only when all of them hold. A day with nothing
+  worth changing records NO_CHANGE and pushes nothing. The outcome lands in
+  state/daily/<date>.json for whatever steward reads it.
+
+  Billing: the agent runs on the operator's subscription through
+  `stigdev.claudecode`, which strips every known billing-route variable and
+  refuses a request that sets one. Do NOT add an ANTHROPIC_API_KEY below.
+
+  Install for the operator's own account, not root:
+    mkdir -p REPO_PATH/state/logs
+    sed -e "s#REPO_PATH#$PWD#g" -e "s#HOME_PATH#$HOME#g" \
+        deploy/launchd/dev.stigmergic.daily.plist > ~/Library/LaunchAgents/dev.stigmergic.daily.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.stigmergic.daily.plist
+
+  Run it now, to see the first pass before trusting the schedule:
+    launchctl kickstart -k gui/$(id -u)/dev.stigmergic.daily
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.stigmergic.daily</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>REPO_PATH/.venv/bin/python</string>
+        <string>REPO_PATH/scripts/daily_pass.py</string>
+        <string>--repo</string>
+        <string>REPO_PATH</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>REPO_PATH</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- launchd gives an agent a minimal PATH; the CLI lives in ~/.local/bin. -->
+        <key>PATH</key>
+        <string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:HOME_PATH/.local/bin</string>
+        <key>HOME</key>
+        <string>HOME_PATH</string>
+        <key>LANG</key>
+        <string>en_US.UTF-8</string>
+    </dict>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>5</integer>
+        <key>Minute</key><integer>30</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>REPO_PATH/state/logs/daily.log</string>
+    <key>StandardErrorPath</key>
+    <string>REPO_PATH/state/logs/daily.err</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>LowPriorityIO</key>
+    <true/>
+    <key>Nice</key>
+    <integer>5</integer>
+</dict>
+</plist>

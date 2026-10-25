@@ -592,6 +592,27 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     unchanged, sample replay ok. Still a blocklist and not a proof — ADR 0014
     limit 1 stands, and the next CLI upgrade should re-read the binary.
 
+44. **A daily pass for this repository, and a steward over the whole system
+    (2026-10-25, ADR 0016 proposed).** The operator asked whether "the whole
+    system improves every day and GitHub work happens on its own" was true.
+    It was not: the media side had its daily loop (supervisor, 06:40 pulse,
+    six-hourly performance snapshots, a 09:30 growth agent) but this
+    repository had moved only by hand, and nothing anywhere pushed to GitHub
+    unattended. `scripts/daily_pass.py` is the missing caller: one bounded
+    Claude Code pass a day in a throwaway worktree off `origin/main`, through
+    `ClaudeCodeExecutor` so the subscription rule holds, gated by a path
+    blocklist (the agent cannot edit its own gates), a 12-file / 600-line
+    cap, a secret scan over added lines, pyflakes, pytest, the seed-42 demo
+    and replay, then one push to `main`. `NO_CHANGE` is a recorded outcome and
+    produces no commit; every run writes `state/daily/<date>.json`.
+    `deploy/launchd/dev.stigmergic.daily.plist` runs it at 05:30 KST. 20
+    tests, suite 655. The private operations layer gained a steward that
+    reads that file beside its own agents, the Pages site and the app
+    backend; it stays private (`docs/integration_boundary.md`). Recorded and
+    not resolved: the pass is not a security boundary, the gates are a
+    blocklist, a green pass proves only that the tests still hold, and the
+    first unattended run under launchd is still to be observed.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
@@ -664,6 +685,13 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    measured render costs, because every conclusion above rests on assumed
    numbers. Model the LLM / image / TTS-render queues separately only once
    measurement shows one pooled GPU budget hides a real bottleneck.
+
+12. **Watch the daily pass (ADR 0016)** — read the first days of
+   `state/daily/<date>.json` and the commits they pushed. A bad day is
+   reverted by hand and the prompt in `scripts/daily_pass.py` tightened; a
+   run of `NO_CHANGE` days means the prompt's menu is exhausted and the gaps
+   above need new entries. Pointing the pass at a second repository is a
+   separate boundary decision.
 
 ## Blockers
 

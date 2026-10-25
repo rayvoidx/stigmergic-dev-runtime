@@ -108,6 +108,12 @@ implementation still requires the decisions listed in that ADR.
 22. **Private testbed and extraction review.** Validate from the private
     `social-trend-agent` repository, then create a separate deployable control
     plane only if ADR 0005 extraction criteria are met.
+23. **Daily unattended pass — done (2026-10-25).** `scripts/daily_pass.py`
+    runs one bounded Claude Code pass a day on this repository through the
+    ADR 0014 executor, gated by tests, demo, replay, a secret scan and a size
+    cap, and pushes to `main` only when green (ADR 0016, proposed). Next:
+    observe the first unattended runs; a second repository needs its own
+    boundary review.
 
 See `docs/implementation_plan.md` for worktrees and verification gates.
 
