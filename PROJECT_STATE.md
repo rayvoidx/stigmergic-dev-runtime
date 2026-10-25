@@ -627,6 +627,19 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     regression test added. 656 tests, seed-42 demo invariants unchanged,
     sample replay ok.
 
+46. **A malformed executor result no longer kills the worker loop
+    (2026-10-26, daily pass).** `ExecutionResult`'s own contract says it is
+    untrusted until `validate_result` passes; `execution.py` obeyed that and
+    `workerd.tick` did not. An adapter returning a status the ledger does not
+    know (e.g. `"succeeded"`) raised `ValueError` out of `tick()` — killing
+    `run_forever` and stranding the task `leased` until the TTL — and a
+    foreign `attempt_id` would have been recorded under this worker's lease.
+    `tick` now runs `validate_result` inside the same try as the executor
+    call, so a contract-violating result is a failed attempt like any other
+    adapter crash (reproduced pre-fix; regression test added; the test fake
+    now emits contract-valid failures). 658 tests, seed-42 demo invariants
+    unchanged, sample replay ok.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level

@@ -33,6 +33,7 @@ class RecordingExecutor:
             started_at=1.0,
             finished_at=2.0,
             exit_code=0 if self.status == "success" else 1,
+            failure_classification="none" if self.status == "success" else "nonzero_exit",
             usage=self.usage or ExecutionUsage(input_tokens=3, output_tokens=4, usd=0.0),
         )
 
@@ -129,6 +130,18 @@ def test_a_lease_that_expires_mid_attempt_yields_to_the_fence_not_the_worker(tmp
     assert worker.tick() is True  # must not raise LeaseError
     assert worker.tick() is False  # recovery reclaimed the lease; nothing ready
     assert sched.state().tasks["t1"].status != "leased"
+
+
+def test_a_malformed_result_is_a_failed_attempt_not_a_dead_loop(tmp_path):
+    """`ExecutionResult` is untrusted until `validate_result` passes. A status
+    the ledger does not know must fail the task; before validation was added it
+    raised ValueError out of tick() and stranded the task leased."""
+    st = store(tmp_path)
+    sched = scheduler(st)
+    submit(sched)
+    agent = RecordingExecutor(status="succeeded")  # not an ExecutionStatus
+    assert loop(sched, agent).tick() is True  # must not raise
+    assert sched.state().tasks["t1"].status == "failed"
 
 
 def test_run_until_idle_drains_the_queue_and_stops(tmp_path):

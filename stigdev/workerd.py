@@ -10,7 +10,8 @@ Two rules it does own:
 
 * Admission comes before the lease. Asking the machine first and the queue
   second means a hot laptop never strands a task in `leased`.
-* An adapter that raises is still a finished attempt. A worker that dies
+* An adapter that raises — or returns a result that fails the execution
+  contract — is still a finished attempt. A worker that dies
   holding a lease is the one failure the ledger cannot see until the lease
   expires, so every exit path finishes — or yields to the fence: when the
   lease expired or was superseded mid-attempt, the outcome is recorded as
@@ -22,7 +23,7 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, Mapping
 
-from .executor import ExecutionRequest, ExecutionResult
+from .executor import ExecutionRequest, ExecutionResult, validate_result
 from .ledger import LeaseError
 from .node import Allocation, HostFacts, NodeProfile, ResourceClass, admit
 from .scheduler import WORK_KEY, Scheduler, Usage
@@ -129,7 +130,12 @@ class WorkerLoop:
             return True
         started = self.clock()
         try:
-            result = self.executor.execute(self._request(lease, work))
+            request = self._request(lease, work)
+            result = self.executor.execute(request)
+            # The result is untrusted until validated: a status the ledger does
+            # not know, or a foreign attempt id, must become this attempt's
+            # failure, never a ledger error that kills the loop.
+            validate_result(result, request)
         except Exception as exc:  # noqa: BLE001 - an adapter crash is a task outcome, not a worker death
             self._finish(
                 lease,
