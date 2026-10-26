@@ -3,7 +3,7 @@
 Durable state + decision log. A fresh agent should be able to resume from this
 file alone. Update it at every milestone.
 
-Last updated: 2026-10-23 (M6 event store, M5 GitWorktreeBackend and M7
+Last updated: 2026-10-26 (M6 event store, M5 GitWorktreeBackend and M7
 scheduler merged to `main` via PRs #3-#7 with ADR 0006 accepted; media
 portfolio, concept lineage/Truth Firewall, revenue intelligence, model radar
 and portfolio policy, channel lifecycle governance, node profiles, the
@@ -640,6 +640,26 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     now emits contract-valid failures). 658 tests, seed-42 demo invariants
     unchanged, sample replay ok.
 
+47. **The daily pass takes other repositories through flags (2026-10-26,
+    ADR 0017 proposed).** The first unattended run of #44 pushed #46 at 05:51
+    KST from launchd, so the loop works end to end. The operator then decided
+    that every part of the system gets one bounded, test-gated improvement
+    pass a day, applied to GitHub where a remote exists and to the running
+    checkout either way. `scripts/daily_pass.py` stays one script:
+    `--prompt FILE`, `--verify CMD` (repeatable, replaces the default checks),
+    `--guard PREFIX` (widens the blocklist only), `--state DIR`,
+    `--base`/`--branch`, `--merge` (a fast-forward of the checked-out branch,
+    never a reset; a merge the checkout cannot take is a note after a push and
+    `merge_failed` without one) and `--after CMD` (restart what serves the
+    code). Without flags it behaves exactly as ADR 0016. Which repositories,
+    with which prompts, checks and restarts, stays in the private operations
+    layer, which runs the targets in sequence under one launchd label so two
+    agents never share the CPU or the quota. 27 tests in
+    `tests/test_daily_pass.py`, suite 664; demo and replay unchanged. Recorded
+    and not resolved: a target whose `main` deploys deploys the agent's commit
+    unattended; `--verify` runs the operator's shell commands, outside the
+    agent's reach.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
@@ -713,12 +733,13 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
    numbers. Model the LLM / image / TTS-render queues separately only once
    measurement shows one pooled GPU budget hides a real bottleneck.
 
-12. **Watch the daily pass (ADR 0016)** — read the first days of
-   `state/daily/<date>.json` and the commits they pushed. A bad day is
-   reverted by hand and the prompt in `scripts/daily_pass.py` tightened; a
-   run of `NO_CHANGE` days means the prompt's menu is exhausted and the gaps
-   above need new entries. Pointing the pass at a second repository is a
-   separate boundary decision.
+12. **Watch the daily passes (ADR 0016, ADR 0017)** — read the first days of
+   `state/daily/<date>.json` here and the per-target reports the private
+   runner keeps, and the commits they pushed or merged. A bad day is reverted
+   by hand and that target's prompt tightened; a run of `NO_CHANGE` days means
+   the prompt's menu is exhausted and the gaps above (or the target's brief)
+   need new entries. The app target's push deploys; if that proves too eager,
+   `--branch dev` makes it a reviewed change.
 
 ## Blockers
 

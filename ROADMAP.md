@@ -111,9 +111,13 @@ implementation still requires the decisions listed in that ADR.
 23. **Daily unattended pass — done (2026-10-25).** `scripts/daily_pass.py`
     runs one bounded Claude Code pass a day on this repository through the
     ADR 0014 executor, gated by tests, demo, replay, a secret scan and a size
-    cap, and pushes to `main` only when green (ADR 0016, proposed). Next:
-    observe the first unattended runs; a second repository needs its own
-    boundary review.
+    cap, and pushes to `main` only when green (ADR 0016, proposed). First
+    unattended push 2026-10-26 05:51 KST.
+24. **The same pass on the operator's other repositories — done
+    (2026-10-26).** Flags for the prompt, the checks, the blocklist, the state
+    directory, a fast-forward of the checked-out branch and a restart command
+    (ADR 0017, proposed); the targets and their order live in the private
+    operations layer. Next: read the first unattended days per target.
 
 See `docs/implementation_plan.md` for worktrees and verification gates.
 

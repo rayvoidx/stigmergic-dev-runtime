@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
-"""One bounded, unattended improvement pass over this repository (ADR 0016).
+"""One bounded, unattended improvement pass over a repository (ADR 0016, ADR 0017).
 
 The coding agent runs on the operator's subscription inside a throwaway git
 worktree branched from origin/main. Its change reaches `main` only if every
 gate holds: a path blocklist that keeps it away from the gates themselves, a
-size cap, a secret scan over the added lines, pyflakes, the test suite, and
-the offline demo plus replay — the same checks CI runs. Green means one commit
-and one push; anything else leaves the worktree behind for a human and pushes
-nothing. A day with nothing worth changing is a recorded outcome, never an
-invented commit.
+size cap, a secret scan over the added lines, and the repository's own checks
+(here: pyflakes, the test suite, the offline demo plus replay — what CI runs).
+Green means one commit and one push; anything else leaves the worktree behind
+for a human and pushes nothing. A day with nothing worth changing is a recorded
+outcome, never an invented commit.
 
-    .venv/bin/python scripts/daily_pass.py              # the daily job
+    .venv/bin/python scripts/daily_pass.py              # this repository, the daily job
     .venv/bin/python scripts/daily_pass.py --no-push    # rehearse: commit on the branch only
 
-Every run writes state/daily/<date>.json so an operator's steward can read the
+Another repository takes the same pass through flags (ADR 0017): --repo and
+--python name it, --prompt FILE replaces the instruction, --verify CMD (repeatable)
+replaces the default checks with its own, --guard PREFIX widens the blocklist,
+--state DIR keeps the worktree and report out of it, --merge fast-forwards the
+checked-out branch so the machine runs the change, --after CMD restarts whatever
+serves it, and --no-push --merge suits a repository without a remote.
+
+Every run writes <state>/<date>.json so an operator's steward can read the
 outcome without parsing logs.
 """
 
@@ -46,6 +53,7 @@ MAX_LINES = 600
 TIMEOUT_SECONDS = 1800.0
 NO_CHANGE = "NO_CHANGE"
 TRAILER = "Co-Authored-By: Claude <noreply@anthropic.com>"
+DEFAULT_GATES = "pyflakes, pytest, demo, replay and a secret scan"
 SUBJECT_PREFIXES = ("feat:", "fix:", "docs:", "test:", "refactor:", "perf:", "chore:")
 # The agent may not edit what reviews it. A change under any of these fails the pass.
 GUARDED_PREFIXES = (
@@ -54,6 +62,7 @@ GUARDED_PREFIXES = (
     "scripts/daily_pass.py",
     "tests/test_daily_pass.py",
     "docs/adr/0016-",
+    "docs/adr/0017-",
 )
 # Added lines are scanned; a hit fails the pass. Widen, never narrow: a false
 # positive costs one skipped day, a false negative publishes a credential.
@@ -84,8 +93,8 @@ stated invariant, a document corrected against the implementation, or the
 smallest next step of a listed gap. Prefer correctness over features. Never add
 a dependency. Never call a live model, paid API, or the network from code or
 tests. Never touch .github/, deploy/, scripts/daily_pass.py,
-tests/test_daily_pass.py or docs/adr/0016-*: those are the gates that review
-you. Stay inside the public/private boundary in AGENTS.md: no credentials,
+tests/test_daily_pass.py, docs/adr/0016-* or docs/adr/0017-*: those are the
+gates that review you. Stay inside the public/private boundary in AGENTS.md: no credentials,
 prompts, production data, or private infrastructure details. Keep the diff
 under {max_files} files and {max_lines} changed lines.
 
@@ -139,6 +148,9 @@ class Outcome:
     pushed: bool = False
     agent: dict[str, Any] = field(default_factory=dict)
     agent_text: str = ""  # the agent's final message, kept so a failed day can still be read
+    merged: bool = False  # the repository's checked-out branch was fast-forwarded to the commit
+    merge_note: str = ""  # why it was not
+    after: dict[str, Any] = field(default_factory=dict)  # the --after command's exit code and tail
     finished_at: str = ""
 
 
@@ -175,10 +187,17 @@ def added_lines(diff: str) -> str:
     )
 
 
-def gate(change: Change, *, max_files: int = MAX_FILES, max_lines: int = MAX_LINES) -> list[str]:
+def render_prompt(template: str, *, python: str, max_files: int, max_lines: int) -> str:
+    """Fill the three placeholders by replacement: a custom prompt may hold braces of its own."""
+    return (template.replace("{python}", python)
+            .replace("{max_files}", str(max_files)).replace("{max_lines}", str(max_lines)))
+
+
+def gate(change: Change, *, max_files: int = MAX_FILES, max_lines: int = MAX_LINES,
+         guarded_prefixes: tuple[str, ...] = GUARDED_PREFIXES) -> list[str]:
     """Why this change may not go to main; empty means it may."""
     problems: list[str] = []
-    guarded = [f for f in change.files if f.startswith(GUARDED_PREFIXES)]
+    guarded = [f for f in change.files if f.startswith(guarded_prefixes)]
     if guarded:
         problems.append("touches guarded paths: " + ", ".join(guarded))
     if len(change.files) > max_files:
@@ -202,7 +221,7 @@ def agent_summary(result: ExecutionResult) -> str:
     return text.strip() if isinstance(text, str) else ""
 
 
-def commit_message(agent_text: str, date: str) -> str | None:
+def commit_message(agent_text: str, date: str, gates: str = DEFAULT_GATES) -> str | None:
     """A conventional commit message, or None when the agent declared NO_CHANGE."""
     lines = [line.rstrip() for line in agent_text.strip().splitlines()]
     lines = [line for line in lines if line.strip() != "```"]
@@ -215,7 +234,7 @@ def commit_message(agent_text: str, date: str) -> str | None:
         subject = "chore: " + subject
     subject = subject[:72].rstrip()
     body = "\n".join(lines[1:]).strip()
-    footer = f"Daily pass {date} (ADR 0016): gated by pyflakes, pytest, demo, replay and a secret scan."
+    footer = f"Daily pass {date} (ADR 0016): gated by {gates}."
     return "\n\n".join(part for part in (subject, body, footer, TRAILER) if part)
 
 
@@ -230,19 +249,21 @@ def git(*args: str, cwd: Path) -> str:
     return proc.stdout
 
 
-def prepare_worktree(repo: Path, date: str) -> tuple[Path, str]:
+def prepare_worktree(repo: Path, date: str, *, state_dir: Path, base: str) -> tuple[Path, str]:
     branch = f"daily/{date}"
-    path = repo / "state" / "daily" / date
+    path = state_dir / date
     if path.exists():
         raise AlreadyRan(str(path))
     path.parent.mkdir(parents=True, exist_ok=True)
-    git("fetch", "-q", "origin", "main", cwd=repo)
-    git("worktree", "add", "-q", "-B", branch, str(path), "origin/main", cwd=repo)
+    if base.startswith("origin/"):
+        git("fetch", "-q", "origin", base[len("origin/"):], cwd=repo)
+    git("worktree", "add", "-q", "-B", branch, str(path), base, cwd=repo)
     return path, branch
 
 
 def request_for(
-    worktree: Path, date: str, *, python: str, max_files: int, max_lines: int, timeout: float
+    worktree: Path, date: str, *, python: str, max_files: int, max_lines: int, timeout: float,
+    prompt: str = PROMPT,
 ) -> ExecutionRequest:
     return ExecutionRequest(
         run_id=f"daily-{date}",
@@ -250,7 +271,7 @@ def request_for(
         attempt_id=f"daily-{date}-1",
         executor_id=EXECUTOR_ID,
         workspace=WorkspaceRef(backend_id="git-worktree", workspace_id=f"daily-{date}", locator=str(worktree)),
-        instruction=PROMPT.format(python=python, max_files=max_files, max_lines=max_lines),
+        instruction=render_prompt(prompt, python=python, max_files=max_files, max_lines=max_lines),
         # The operator's fact-forcing hook would deny the agent's first edit of
         # every file; it is for interactive sessions and is switched off here.
         environment=(("ECC_GATEGUARD", "off"),),
@@ -308,6 +329,43 @@ def verify(worktree: Path, python: str, files: tuple[str, ...]) -> list[str]:
     return []
 
 
+def shell_verifier(commands: list[str]) -> "Verifier":
+    """Another repository's own checks: shell commands run in the worktree, in order, first failure stops."""
+
+    def run_checks(worktree: Path, python: str, files: tuple[str, ...]) -> list[str]:
+        for command in commands:
+            proc = subprocess.run(command, shell=True, cwd=worktree, capture_output=True, text=True, timeout=1800)
+            if proc.returncode:
+                tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-8:])
+                return [f"{command[:60]} failed ({proc.returncode}): {tail}"]
+        return []
+
+    return run_checks
+
+
+def fast_forward(repo: Path, branch: str, commit: str) -> tuple[bool, str]:
+    """Move the repository's checked-out branch to the commit so the machine runs it.
+
+    Only a fast-forward of the branch that is checked out: another branch, a
+    detached head or local edits in the way are a note for the operator, never
+    a reset.
+    """
+    head = subprocess.run(["git", "symbolic-ref", "-q", "--short", "HEAD"], cwd=repo, capture_output=True, text=True)
+    checked_out = head.stdout.strip()
+    if checked_out != branch:
+        return False, f"skipped: {checked_out or 'a detached HEAD'} is checked out, not {branch}"
+    proc = subprocess.run(["git", "merge", "-q", "--ff-only", commit], cwd=repo, capture_output=True, text=True)
+    if proc.returncode:
+        return False, (proc.stderr or proc.stdout).strip()[-300:]
+    return True, ""
+
+
+def run_after(command: str, repo: Path) -> dict[str, Any]:
+    proc = subprocess.run(command, shell=True, cwd=repo, capture_output=True, text=True, timeout=600)
+    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-5:])
+    return {"command": command, "exit_code": proc.returncode, "tail": tail[-500:]}
+
+
 def discard_worktree(repo: Path, worktree: Path, branch: str) -> None:
     subprocess.run(["git", "worktree", "remove", "--force", str(worktree)], cwd=repo, capture_output=True)
     subprocess.run(["git", "branch", "-q", "-D", branch], cwd=repo, capture_output=True)
@@ -323,14 +381,23 @@ def run_pass(
     python: str,
     executor: Any,
     push: bool = True,
+    merge: bool = False,
+    branch: str = "main",
+    base: str | None = None,
+    state_dir: Path | None = None,
+    prompt: str = PROMPT,
+    guarded_prefixes: tuple[str, ...] = GUARDED_PREFIXES,
+    gates: str = DEFAULT_GATES,
+    after: str | None = None,
     max_files: int = MAX_FILES,
     max_lines: int = MAX_LINES,
     timeout: float = TIMEOUT_SECONDS,
     verifier: Verifier = verify,
 ) -> Outcome:
+    state_dir = state_dir or repo / "state" / "daily"
     outcome = Outcome(date=date, status="started")
     try:
-        worktree, outcome.branch = prepare_worktree(repo, date)
+        worktree, outcome.branch = prepare_worktree(repo, date, state_dir=state_dir, base=base or f"origin/{branch}")
     except AlreadyRan as exc:
         outcome.status, outcome.summary = "already_ran", f"worktree exists: {exc}"
         return outcome
@@ -338,7 +405,8 @@ def run_pass(
 
     started = time.time()
     result = executor.execute(
-        request_for(worktree, date, python=python, max_files=max_files, max_lines=max_lines, timeout=timeout)
+        request_for(worktree, date, python=python, max_files=max_files, max_lines=max_lines, timeout=timeout,
+                    prompt=prompt)
     )
     usage = result.usage
     outcome.agent = {
@@ -359,7 +427,7 @@ def run_pass(
 
     change = staged_change(worktree)
     outcome.files, outcome.insertions, outcome.deletions = list(change.files), change.insertions, change.deletions
-    message = commit_message(text, date)
+    message = commit_message(text, date, gates)
     if not change.files or message is None:
         outcome.status = "no_change"
         outcome.summary = text[:500] or "agent changed nothing"
@@ -367,7 +435,7 @@ def run_pass(
             discard_worktree(repo, worktree, outcome.branch)
         return outcome
 
-    outcome.gate = gate(change, max_files=max_files, max_lines=max_lines)
+    outcome.gate = gate(change, max_files=max_files, max_lines=max_lines, guarded_prefixes=guarded_prefixes)
     if outcome.gate:
         outcome.status, outcome.summary = "gated", "; ".join(outcome.gate)
         return outcome
@@ -379,27 +447,40 @@ def run_pass(
     subprocess.run(["git", "commit", "-q", "-F", "-"], cwd=worktree, input=message, text=True, check=True)
     outcome.commit = git("rev-parse", "HEAD", cwd=worktree).strip()
     outcome.summary = message.splitlines()[0]
-    if not push:
+    if push:
+        pushed = subprocess.run(["git", "push", "-q", "origin", f"HEAD:{branch}"], cwd=worktree, capture_output=True, text=True)
+        if pushed.returncode:
+            outcome.status, outcome.summary = "push_rejected", pushed.stderr.strip()[-500:]
+            return outcome
+        outcome.pushed = True
+    if merge:
+        outcome.merged, outcome.merge_note = fast_forward(repo, branch, outcome.commit)
+        if not outcome.merged and not outcome.pushed:
+            outcome.status = "merge_failed"  # the commit sits on daily/<date>; a human merges or drops it
+            return outcome
+    if not (outcome.pushed or outcome.merged):
         outcome.status = "committed"
         return outcome
-    pushed = subprocess.run(["git", "push", "-q", "origin", "HEAD:main"], cwd=worktree, capture_output=True, text=True)
-    if pushed.returncode:
-        outcome.status, outcome.summary = "push_rejected", pushed.stderr.strip()[-500:]
-        return outcome
-    outcome.status, outcome.pushed = "pushed", True
+    outcome.status = "pushed" if outcome.pushed else "merged"
+    if after:
+        outcome.after = run_after(after, repo)
     discard_worktree(repo, worktree, outcome.branch)
     return outcome
 
 
-def write_report(repo: Path, outcome: Outcome) -> Path:
+def write_report(repo: Path, outcome: Outcome, state_dir: Path | None = None) -> Path:
     outcome.finished_at = datetime.now(UTC).isoformat(timespec="seconds")
-    path = repo / "state" / "daily" / f"{outcome.date}.json"
+    path = (state_dir or repo / "state" / "daily") / f"{outcome.date}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(asdict(outcome), indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
     return path
 
 
-EXIT_CODES = {"pushed": 0, "committed": 0, "no_change": 0, "already_ran": 2}
+EXIT_CODES = {"pushed": 0, "merged": 0, "committed": 0, "no_change": 0, "already_ran": 2}
+
+
+def has_remote(repo: Path) -> bool:
+    return subprocess.run(["git", "remote", "get-url", "origin"], cwd=repo, capture_output=True).returncode == 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -412,22 +493,44 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-files", type=int, default=MAX_FILES)
     parser.add_argument("--max-lines", type=int, default=MAX_LINES)
     parser.add_argument("--no-push", action="store_true", help="commit on the daily branch, push nothing")
+    parser.add_argument("--merge", action="store_true", help="after a green pass, fast-forward the checked-out branch")
+    parser.add_argument("--branch", default="main", help="branch the pass pushes to and merges into")
+    parser.add_argument("--base", default=None, help="start point (default: origin/<branch>, or <branch> without a remote)")
+    parser.add_argument("--state", default=None, help="directory for the worktree and <date>.json (default: <repo>/state/daily)")
+    parser.add_argument("--prompt", default=None, metavar="FILE", help="instruction; {python} {max_files} {max_lines} are filled in")
+    parser.add_argument("--verify", action="append", default=None, metavar="CMD",
+                        help="shell check run in the worktree, in order; given at all, replaces pyflakes/pytest/demo/replay")
+    parser.add_argument("--guard", action="append", default=[], metavar="PREFIX", help="extra path prefix the agent may not touch")
+    parser.add_argument("--after", default=None, metavar="CMD", help="shell command run in the repository after a pushed or merged pass")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo).resolve()
     python = args.python or str(repo / ".venv" / "bin" / "python")
     date = args.date or datetime.now(KST).strftime("%Y-%m-%d")
+    state_dir = Path(args.state).resolve() if args.state else repo / "state" / "daily"
+    base = args.base or (f"origin/{args.branch}" if has_remote(repo) else args.branch)
+    verifier: Verifier = shell_verifier(args.verify) if args.verify else verify
+    gates = f"{len(args.verify)} repository checks and a secret scan" if args.verify else DEFAULT_GATES
     outcome = run_pass(
         repo,
         date=date,
         python=python,
         executor=default_executor(args.model),
         push=not args.no_push,
+        merge=args.merge,
+        branch=args.branch,
+        base=base,
+        state_dir=state_dir,
+        prompt=Path(args.prompt).read_text(encoding="utf-8") if args.prompt else PROMPT,
+        guarded_prefixes=GUARDED_PREFIXES + tuple(args.guard),
+        gates=gates,
+        after=args.after,
         max_files=args.max_files,
         max_lines=args.max_lines,
         timeout=args.timeout,
+        verifier=verifier,
     )
-    report = write_report(repo, outcome)
+    report = write_report(repo, outcome, state_dir)
     print(json.dumps({"status": outcome.status, "summary": outcome.summary[:200], "report": str(report)}, ensure_ascii=False))
     return EXIT_CODES.get(outcome.status, 1)
 

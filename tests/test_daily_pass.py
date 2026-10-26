@@ -36,7 +36,7 @@ def test_the_agent_may_not_edit_the_gates_that_review_it():
     for guarded in (".github/workflows/ci.yml", "deploy/launchd/x.plist", "scripts/daily_pass.py",
                     "tests/test_daily_pass.py", "docs/adr/0016-daily-pass.md"):
         assert daily_pass.gate(change([guarded, "stigdev/cli.py"])), guarded
-    assert daily_pass.gate(change(["stigdev/cli.py", "docs/adr/0017-next.md"])) == []
+    assert daily_pass.gate(change(["stigdev/cli.py", "docs/adr/0018-next.md"])) == []
 
 
 def test_size_caps_are_enforced_on_files_and_lines():
@@ -224,3 +224,100 @@ def test_a_second_run_on_the_same_day_steps_aside(tmp_path):
     assert first.status == "gated"
     again = run(repo, EditingExecutor("fix: x"))
     assert again.status == "already_ran"
+
+
+# --- other repositories through flags (ADR 0017) -------------------------------
+
+
+def make_local_repo(tmp_path: Path) -> Path:
+    """A repository with no remote, like the operator's private media repository."""
+    repo = tmp_path / "local"
+    repo.mkdir()
+    sh("git", "init", "-q", "-b", "main", cwd=repo)
+    sh("git", "config", "user.name", "t", cwd=repo)
+    sh("git", "config", "user.email", "t@example.com", cwd=repo)
+    (repo / "README.md").write_text("hello\n")
+    sh("git", "add", "README.md", cwd=repo)
+    sh("git", "commit", "-q", "-m", "init", cwd=repo)
+    return repo
+
+
+def edit_readme(wt):
+    (wt / "README.md").write_text("goodbye\n")
+
+
+def test_a_repositorys_own_checks_run_in_the_worktree_and_the_first_failure_blocks(tmp_path):
+    repo, origin = make_repo(tmp_path)
+    agent = EditingExecutor("fix: x", edit=edit_readme)
+    failing = daily_pass.shell_verifier(["grep -q goodbye README.md", "echo boom; exit 3", "touch never"])
+    outcome = run(repo, agent, verifier=failing)
+    assert outcome.status == "verify_failed" and "exit 3 failed (3): boom" in outcome.verify[0]
+    assert not (Path(outcome.worktree) / "never").exists() and origin_subject(origin) == "init"
+    assert daily_pass.shell_verifier(["grep -q goodbye README.md"])(Path(outcome.worktree), "py", ()) == []
+
+
+def test_a_repository_without_a_remote_merges_into_its_own_main_and_cleans_up(tmp_path):
+    repo = make_local_repo(tmp_path)
+    outcome = run(repo, EditingExecutor("fix: say goodbye", edit=edit_readme), push=False, merge=True, base="main",
+                  state_dir=tmp_path / "elsewhere", after="echo restarted > after.txt")
+    assert outcome.status == "merged" and outcome.merged and not outcome.pushed
+    assert sh("git", "log", "-1", "--format=%s", "main", cwd=repo).strip() == "fix: say goodbye"
+    assert (repo / "README.md").read_text() == "goodbye\n"  # the checkout runs the change
+    assert outcome.after["exit_code"] == 0 and (repo / "after.txt").read_text().strip() == "restarted"
+    assert outcome.worktree.startswith(str(tmp_path / "elsewhere")) and not Path(outcome.worktree).exists()
+    assert daily_pass.write_report(repo, outcome, tmp_path / "elsewhere").parent == tmp_path / "elsewhere"
+    assert daily_pass.EXIT_CODES["merged"] == 0
+
+
+def test_push_then_merge_brings_the_local_checkout_up_to_date(tmp_path):
+    repo, origin = make_repo(tmp_path)
+    outcome = run(repo, EditingExecutor("fix: say goodbye", edit=edit_readme), merge=True)
+    assert outcome.status == "pushed" and outcome.pushed and outcome.merged
+    assert sh("git", "rev-parse", "main", cwd=repo).strip() == outcome.commit
+    assert sh("git", "rev-parse", "main", cwd=origin).strip() == outcome.commit
+
+
+def test_a_merge_the_checkout_cannot_take_is_a_note_never_a_reset(tmp_path):
+    repo, origin = make_repo(tmp_path)
+    (repo / "README.md").write_text("operator's unsaved edit\n")  # dirty on the very file the agent changes
+    outcome = run(repo, EditingExecutor("fix: say goodbye", edit=edit_readme), merge=True)
+    assert outcome.status == "pushed" and not outcome.merged and "README.md" in outcome.merge_note
+    assert (repo / "README.md").read_text() == "operator's unsaved edit\n"
+    assert origin_subject(origin) == "fix: say goodbye"
+
+    sh("git", "checkout", "-q", "-b", "wip", cwd=repo)
+    again = run(repo, EditingExecutor("fix: y", edit=lambda wt: (wt / "y").write_text("y")), merge=True,
+                state_dir=tmp_path / "second")
+    assert again.status == "pushed" and again.merge_note.startswith("skipped: wip is checked out")
+
+    local = make_local_repo(tmp_path)
+    sh("git", "checkout", "-q", "-b", "wip", cwd=local)
+    kept = run(local, EditingExecutor("fix: z", edit=edit_readme), push=False, merge=True, base="main")
+    assert kept.status == "merge_failed" and Path(kept.worktree).exists()
+    assert daily_pass.EXIT_CODES.get(kept.status, 1) == 1
+
+
+def test_extra_guards_a_prompt_file_and_a_custom_gate_footer(tmp_path):
+    repo, origin = make_repo(tmp_path)
+
+    def edit(wt):
+        (wt / "docs").mkdir()
+        (wt / "docs" / "x.md").write_text("x")
+
+    outcome = run(repo, EditingExecutor("docs: x", edit=edit), guarded_prefixes=("docs/",))
+    assert outcome.status == "gated" and "docs/x.md" in outcome.summary
+
+    prompt = "Run {python} -m pytest; keep under {max_files} files and {max_lines} lines; {not_a_placeholder}"
+    rendered = daily_pass.render_prompt(prompt, python="py3", max_files=4, max_lines=50)
+    assert rendered == "Run py3 -m pytest; keep under 4 files and 50 lines; {not_a_placeholder}"
+    (tmp_path / "b").mkdir()
+    repo, origin = make_repo(tmp_path / "b")  # the gated worktree above still holds today's branch
+    agent = EditingExecutor("fix: y", edit=lambda wt: (wt / "y").write_text("y"))
+    run(repo, agent, prompt=prompt, gates="2 repository checks and a secret scan")
+    assert agent.requests[0].instruction.startswith("Run " + sys.executable)
+    assert "gated by 2 repository checks and a secret scan." in sh("git", "log", "-1", "--format=%B", "main", cwd=origin)
+
+
+def test_the_cli_defaults_the_base_to_origin_only_when_there_is_a_remote(tmp_path):
+    repo, _ = make_repo(tmp_path)
+    assert daily_pass.has_remote(repo) and not daily_pass.has_remote(make_local_repo(tmp_path))
