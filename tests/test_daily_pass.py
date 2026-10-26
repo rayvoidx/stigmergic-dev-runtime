@@ -82,6 +82,14 @@ def test_commit_messages_get_a_conventional_subject_a_footer_and_a_trailer():
     assert kept.startswith("fix: ") and len(kept) <= 72
 
 
+def test_chatter_before_the_commit_message_is_dropped():
+    """The first app rehearsal (2026-10-26) made 'chore: 2 files, small diff. Final commit message:' the subject."""
+    text = "2 files, small diff. Within limits. Final commit message:\n\nfix: stop the fork\n\nIt forked.\n"
+    lines = daily_pass.commit_message(text, DATE).splitlines()
+    assert lines[0] == "fix: stop the fork" and lines[2] == "It forked." and "Within limits" not in "\n".join(lines)
+    assert daily_pass.commit_message("Tightened it.\n\nDetails.", DATE).startswith("chore: Tightened it.\n\nDetails.")
+
+
 def test_no_change_means_no_message():
     assert daily_pass.commit_message("NO_CHANGE: nothing to improve today.", DATE) is None
     assert daily_pass.commit_message("   \n\n", DATE) is None

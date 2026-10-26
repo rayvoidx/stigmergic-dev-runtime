@@ -658,7 +658,10 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     `tests/test_daily_pass.py`, suite 664; demo and replay unchanged. Recorded
     and not resolved: a target whose `main` deploys deploys the agent's commit
     unattended; `--verify` runs the operator's shell commands, outside the
-    agent's reach.
+    agent's reach. First app-target rehearsal the same evening: a real fix with
+    four tests, committed on its branch in 8 minutes with all five checks
+    green; the agent's preamble had become the subject, so `commit_message`
+    now starts at the first conventional subject line.
 
 ## Known gaps / next actions (highest value first)
 

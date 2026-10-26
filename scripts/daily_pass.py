@@ -229,6 +229,11 @@ def commit_message(agent_text: str, date: str, gates: str = DEFAULT_GATES) -> st
         lines.pop(0)
     if not lines or lines[0].strip().upper().startswith(NO_CHANGE):
         return None
+    # An agent sometimes talks before the message ("Within limits. Final commit
+    # message:"); the message starts at the first conventional subject line.
+    starts = [i for i, line in enumerate(lines) if line.strip().strip("`").lower().startswith(SUBJECT_PREFIXES)]
+    if starts:
+        lines = lines[starts[0]:]
     subject = lines[0].strip().strip("`")
     if not subject.lower().startswith(SUBJECT_PREFIXES):
         subject = "chore: " + subject
