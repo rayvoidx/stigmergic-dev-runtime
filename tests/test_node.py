@@ -104,6 +104,16 @@ def test_the_interactive_reserve_keeps_one_run_for_the_operator():
     )
 
 
+def test_interactive_runs_in_flight_count_against_the_logical_run_ceiling():
+    # Four interactive sessions already fill mobile-m4's four logical runs; a
+    # further request must be refused, not waved through because admit counted
+    # only background leases and ignored allocation.interactive_runs.
+    busy = Allocation(interactive_runs=MOBILE_M4.max_logical_runs)
+    assert "logical run limit 4 reached on mobile-m4" in admit(
+        MOBILE_M4, busy, "text_small", CALM, interactive=True
+    ).reasons
+
+
 @pytest.mark.parametrize(
     "facts,fragment",
     [

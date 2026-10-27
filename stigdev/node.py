@@ -244,7 +244,10 @@ def admit(
     if not profile.can_ever_run(klass):
         reasons.append(f"{requested} never fits on {profile.node_id}")
 
-    runs = len(allocation.classes)
+    # Interactive sessions occupy logical runs too, so they count toward the
+    # cap; ignoring them lets the operator's own runs push the node past
+    # max_logical_runs even while the reserve "protects" them.
+    runs = len(allocation.classes) + allocation.interactive_runs
     ceiling = profile.max_logical_runs - (0 if interactive else profile.interactive_reserve_runs)
     if runs + 1 > ceiling:
         reasons.append(f"logical run limit {ceiling} reached on {profile.node_id}")
