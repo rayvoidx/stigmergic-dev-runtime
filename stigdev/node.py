@@ -267,7 +267,9 @@ def admit(
     if allocation.cpu_slots + klass.cpu_slots > profile.cpu_workers:
         reasons.append(f"cpu slots over the {profile.cpu_workers} worker limit")
 
-    if klass.exclusive and allocation.classes:
+    # "Alone" includes the operator: an exclusive job must not start under an
+    # interactive session any more than under a background lease.
+    if klass.exclusive and (allocation.classes or allocation.interactive_runs):
         reasons.append(f"{requested} is exclusive and the node is busy")
     if any(c.exclusive for c in allocation.held):
         reasons.append("an exclusive job holds the node")

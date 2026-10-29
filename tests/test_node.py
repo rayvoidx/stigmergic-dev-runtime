@@ -104,6 +104,16 @@ def test_the_interactive_reserve_keeps_one_run_for_the_operator():
     )
 
 
+def test_an_exclusive_job_is_refused_while_an_interactive_session_runs():
+    # ADR 0012: an exclusive class "holds the node alone". An operator session
+    # occupies the node as surely as a background lease, so video_heavy must
+    # not start under one — the busy check read only allocation.classes.
+    busy = Allocation(interactive_runs=1)
+    assert "video_heavy is exclusive and the node is busy" in admit(
+        STUDIO_M5_ULTRA, busy, "video_heavy", CALM
+    ).reasons
+
+
 def test_interactive_runs_in_flight_count_against_the_logical_run_ceiling():
     # Four interactive sessions already fill mobile-m4's four logical runs; a
     # further request must be refused, not waved through because admit counted
