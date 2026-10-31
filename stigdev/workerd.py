@@ -87,9 +87,10 @@ class WorkerLoop:
             raise WorkerLoopError("profile and resource_class are given together or not at all")
         if profile is not None and resource_class is not None and not profile.can_ever_run(resource_class):
             raise WorkerLoopError(
-                f"{resource_class.name} never fits on {profile.node_id}: "
-                f"{resource_class.memory_gb:g} GB wanted against "
-                f"{profile.usable_memory_gb:g} GB usable"
+                f"{resource_class.name} never fits on {profile.node_id}: wants "
+                f"{resource_class.memory_gb:g} GB of {profile.usable_memory_gb:g} GB usable, "
+                f"{resource_class.metal_slots:g} of {profile.metal_cap(resource_class):g} metal slots, "
+                f"{resource_class.cpu_slots} of {profile.cpu_workers} cpu workers"
             )
         self.scheduler = scheduler
         self.executor = executor

@@ -53,6 +53,31 @@ def test_an_idle_studio_admits_every_class():
         assert admit(STUDIO_M5_ULTRA, Allocation(), name, CALM).passed, name
 
 
+def test_can_ever_run_promises_exactly_what_an_idle_calm_machine_admits():
+    """The docstring's contract. It broke for render_cpu on mobile-m4: 4 CPU
+    slots against 3 workers means admit() refuses it on an idle machine, so
+    can_ever_run must not say yes — a worker built on that answer polls
+    forever instead of failing at startup."""
+    for profile in PROFILES.values():
+        for name, klass in RESOURCE_CLASSES.items():
+            assert profile.can_ever_run(klass) == admit(profile, Allocation(), name, CALM).passed, (
+                profile.node_id,
+                name,
+            )
+    assert not MOBILE_M4.can_ever_run(RESOURCE_CLASSES["render_cpu"])
+    assert "render_cpu never fits on mobile-m4" in admit(
+        MOBILE_M4, Allocation(), "render_cpu", CALM
+    ).reasons
+
+
+def test_a_steady_class_over_the_normal_metal_cap_can_never_run():
+    # Admission measures plain classes against the normal ceiling, not the hard
+    # one, so can_ever_run must use the same cap: 3.0 slots sits under the
+    # studio's hard cap of 4 but will never be admitted past normal cap 2.
+    wide = ResourceClass("wide_steady", metal_slots=3.0, memory_gb=10)
+    assert not STUDIO_M5_ULTRA.can_ever_run(wide)
+
+
 def test_admission_reports_every_unmet_condition_at_once():
     decision = admit(MOBILE_M4, Allocation(), "video_heavy", CALM)
     assert decision == GateDecision(

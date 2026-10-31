@@ -86,9 +86,9 @@ review time early, not to assume it.
 
 ## What the laptop can produce for it before the Studio arrives
 
-From ADR 0014: the M4 admits `text_small` (10 GB) and `render_cpu` (12 GB)
-only. Script drafting, source gathering, labelling and CPU-side assembly run
-locally today. Local image generation, vision and video do not — they are
+From ADR 0014 (corrected 2026-11-01): the M4 admits `text_small` (10 GB) only —
+`render_cpu` fits the memory but asks for 4 CPU slots against the profile's 3
+workers. Script drafting, source gathering and labelling run locally today. Local image generation, vision and video do not — they are
 impossible on 16 GB usable, not slow, and they wait for the Studio.
 
 So the honest first-month plan is audio-led: narration over still artwork and

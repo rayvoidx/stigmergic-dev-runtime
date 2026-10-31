@@ -26,6 +26,12 @@ resource classes in ADR 0012, exactly two can ever run there:
 | `image_final` | 40 GB | no |
 | `video_heavy` | 72 GB | no |
 
+*Correction (2026-11-01): this table sized by memory alone. `render_cpu` also
+asks for 4 CPU slots against `mobile-m4`'s 3 CPU workers, so admission refuses
+it on an idle machine — ADR 0012's "it admits exactly one" was right.
+`can_ever_run` now accounts for CPU slots and the per-class Metal cap, and a
+worker asking for `render_cpu` on the laptop fails at construction.*
+
 So "open source to the maximum" on this machine means one small text model
 plus CPU rendering. Local image generation, vision and video are not
 constrained-but-slow here; they are impossible, and they wait for the Studio.

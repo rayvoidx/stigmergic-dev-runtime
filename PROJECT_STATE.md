@@ -663,6 +663,24 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     green; the agent's preamble had become the subject, so `commit_message`
     now starts at the first conventional subject line.
 
+48. **`can_ever_run` keeps its own promise (2026-11-01, daily pass).** Its
+    docstring claims to answer "could this node admit the class on a completely
+    idle machine", but it checked only memory and the hard Metal cap. Two ways
+    that lied: `render_cpu` wants 4 CPU slots against `mobile-m4`'s 3 workers,
+    so an idle calm laptop refuses it while `can_ever_run` said yes — a worker
+    built for that class constructed cleanly and then polled forever for a
+    lease admission would never grant, instead of failing at startup as
+    ADR 0014 promises; and a plain class with Metal between the normal and
+    hard caps could likewise never pass `admit`. The predicate now checks CPU
+    slots and the same per-class Metal cap as `admit` (shared via
+    `NodeProfile.metal_cap`), a test pins `can_ever_run` equal to idle-calm
+    admission over every shipped profile × class, and the worker's
+    construction error names all three dimensions instead of blaming memory
+    for a CPU refusal. ADR 0012's "it admits exactly one" was correct all
+    along; ADR 0014's memory-only table carries a dated correction, and
+    `docs/commissioning.md` / `docs/archive-channel-launch.md` now match the
+    implementation. Only `text_small` runs on the laptop.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level

@@ -224,12 +224,23 @@ def test_the_laptop_refuses_a_class_it_could_never_host(tmp_path):
     """MOBILE_M4 has 16 GB usable; the coder class wants 28 GB. Fail at
     construction, not after a task has already been leased."""
     st = store(tmp_path)
+    sched = scheduler(st)
     with pytest.raises(WorkerLoopError, match="never"):
         loop(
-            scheduler(st),
+            sched,
             RecordingExecutor(),
             profile=MOBILE_M4,
             resource_class=RESOURCE_CLASSES["text_coder"],
+        )
+    # render_cpu fits the laptop's memory but wants 4 CPU slots of 3, so
+    # admission refuses it on an idle machine; constructing a worker for it
+    # must fail too, not poll forever for a lease it can never take.
+    with pytest.raises(WorkerLoopError, match="never"):
+        loop(
+            sched,
+            RecordingExecutor(),
+            profile=MOBILE_M4,
+            resource_class=RESOURCE_CLASSES["render_cpu"],
         )
 
 

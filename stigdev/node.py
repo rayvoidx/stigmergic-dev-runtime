@@ -137,9 +137,19 @@ class NodeProfile:
     def usable_memory_gb(self) -> float:
         return self.total_memory_gb - self.reserve_memory_gb
 
+    def metal_cap(self, klass: ResourceClass) -> float:
+        """The Metal ceiling this class is measured against. Preemptible work can
+        be evicted under pressure and exclusive work holds the node alone, so both
+        ride up to the hard cap; steady work stays under the normal one."""
+        return self.hard_metal_slots if (klass.preemptible or klass.exclusive) else self.normal_metal_slots
+
     def can_ever_run(self, klass: ResourceClass) -> bool:
         """Whether this node could admit the class on a completely idle machine."""
-        return klass.memory_gb <= self.usable_memory_gb and klass.metal_slots <= self.hard_metal_slots
+        return (
+            klass.memory_gb <= self.usable_memory_gb
+            and klass.metal_slots <= self.metal_cap(klass)
+            and klass.cpu_slots <= self.cpu_workers
+        )
 
 
 MOBILE_M4 = NodeProfile(
@@ -252,11 +262,8 @@ def admit(
     if runs + 1 > ceiling:
         reasons.append(f"logical run limit {ceiling} reached on {profile.node_id}")
 
-    # `normal` is the steady-state ceiling for work that must not be disturbed.
-    # Preemptible and exclusive classes are measured against the hard ceiling:
-    # the first can be evicted under pressure, the second holds the node alone.
     metal = allocation.metal_slots + klass.metal_slots
-    cap = profile.hard_metal_slots if (klass.preemptible or klass.exclusive) else profile.normal_metal_slots
+    cap = profile.metal_cap(klass)
     if metal > cap:
         reasons.append(f"metal slots {metal:g} over the {cap:g} limit")
 

@@ -135,20 +135,21 @@ Until the Mac Studio arrives, the MacBook Pro M4 carries unattended work. Two
 things decide what that can be.
 
 **What the laptop can ever host.** `MOBILE_M4` reserves 8 GB of 24, leaving
-16 GB usable against one Metal slot. Two of six resource classes fit:
+16 GB usable against one Metal slot. One of six resource classes fits:
 
 | Class | Memory | On the laptop |
 |---|---:|---|
 | `text_small` | 10 GB | yes |
-| `render_cpu` | 12 GB | yes |
+| `render_cpu` | 12 GB | no — wants 4 CPU slots of 3 |
 | `text_coder` | 28 GB | no |
 | `vision` | 30 GB | no |
 | `image_final` | 40 GB | no |
 | `video_heavy` | 72 GB | no |
 
-Local image generation, vision and video are impossible here, not slow. A
-worker started with one of those classes fails immediately rather than leasing
-a task it cannot run.
+Local image generation, vision, video and CPU rendering are impossible here,
+not slow (`render_cpu` fits the memory but not the CPU workers — see the
+calibration note above). A worker started with any of those classes fails
+immediately rather than polling forever for a lease it can never take.
 
 **Where the reasoning comes from.** Claude Code runs behind `AgentExecutor`,
 not `Provider` — it is an agent process, not a model endpoint, so the
