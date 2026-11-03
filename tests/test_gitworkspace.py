@@ -151,6 +151,26 @@ def test_one_writer_lease_is_enforced_and_fences_the_previous_holder(backend, re
     assert Path(ref.locator).is_dir()
 
 
+def test_retain_and_quarantine_respect_another_holders_live_lease(backend, repo, tmp_path, clock):
+    ref = backend.create(_spec(repo))
+    backend.prepare(ref)
+    other = GitWorktreeBackend({"origin": repo[0]}, tmp_path / "ws", holder="b", lease_ttl=100.0, clock=clock)
+    clock.now = 50.0
+    with pytest.raises(WorkspaceError):
+        other.quarantine(ref, "not mine")
+    with pytest.raises(WorkspaceError):
+        other.retain(ref)
+    record = _record(backend, "ws1")
+    assert record["disposition"] == "active" and record["quarantine"] is None
+    assert record["lease"]["holder"] == "a"
+    assert backend.prepare(ref).prepared  # the holder keeps working
+    clock.now = 200.0  # a's lease has expired: b may take over and quarantine
+    assert other.quarantine(ref, "abandoned").disposition == "retained"
+    assert _record(backend, "ws1")["lease"]["holder"] == "b"
+    with pytest.raises(WorkspaceError):
+        backend.retain(ref)  # and the previous holder is fenced out
+
+
 def test_checkpoint_stores_a_content_addressed_tree_and_patch_digest(backend, repo, tmp_path):
     ref = backend.create(_spec(repo))
     backend.prepare(ref)

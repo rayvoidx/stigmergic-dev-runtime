@@ -213,6 +213,9 @@ class GitWorktreeBackend:
             record = self._record(workspace)
             if record["disposition"] == "disposed":
                 raise WorkspaceError("workspace is disposed")
+            # Retaining is a write like any other: another holder's live lease
+            # must fence it, or a stranger could freeze a workspace mid-attempt.
+            self._acquire(record)
             record["disposition"] = "retained"
             if quarantine is not None:
                 record["quarantine"] = quarantine
