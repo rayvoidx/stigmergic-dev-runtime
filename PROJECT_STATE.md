@@ -681,6 +681,16 @@ repeated_failure_attempts=2, lineage_depth=3, train 0.55->0.86, holdout
     `docs/commissioning.md` / `docs/archive-channel-launch.md` now match the
     implementation. Only `text_small` runs on the laptop.
 
+49. **`retain`/`quarantine` honour the one-writer lease (2026-11-04, daily
+    pass).** `docs/git_worktree_backend.md` lists both among the mutating
+    calls that acquire the lease, but `GitWorktreeBackend._retain` never
+    called `_acquire`: a second holder could quarantine a workspace while
+    the first held a live lease, freezing it mid-attempt (the holder's next
+    `prepare` then failed on `retained`). `_retain` now acquires like
+    `prepare`/`checkpoint`/`dispose`; a regression test covers refusal under a
+    live foreign lease, takeover after expiry, and fencing of the previous
+    holder. Same-holder behaviour is unchanged.
+
 ## Known gaps / next actions (highest value first)
 
 1. **Replicate before paper-level H5 claims** — use a third capability level
